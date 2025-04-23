@@ -1,0 +1,4 @@
+<template>
+    
+    <ListAnnouns />
+</template>
