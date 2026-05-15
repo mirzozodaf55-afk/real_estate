@@ -1,8 +1,10 @@
 <template>
-  <button @click="goBack" class="absolute z-[1000] py-[2px] px-[5px] bg-primary cursor-pointer my-[3px] text-[white]
-  rounded border font-bold mt-0 top-[55px]
+  <button @click="goBack" class="absolute flex items-center z-[1000] py-[2px] px-[5px] bg-primary cursor-pointer my-[3px] text-[white]
+  rounded-full w-[50px] h-[50px] justify-center border font-bold mt-0 top-[55px]
   border-white ml-[4px] text-[20px] mb-[3px]">
-<p class="m-0 pb-[3px]">назад</p>
+<p class="m-0 ">
+  <font-awesome-icon :icon="['fa-solid', 'fa-chevron-left']" />
+</p>
 </button>
   <div class="flex justify-center" style="height: 96vh;">
     <div
@@ -15,21 +17,25 @@
 
 <script setup>
 
-import { onMounted, defineProps } from 'vue'
+// import { onMounted, defineProps } from 'vue'
 let coords = []
 let announ = []
-const filteredData = JSON.parse(sessionStorage.getItem('filter'))
+// const filteredData = JSON.parse(sessionStorage.getItem('filter'))
 let arr = []
 const router = useRouter()
+const route = useRoute()
 function goBack(){
   router.back()
 }
+
+const data = ref([])
 async function getAnnouns(filter){
     data.value = []
     await fetch('http://127.0.0.1:8000/api/get_announs',{
         method:'post',
         headers:{
-            "Content-Type":'application/json'
+            "Content-Type":'application/json',
+            Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
         },
         body:JSON.stringify(filter)
     })
@@ -101,6 +107,7 @@ const props = defineProps({
       { name: 'Варзоб', color: '' },
     ]
   },
+  error: Object,
   center: {
     type: Array,
     default: () => [38.559772, 68.787038] // Центр Таджикистана
@@ -118,7 +125,8 @@ showNavBar.value = true
 
 onMounted(() => {
   
-  getAnnouns(filteredData)
+  getAnnouns(route.query)
+  
   const checkYMaps = setInterval(() => {
   if (window.ymaps) {
     clearInterval(checkYMaps)

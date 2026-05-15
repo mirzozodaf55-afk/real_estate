@@ -1,4 +1,5 @@
 <?php
+/*https://payouts.payoneer.com/partners/Default/AccountRegistration.aspx?token=4c0c7b583ea645198351dace367f8c33B995A4DD71&ref=or&_gl=1*2lf5zd*_up*MQ..*_gs*MQ..&gclid=CjwKCAjwl_XBBhAUEiwAWK2hzpiLptBydKnIjZEHmvk1ptUmAfEaEJ03lB0-7VLxSSCbwBuhTBiIoBoC6kEQAvD_BwE&gbraid=0AAAAADmHOcgsB1KFfqvFwzsAfWx7giaSB*/
 
 use App\Http\Controllers\CreateAnnounController;
 use App\Http\Controllers\CreateOwnerController;
@@ -11,6 +12,7 @@ use App\Http\Controllers\getImageController;
 use App\Http\Controllers\LikesController;
 use App\Http\Controllers\UpdateAnnounController;
 use App\Http\Controllers\MessageController;
+use App\Http\Controllers\NotifyController;
 use App\Http\Controllers\VideoController;
 use App\Models\Message;
 use Illuminate\Http\Request;
@@ -28,35 +30,41 @@ use Symfony\Component\Translation\MessageCatalogue;
 |
 */
 
+Route::post('/avatar',[getImageController::class, 'getAvatar']);
 Route::group(['middleware' => 'auth:sanctum'], function(){
     Route::post('/create/announ/commercial', [CreateAnnounController::class, 'createAnnoun'])->middleware('throttle:1000,1');
     Route::post('/create/announ',[CreateAnnounController::class, 'createResidentAnnoun'])->middleware('throttle:1000,1');
     Route::post('/save-pictures',[getImageController::class, 'saveImageFiles'])->middleware('throttle:1000,1');
     Route::post('/upload-image',[getImageController::class,'createImageFiles'])->middleware('throttle:1000,1');
     Route::post('/update_user',[CreateOwnerController::class,'UpdateOwner'])->middleware('throttle:1000,1');
-    Route::post('/avatar',[getImageController::class,'getAvatar'])->middleware('throttle:1000,1');
     Route::get('/get_user',[CreateOwnerController::class,'getUser'])->middleware('throttle:1000,1');
-    Route::post('/get_announs_by_user',[CreateAnnounController::class,'getAnnounByUser'])->middleware('throttle:1000,1');
+    Route::get('/get_announs_by_user',[CreateAnnounController::class,'getAnnounByUser'])->middleware('throttle:1000,1');
     Route::post('/delete-announ',[deleteAnnounController::class,'deleteAnnoun'])->middleware('throttle:1000,1');
     Route::post('/update-announ',[UpdateAnnounController::class,'updateAnnoun'])->middleware('throttle:1000,1');
     Route::post('/restore',[UpdateAnnounController::class,'restoreData'])->middleware('throttle:1000,1');
     Route::post('/send-message',[MessageController::class, 'Message'])->middleware('throttle:1000,1');
     Route::post('/send-file',[MessageController::class,'SendFile'])->middleware('throttle:1000,1');
-    Route::post('/send-video',[MessageController::class,'SendVideo'])->middleware('throttle:1000,1');
+    Route::post('/send-video',[MessageController::class,'SendVideo']);
     Route::post('/get-message',[MessageController::class, 'getMessage'])->middleware('throttle:1000,1');
     Route::post('/typing',[MessageController::class, 'Typing'])->middleware('throttle:1000,1');
-    Route::get('/get_all_users',[MessageController::class,'getAllUser'])->middleware('throttle:1000,1');
+    // Route::get('/get_all_users',[MessageController::class,'getAllUser'])->middleware('throttle:1000,1');
+    Route::post('/notify-me',[NotifyController::class, 'notifyMe'])->middleware('throttle:1000,1');
     Route::post('/delete-acount',[CreateAnnounController::class, 'deleteAcount'])->middleware('throttle:1000,1');
     Route::post('/get_video',[MessageController::class, 'getVideo']);
     Route::post('/likes',[LikesController::class,'setLikes']);
-    Route::get('/check-auth',function(){
+    Route::get('/check-auth',function(Request $request){
         return response()->json([
             'isAuth'=>true,
-            'user'=>auth()->user()
+            'user'=>$request->user()
         ]);
     });
+    Route::get('/delete_acount', function(Request $request){
+        $request->user()->currentAccessToken()->delete();
+        return ['curentAccessToken deleted'];
+    });
+    Route::get('/favorite', [LikesController::class, 'getFavorite']);
 });
-
+Route::get('/get_all_users',[MessageController::class,'getAllUser'])->middleware('throttle:1000,1');
 Route::post('/video-sync',[VideoController::class, 'syncVideo']);
 Route::get('/avatar/{name}',function($name){
     return response()->download(public_path("avatar/$name",));

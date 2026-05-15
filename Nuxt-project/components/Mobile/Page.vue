@@ -288,7 +288,9 @@
     const props = defineProps({
         pictures:{
             type: Array,
-            required:true
+            required:true,
+            error: Object
+
         }
     })
     const video = ref(null)
@@ -327,7 +329,8 @@ const sStorage = {}
 const {showNavBar,isShow} = useSwitch()
 const router = useRouter()
 function filter(event){
-    showNavBar.value = isShow.value = false 
+    showNavBar.value = true 
+    isShow.value = false 
     if (event.target.children[1].textContent.trim() == 'Купить') {
         sStorage.dealType = 'Продажа'
         sStorage.typeObject = 'Квартира'

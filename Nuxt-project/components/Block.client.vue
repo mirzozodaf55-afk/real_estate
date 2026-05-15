@@ -70,11 +70,15 @@ function move() {
     if (announData.value.objects == 'Участок') {
       navigateTo('/technicsandfurniture')
     }
-    if (announData.value.objects == 'Квартира'||announData.value.objects == 'Комната'||announData.value.objects == 'Квартира в Новостройке') {
+    if (announData.value.objects == 'Квартира'||
+    announData.value.objects == 'Комната') {
+      console.log('click');
+      
       
       if (
-         announData.value.city == '' 
-      || !announData.value.floor 
+         !announData.value.coord_x || 
+         !announData.value.coord_y ||
+         !announData.value.floor 
       || !announData.value.floorHouse 
       || parseInt(announData.value.floor) > parseInt(announData.value.floorHouse)
       || typeHome.value == ''
@@ -82,13 +86,14 @@ function move() {
       || announData.value.year < 1950
       || announData.value.year > curentYear.value
       ) {
-        navigateTo("/map");
         // announData.value[1] = "";
         localStorage.setItem("announ", JSON.stringify(announData.value));
+        return;
       }else navigateTo("/pictures");
     }
     if(announData.value.objects == 'Дом/Дача'||announData.value.objects == 'Коттедж' || announData.value.objects == 'Участок'||announData.value.objects == 'Дом'){
-      if (!announData.value.city
+      if (!announData.value.coord_x 
+      || !announData.value.coord_y
       || !announData.value.floorHouse
       || !typeHome.value
       || !announData.value.year
@@ -252,12 +257,12 @@ mapLoader.value = false
       </p>
     </form>
 
-    <div class="flex mt-4" id="floor"
+    <div class="flex mt-5" id="floor"
     >
       <div class="content">
         <div 
         class="rows" v-if="announData.objects == 'Квартира' || announData.objects =='Комната'|| announData.objects =='Квартира в Новостройке'">
-          <span>Этаж</span>
+          <span class="text-[18px]">Этаж</span>
           <input  
             :style="moreThen || !announData.floor || announData.floor > announData.floorHouse ? `border:1px solid red;color:red;` : 'border-color:green;color:green'"
             @input="isFloor"
@@ -282,6 +287,7 @@ mapLoader.value = false
             Этаж должен быть меньше или <br />
             равен количеству этажей
           </p>
+          <!-- {{ moreThen }} -->
         </div>
         <div class="rows" v-if="announData.objects !=='Участок'">
           <span>{{ announData.objects == 'Квартира' || announData.objects =='Комната' || announData.objects =='Квартира в Новостройке' ? 'Этаж в дома': 'Количество этажей' }}</span>
@@ -294,6 +300,7 @@ mapLoader.value = false
             v-model="announData.floorHouse"
             class="input focus:outline-none border-none form-control "
           />
+          
         </div>
       </div>
     </div>

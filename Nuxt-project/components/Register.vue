@@ -88,15 +88,30 @@
             <span class="sr-only">Loading...</span>
           </div>
         </button>
+        <p class="ml-[80px] mt-[20px]">Войти через</p>
+        <div class="flex  w-full justify-evenly items-center h-full">
+
+          <button
+          v-if="!sendDataUSer"
+            style="font-family: Lato, Arial, sans-serif"
+            class=" mt-[10px]"
+            @click.prevent
+          >
+          <font-awesome-icon :icon="['fas', 'g']" style="color: orangered; font-size: 45px;"/>
+          <p>google</p>
+          </button>
+          <button
+          v-if="!sendDataUSer"
+            style="font-family: Lato, Arial, sans-serif;"
+            class="text-black mt-[10px]"
+            @click.prevent
+          >
+          <font-awesome-icon :icon="['fab', 'apple']" style="color: darkslategray; font-size: 50px;"/>
+          <p>apple</p>
+          </button>
+        </div>
         
-        <button
-        v-if="!sendDataUSer"
-          style="font-family: Lato, Arial, sans-serif"
-          class="btn-light text-primary btn mt-[10px]"
-          @click.prevent
-        >
-          Другим способом
-        </button>
+
       </form>
 
       <div class="help w-[80%] flex justify-center mx-auto mt-[70px] mb-[20px]">
@@ -137,6 +152,7 @@ const tel = ref({
   phone: "(992)",
 });
 let time = ref(0)
+const token = useCookie('token')
 async function createUser() {
   loader.value = true;
   verified.value =''
@@ -175,6 +191,8 @@ async function createUser() {
           verified.value = res[0]
           responce.value = res[1];
         localStorage.setItem("token", JSON.stringify(responce.value));
+        token.value = res[1]
+
         console.log(res);
         
         },3000)

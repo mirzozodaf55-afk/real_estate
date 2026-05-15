@@ -158,7 +158,9 @@ const filter = JSON.parse(sessionStorage.getItem('filter'))||{}
 const props = defineProps({
     getAnnouns:{
         type:Function,
-        required:true
+        required:true,
+        error: Object
+
     }
 })
 function updateTotalArea(value1,value2){

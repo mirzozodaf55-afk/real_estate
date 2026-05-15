@@ -6,10 +6,21 @@
                             <div class="w-[94%]  bg-[white] m-[5px] sm:w-[94%]">
                                 <div class="mb-[8px] border-b px-[10px] pb-[20px]">
                                     <div class="flex mt-[10px]">
-                                            <a style="flex: 0 0 56px; user-select: none; text-decoration: none;" class="mr-[15px] overflow-hidden rounded-[50%] flex justify-center items-center h-[56px] overflow-hidden"
+                                            <a style="flex: 0 0 56px; user-select: none; text-decoration: none;" class="mr-[15px]  overflow-hidden rounded-[50%] flex justify-center
+                                             items-center h-[56px] overflow-hidden"
                                                 >
-                                                <span  class="rounded-[50%] bg-[silver] w-[92%] h-[52px] ">
-                                                    <img :src="`http://127.0.0.1:8000/api/avatar/${id.avatar}`" class="w-full h-full rounded-[50%]">
+                                                <span  class="rounded-[50%]
+                                                flex items-center justify-center
+                                                bg-[black] w-[92%] h-full relative">
+                                                    <!-- <font-awesome-icon
+                                                v-if="loadImage"
+                                                :icon="['fa', 'load']"
+                                                class="text-[white]"
+                                            /> -->
+                                            <p v-if="loadImage" class="text-[white]" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);">
+                                                <font-awesome-icon :icon="['fas', 'rotate']" spin />
+                                            </p>
+                                                    <img :src="`http://127.0.0.1:8000/api/avatar/${avatar?avatar:owner.avatar}`" class="w-full h-full rounded-[50%]">
                                                 </span>
                                             </a>
                                             <div class="flex flex-col justify-center" style="flex: 1 1;">
@@ -24,7 +35,7 @@
                                 </div>
                                 <div class="w-[65%] flex  flex-col">
                                     <div class="mx-[15px] mt-[10px] flex w-full justify-between">
-                                        <input @change="addNewPicture" type="file" id="file" class="d-none">
+                                        <input @change="addNewPicture" accept="image/*" type="file" id="file" class="d-none">
                                         <button @click="open" class="rounded bg-[rgba(4,104,255,.2)] text-[#075ad9] m-[0] px-[10px] text-[14px] h-[30px] w-[max-content]">Обновить фото</button>
                                         <button class="rounded bg-[rgba(255,31,52,.2)] text-[red] m-[0] px-[10px] text-[14px] h-[30px] w-[max-content]">Удалить фото</button>
                                     </div>
@@ -108,9 +119,12 @@
 </template>
 <script setup>
 
+// useHead({
+//     title:'Профиль'
+// })
 const route = useRoute()
 getUser()
-const {responce} = getData()
+const {responce,loadImage} = getData()
 const isPassword = ref(false);
 const isPassword1 = ref(false);
 const name = ref('')
@@ -119,10 +133,16 @@ const date = ref('')
 const message = ref('')
 const password = ref('')
 const confirm_password = ref('')
-const id = JSON.parse(localStorage.getItem('owner'))
+const {user} = getUserByServer()
+const owner = user.value
 const d = new Date()
 const age = ref(0)
 const {avatar} = getData()
+watch(user,(value)=>{
+    owner.value=value
+})
+console.log(user.value);
+
 function changeType(){
     isPassword.value = !isPassword.value
 }
@@ -145,13 +165,14 @@ function data(){
     date.value = event.target.value
     // console.log(date.value);
 }
-
+// const loadImage = ref(false)
 async function addNewPicture(event){
+    owner.value = user.value
+    
     const formData = new FormData()
     formData.append('avatar',event.target.files[0])
-    formData.append('phone', id.phone_number)
-    // console.log(formData.get('phone'));
-
+    formData.append('phone', owner.value.phone_number)
+    loadImage.value=true
     await fetch('http://127.0.0.1:8000/api/avatar',{
         method:'post',
         headers:{
@@ -162,15 +183,20 @@ async function addNewPicture(event){
     .then(res=>res.json())
     .then(res=>{
         avatar.value = res.avatar || {}
-        responce.value[1] = res
-        localStorage.setItem('owner',JSON.stringify(res))
-        console.log(res);
+        // responce.value[1] = res
+        owner.value = user.value = res
+        
+        // localStorage.setItem('owner',JSON.stringify(res))
+        
         
     })
+    loadImage.value =false
 }
 
 async function sendData(){
-   await fetch('http://127.0.0.1:8000/api/update_user',{
+    owner.value = user.value
+    
+    await fetch('http://127.0.0.1:8000/api/update_user',{
         method:'post',
         headers:{
             "Content-Type":'application/json',
@@ -180,12 +206,13 @@ async function sendData(){
             name:name.value,
             lastName:lastName.value,
             date:date.value,
-            phone: id.phone_number
+            phone: owner.value.phone_number
         })
         
     })
     .then(res=>res.json())
     .then(res=>{
+        user.value = owner.value = res
         name.value= lastName.value= date.value = ''
         name.value = res.name
         lastName.value = res.last_name
@@ -199,6 +226,7 @@ async function sendData(){
 }
 
 async function sendMessage(){
+    owner.value = user.value
     await fetch('http://127.0.0.1:8000/api/send_message',{
         method:'post',
         headers:{
@@ -206,7 +234,7 @@ async function sendMessage(){
             Authorization:'Bearer '+JSON.parse(localStorage.getItem('token')) 
         },
         body:JSON.stringify({
-            'phone':id.phone_number,
+            'phone':owner.phone_number,
             'email':message.value
         })
     })
@@ -226,7 +254,7 @@ async function getUser(){
        method:'GET',
        headers:{
            "Content-Type":'application/json',
-           Authorization:'Bearer '+JSON.parse(localStorage.getItem('token')) 
+           Authorization:'Bearer '+ JSON.parse(localStorage.getItem('token')) 
        }
    })
    .then(res=>res.json())
@@ -240,14 +268,14 @@ async function getUser(){
        const birthYear = new Date(date.value)
        const year = birthYear.getFullYear()  
        
-       if (id.birth_date || res.date) {
+       if (owner.birth_date || res.date) {
            
            age.value = d.getFullYear() - year
        }      
    }) 
 }
 
-onMounted(async ()=>{
-
+onMounted(()=>{
+owner.value = user.value
 })
 </script>

@@ -10,7 +10,10 @@
     </div>
 </template>
 <script setup>
-const filter = JSON.parse(sessionStorage.getItem('filter')) || {}
+// const filter = reac
+const router = useRouter()
+const route = useRoute()
+
 const quantityRooms = ref([
     {value:1},
     {value:2},
@@ -18,22 +21,33 @@ const quantityRooms = ref([
     {value:4},
     {value:5},
 ])
-
+let filter = reactive({
+    typeObject: route.query.typeObject || '',
+    dealType: route.query.dealType,
+    quantityRoom: route.query.quantityRoom || [],
+    realEstate: route.query.realEstate || '',
+    max_price: route.query.max_price || '',
+    min_price: route.query.min_price || '',
+})
 const { quantityRoom, priceFrom, priceTo } = getData()
 function selectQuanitityRoom(room){
     if (event.target.checked ) {
-        quantityRoom.value.push(room.value)
-        filter.quantityRoom = quantityRoom.value;
-        // filter.priceFrom = priceFrom.value
-        // filter.priceTo = priceTo.value
+        // quantityRoom.value.push(room.value)
+        filter.quantityRoom.push(room.value);
+        
     }
     if (!event.target.checked) {
-        quantityRoom.value.splice(quantityRoom.value.indexOf(room.value), 1)
+        filter.quantityRoom.splice(filter.quantityRoom.indexOf(room.value), 1)
+        router.replace({query:{...filter,array:filter.quantityRoom}})
     }
         
-    sessionStorage.setItem('filter',JSON.stringify(filter)) 
+    console.log(filter.quantityRoom);
+    
 }
 
+watch(filter,(value)=>{
+    router.replace({query:{...value}})
+})
 
 onMounted(()=>{
     setTimeout(() => {

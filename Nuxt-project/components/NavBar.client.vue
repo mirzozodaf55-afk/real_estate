@@ -11,7 +11,7 @@
                     
                 </div>
 
-                    <h4 @click="Home" class="name-page cursor-pointer" style="text-transform:uppercase;">Avera</h4>
+                    <h4 @click="Home" class="name-page cursor-pointer" style="text-transform:uppercase;">Logo</h4>
                  
                 <div class="container-filters" v-if="desktopSize">
                     <ul class="lists">
@@ -41,16 +41,16 @@
                 <div class="containers-icons">
                     <div class="utilities" >
                         <div class="containers ">
-                            <button @click="message" class="buttons">
-                                <font-awesome-icon style="font-size:18px;" :icon="['far', 'comment']" />
+                            <button @click="goToLink" class="buttons" data-value="Пользователи" data-name="listfriend">
+                                <font-awesome-icon style="font-size:18px; pointer-events: none;" :icon="['far', 'comment']" />
                             </button>
                         </div>
-                        <button @click="favorite" class="buttons">
-                            <font-awesome-icon style="font-size:18px;" :icon="['far', 'heart']" />
+                        <button @click="goToLink" class="buttons" data-name="personal_area/favorite" data-value="Избранное">
+                            <font-awesome-icon style="font-size:18px; pointer-events: none;" :icon="['far', 'heart']" />
                         </button> 
                         <div class="bell" v-if="desktopSize">
-                            <button @click="notification" class="buttons">
-                            <font-awesome-icon style="font-size:18px;" :icon="['far', 'bell']" />
+                            <button @click="goToLink" class="buttons" data-name="personal_area/notification" data-value="Уведомления">
+                            <font-awesome-icon style="font-size:18px; pointer-events: none;" :icon="['far', 'bell']" />
                             </button>
                         </div>
                     </div>
@@ -59,7 +59,7 @@
                 </div>
 
                 <div class="place" v-if="mobileSize" @click="showAndHide">
-                    <NuxtLink rel="noopener" href="#">
+                    <NuxtLink to="/announ" rel="noopener">
                         <span >
                             <span >&plus;</span>&nbsp;Разместить oбъявление
                         </span>
@@ -105,22 +105,22 @@
 
     
     watch(user,(val)=>{
-        console.log(val);
         data.value = user.value
         localStorage.setItem('owner', JSON.stringify(user.value))
     })
 
     
     function showAndHide(){
+        // console.log(data.value.phone_number);
+        
         if (data.value.phone_number) {
          isShow.value = false
-        //  window.location.replace('/announ')
-        navigateTo('/announ')
+         router.push('/announ')
          localStorage.removeItem('announ')
-     }else{
-         showMadoal.value = true
-        direction.value = '/announ'
-     }
+        }else{
+            showMadoal.value = true
+            direction.value = '/announ'
+        }
     
 }       
  function isActive(){
@@ -158,6 +158,7 @@ function handleSize(){
 }
 
 onMounted(()=>{
+    data.value = user.value
     window.addEventListener('resize', handleSize)
     handleSize()
     isShow.value = false
@@ -178,37 +179,50 @@ function logOut(){
 
 }
 
-function message(){
+function goToLink(event){
+    data.value = user.value
     if (data.value.phone_number) {
-        navigateTo(('/listfriend'))
+        useHead({title:event.target.dataset.value})
+        navigateTo(`/${event.target.dataset.name}`)
         document.body.style.overflow = 'auto'
         isShow.value = false
     }else{
         showMadoal.value = true
-        direction.value = '/listfriend'
-    }
-}
-function favorite(){
-    if (data.value.phone_number) {
-        navigateTo('/personal_area/favorite')
-        document.body.style.overflow = 'auto'
-        isShow.value = false
-    }else{
-        showMadoal.value = true
-        direction.value = '/personal_area/favorite'
+        direction.value = event.target.dataset.name
     }
 }
 
-function notification(){
-    if (data.value.phone_number) {
-        navigateTo('/personal_area/notification') 
-        document.body.style.overflow = 'auto'
-        isShow.value = false
-    }else{
-        showMadoal.value = true
-        direction.value = '/personal_area/notification'
-    }
-}
+// function message(){
+//     if (data.value.phone_number) {
+//         navigateTo(('/listfriend'))
+//         document.body.style.overflow = 'auto'
+//         isShow.value = false
+//     }else{
+//         showMadoal.value = true
+//         direction.value = '/listfriend'
+//     }
+// }
+// function favorite(){
+//     if (data.value.phone_number) {
+//         navigateTo('/personal_area/favorite')
+//         document.body.style.overflow = 'auto'
+//         isShow.value = false
+//     }else{
+//         showMadoal.value = true
+//         direction.value = '/personal_area/favorite'
+//     }
+// }
+
+// function notification(){
+//     if (data.value.phone_number) {
+//         navigateTo('/personal_area/notification') 
+//         document.body.style.overflow = 'auto'
+//         isShow.value = false
+//     }else{
+//         showMadoal.value = true
+//         direction.value = '/personal_area/notification'
+//     }
+// }
 function showModalWindow(){
     const {active,showMadoal} = useSwitch()
     document.body.style.overflow ='hidden';
@@ -217,7 +231,7 @@ function showModalWindow(){
 }
 
 function Home(){
-    window.location.replace('/')
+    router.push('/')
     // navigateTo('/')
 }
 </script>

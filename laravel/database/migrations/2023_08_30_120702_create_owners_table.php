@@ -21,6 +21,9 @@ return new class extends Migration
             $table->string('pass')->nullable();
             $table->integer('verification_code')->nullable();
             $table->string('phone_number');
+            $table->string('ip_adress')->nullable();
+            $table->string('is_admin')->default(false);
+            $table->string('uniq_id')->nullable();
             $table->softDeletes();
             $table->timestamps();
         });

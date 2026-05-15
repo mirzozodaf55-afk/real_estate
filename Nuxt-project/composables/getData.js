@@ -18,6 +18,8 @@ export default function getData(){
     const typeDeal = useState('typeDeal',()=>'')
     const updateAnnounData = useState('updateAnnounData',()=>{})
     const show_video = useState('show_video',()=>false)
+    const loadImage = useState('loadImage',()=>false)
+
     // const token = useState('token',()=>JSON.parse(localStorage.getItem('token'))) 
      
     return{
@@ -39,6 +41,7 @@ export default function getData(){
         AnnounOgj,
         images,
         avatar,
-        typeObject
+        typeObject,
+        loadImage
     }
 }

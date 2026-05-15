@@ -50,52 +50,54 @@ class UpdateAnnounController extends Controller
     }
 
     public function updateAnnoun(Request $request){
-        // $data = json_decode($request->input('all-data'),true);
-            // $images = $request->file('images');
-            // $filename = [];
-            // $names = [];
-            // foreach ($images as $image) {
-            //     $names[] = $name = uniqid() . '.' . $image->getClientOriginalExtension();
-            //     $filename[] = [
-            //         'name'=>$name,
-            //         'xsmall' => 'xsmall/' . $name,
-            //         'small' => 'small/' . $name,
-            //         'medium' => 'medium/' . $name,
-            //         'large' => 'large/' . $name,
-            //     ];
+        $dataImage = json_decode($request->input('image-data'),true);
+            $images = $request->file('images');
+            $filename = [];
+            $names = [];
+            foreach ($images as $image) {
+                $names[] = $name = uniqid() . '.' . $image->getClientOriginalExtension();
+            }//         $filename[] = [
+        //             'name'=>$name,
+        //             'xsmall' => 'xsmall/' . $name,
+        //             'small' => 'small/' . $name,
+        //             'medium' => 'medium/' . $name,
+        //             'large' => 'large/' . $name,
+        //         ];
     
-            //     $img =  Image::make($image);
-            //     $img->fit(2250, 950)->save(public_path('large/' . $name));
+        //         $img =  Image::make($image);
+        //         $img->fit(2250, 950)->save(public_path('large/' . $name));
     
-            //     $img->fit(1400, 800)->save(public_path('medium/' . $name));
+        //         $img->fit(1400, 800)->save(public_path('medium/' . $name));
     
-            //     $img->fit(700, 400)->save(public_path('small/' . $name));
+        //         $img->fit(700, 400)->save(public_path('small/' . $name));
     
-            //     $img->fit(350, 200)->save(public_path('xsmall/' . $name));  
-            // }
+        //         $img->fit(350, 200)->save(public_path('xsmall/' . $name));  
+        //     }
 
-            // for ($i=0; $i < count($dataImage); $i++) { 
-            //     Pictures::update([
-            //     'pictures'=>$names[$i],
-            //     'position'=>$dataImage[$i]['position'],
-            //     'rotation'=>$dataImage[$i]['rotation'],
-            //     'announ_id'=>$announ->id]);
-            // }
-        $data = $request;
-        // $announ = json_decode($data['announ'],true);
-        $allData = [];
-        foreach ($data->img as $value) {
-            $allData[] = $value['pictures'];
-        }
+        //     for ($i=0; $i < count($dataImage); $i++) { 
+        //         Pictures::update([
+        //         'pictures'=>$names[$i],
+        //         'position'=>$dataImage[$i]['position'],
+        //         'rotation'=>$dataImage[$i]['rotation'],
+        //         // 'announ_id'=>$announ->id
+        //         ]
+        //     );
+        //     }
+        // $data = $request;
+        // // $announ = json_decode($data['announ'],true);
+        // $allData = [];
+        // foreach ($data->img as $value) {
+        //     $allData[] = $value['pictures'];
+        // }
 
-        $pictures = Pictures::where('announ_id',$data->announ['id'])->get();
-        $picturesId = [];
-        foreach ($pictures as $value) {
-            $picturesId[] = $value['pictures'];
-        }
-        $deletedPicures  = array_diff($picturesId, $allData);
-        Pictures::WhereIn('pictures', $deletedPicures)->forceDelete();
-        return $deletedPicures;
+        // $pictures = Pictures::where('announ_id',$data->announ['id'])->get();
+        // $picturesId = [];
+        // foreach ($pictures as $value) {
+        //     $picturesId[] = $value['pictures'];
+        // }
+        // $deletedPicures  = array_diff($picturesId, $allData);
+        // Pictures::WhereIn('pictures', $deletedPicures)->forceDelete();
+        return [$names];
     }
 
     public function restoreData(Request $request){

@@ -1,11 +1,10 @@
 <template>
-    <main >
-
+    <main>
         <section class="w-full">
             <div class="pt-8  relative w-full" style="height:490px;">
         <div class="absolute top-0 left-0 bottom-0 z-2 w-full h-full bg-black/30">
         </div>
-        <div class="w-full h-full bg-cover block absolute top-0 left-0 z-1 bg-no-repeat bg-center" style="background-image: url('/Nuxt-project/assets/images/photo.jpeg');"></div>    
+        <div class="w-full h-full bg-cover block absolute top-0 left-0 z-1 bg-no-repeat bg-center" style="background-image: url('http://127.0.0.1:8000/api/image/large/photo.jpeg');"></div>    
         <div class="relative z-3 py-0 px-16 mt-20">
             <div class="relative my-0 mx-auto w-100 max-w-6xl">
                 <div class="relative z-5">
@@ -21,10 +20,10 @@
                             <div  class="flex w-full">
                                 <div class="form-select relative hover:bg-sky-100" style="height:100%; border-right:1px solid #f4f4f4; min-width:140px; max-width:316px;">
                                     <button @click="showCategory" class="text-btn truncate" style="border-top-left-radius:8px; line-height:1.22; border-bottom-left-radius: 8px;">
-                                        {{ typeObject }}
+                                        {{ route.query.typeObject }}
                                     </button>
 
-                                    <div class="drop-down radio-group ml-[-12px]" v-if="showCat">
+                                    <div class="drop-down radio-group  ml-[-12px]" v-if="showCat">
                                         <div style="margin-top:16px;">
                                             <div class="flex flex-wrap" style="margin-top:-4px;margin-bottom:-4px;">
 
@@ -32,10 +31,10 @@
                                                 <label @click="showRes" style="margin-top:-4px; margin-bottom:4px; border-top-left-radius:5px;border-bottom-left-radius:5px;" class="cursor-pointer px-2 py-1 border-1" for="option1">Жилая</label>
 
                                                 <input type="radio" class="btn-check" name="options" id="option2"  :checked="showC" >
-                                                <label @click="showCom" style="margin-top:-4px; margin-bottom:4px; border-top-right-radius:5px;border-bottom-right-radius:5px;" class="cursor-pointer px-2 py-1 border-1" for="option2">коммерческая</label>
+                                                <label @click="showRes" style="margin-top:-4px; margin-bottom:4px; border-top-right-radius:5px;border-bottom-right-radius:5px;" class="cursor-pointer px-2 py-1 border-1" for="option2">Коммерческая</label>
                                             </div>
 
-                                            <Commercial v-if="showC"/>
+                                            <Commercial v-if="!showR"/>
                                             <Resident v-if="showR"/>
                                         </div>
                                     </div>
@@ -97,8 +96,8 @@
                                      hover:bg-[#055de1]
                                      text-white
                                      "
-                                     
-                                     style="font-family: Lato,Arial,sans-serif; line-height:40px; text-decoration:none;" href="#">Найти</a>
+                                     style="font-family: Lato,Arial,sans-serif; line-height:40px;
+                                      text-decoration:none;" href="#">Найти</a>
                                 </button>
                             </span>
                         </div>
@@ -271,15 +270,17 @@
 <section class="mt-[19px]">
     <div class="w-full mx-[auto]  mt-[10px] h-[max-content]">
                     <div class="h-full mt-[120px]"> 
-                    <span style="font-family:Lato,Arial,sans-serif;" class="mx-[10px] block text-[#152242] font-bold text-[28px]">Могут подойти</span>
+                    <span style="font-family:Lato,Arial,sans-serif;" 
+                    class="mx-[10px] block text-[#152242]
+                    font-bold text-[28px]">Могут подойти</span>
                     </div>
             
-            <div class="mt-[24px] w-[1200px] mx-auto  mb-[10px]">
-                <div class="flex justify-center">
-                    <div class="mx-[10px]">
-                                <div class="my-[10px] w-[320px]">  
-                                    <a href="#" class="block overflow-hidden border rounded-[12px]  h-[400px] no-underline">
-                                        <div class="h-[300px]">
+            <div class="mt-[24px] w-full mx-auto w-full mb-[10px]">
+                <div class="flex justify-center flex-basis-[25%]">
+                    <div class="mx-[10px] basis-1/4">
+                                <div class="my-[10px] ">  
+                                    <a href="#" class="block overflow-hidden border rounded-[12px]  h-[350px] no-underline">
+                                        <div class="h-[75%]">
                                             <div class="flex relative w-full h-full">
                                                 <div class="w-full h-full m-0 p-0 relative items-scretch">
                                                     <img class="h-full w-full" src="https://images.adsttc.com/media/images/5014/01bd/28ba/0d3b/4500/0b8c/large_jpg/stringio.jpg?1414576505" alt="">
@@ -297,10 +298,10 @@
                                     </a>
                                 </div>
                     </div>
-                    <div class="mx-[10px]">
-                        <div class="my-[10px] w-[320px]">
-                                    <a href="#" class="block overflow-hidden border rounded-[12px]  h-[400px] no-underline">
-                                        <div class="h-[300px]">
+                    <div class="mx-[10px] basis-1/4">
+                        <div class="my-[10px] ">
+                                    <a href="#" class="block overflow-hidden border rounded-[12px]  h-[350px] no-underline">
+                                        <div class="h-[75%]">
                                             <div class="flex relative w-full h-full">
                                                 <div class="w-full h-full m-0 p-0 relative items-scretch">
                                                     <img class="h-full w-full" src="https://img.freepik.com/premium-vector/vector-living-room-interior-with-big-windows-sofa-armchair-with-old-style-pendulum-clock_730604-489.jpg?w=2000" alt="">
@@ -318,10 +319,10 @@
                                     </a>
                                 </div>
                     </div>
-                    <div class="mx-[10px]">
-                        <div class="my-[10px] w-[320px]">
-                                    <a href="#" class="block overflow-hidden border rounded-[12px]  h-[400px] no-underline">
-                                        <div class="h-[300px]">
+                    <div class="mx-[10px] basis-1/4">
+                        <div class="my-[10px] ">
+                                    <a href="#" class="block overflow-hidden border rounded-[12px]  h-[350px] no-underline">
+                                        <div class="h-[75%]">
                                             <div class="flex relative w-full h-full">
                                                 <div class="w-full h-full m-0 p-0 relative items-scretch">
                                                     <img class="h-full w-full" src="https://media.istockphoto.com/id/1142747548/photo/modern-house-interior-design.jpg?s=170667a&w=0&k=20&c=mBDJY0o0fojTcvfKBfp6qbKcRB0BmHbA4IRqSDF72uU=" alt="">
@@ -340,10 +341,10 @@
                                     </a>
                                 </div>
                     </div>
-                    <div class="mx-[10px]">
-                        <div class="my-[10px] w-[320px]">
-                                    <a href="#" class="block overflow-hidden border rounded-[12px] h-[400px] no-underline">
-                                        <div class="h-[300px]">
+                    <div class="mx-[10px] basis-1/4">
+                        <div class="my-[10px] ">
+                                    <a href="#" class="block overflow-hidden border rounded-[12px] h-[350px] no-underline">
+                                        <div class="h-[75%]">
                                             <div class="flex relative w-full h-full">
                                                 <div class="w-full h-full m-0 p-0 relative items-scretch">
                                                     <img class="h-full w-full" src="https://images.unsplash.com/photo-1604014237800-1c9102c219da?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8aG91c2UlMjBpbnRlcmlvcnxlbnwwfHwwfHx8MA%3D%3D&w=1000&q=80" alt="">
@@ -362,11 +363,11 @@
                                 </div>
                     </div>
                 </div>
-                <div class="flex justify-center">
-                    <div class="mx-[10px] ">
-                        <div class=" my-[10px] w-[320px]">
-                                    <a href="#" class="block overflow-hidden border rounded-[12px]  h-[400px] no-underline">
-                                        <div class="h-[300px]">
+                <div class="flex justify-center basis-[25%] ">
+                    <div class="mx-[10px] basis-1/4">
+                        <div class=" my-[10px] ">
+                                    <a href="#" class="block overflow-hidden border rounded-[12px]  h-[350px] no-underline">
+                                        <div class="h-[75%]">
                                             <div class="flex relative w-full h-full">
                                                 <div class="w-full h-full m-0 p-0 relative items-scretch">
                                                     <img class="h-full w-full" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1WFFDg4MyR3YxQPpL2MegAxGGCh6cE1NDoSqPRI_qp-HNBR-I0Az-8ax-YymnKvckHg4&usqp=CAU" alt="">
@@ -384,10 +385,10 @@
                                     </a>
                                 </div>
                     </div>
-                    <div class="mx-[10px] ">
-                        <div class="my-[10px] w-[320px]">
-                                    <a href="#" class="block overflow-hidden border rounded-[12px]  h-[400px] no-underline">
-                                        <div class="h-[300px]">
+                    <div class="mx-[10px] basis-1/4">
+                        <div class="my-[10px]">
+                                    <a href="#" class="block overflow-hidden border rounded-[12px]  h-[350px] no-underline">
+                                        <div class="h-[75%]">
                                             <div class="flex relative w-full h-full">
                                                 <div class="w-full h-full m-0 p-0 relative items-scretch">
                                                     <img class="h-full w-full" src="https://media.gettyimages.com/id/157193888/photo/luxury-home-interior.jpg?s=612x612&w=gi&k=20&c=lkJ2V1HcTqcgVtFMayKPG1XDFwtUJsqt2ZstSShAU3E=" alt="">
@@ -405,10 +406,10 @@
                                     </a>
                                 </div>
                     </div>
-                    <div class="mx-[10px] ">
-                        <div class="my-[10px] w-[320px]">
-                                    <a href="#" class="block overflow-hidden border rounded-[12px] h-[400px] no-underline">
-                                        <div class="h-[300px]">
+                    <div class="mx-[10px] basis-1/4">
+                        <div class="my-[10px] ">
+                                    <a href="#" class="block overflow-hidden border rounded-[12px] h-[350px] no-underline">
+                                        <div class="h-[75%]">
                                             <div class="flex relative w-full h-full">
                                                 <div class="w-full h-full m-0 p-0 relative items-scretch">
                                                     <img class="h-full w-full" src="https://www.mydomaine.com/thmb/Y8PWyIprwISsOVMXTYX05K3XJcw=/1080x0/filters:no_upscale():strip_icc()/TheBradburyProject-e8a49ddbbe43459e8dfe7359e0512082.jpg" alt="">
@@ -426,10 +427,10 @@
                                     </a>
                                 </div>
                     </div>
-                    <div class="mx-[10px] ">
-                            <div class="my-[10px] w-[320px]">
-                                    <a href="#" class=" block overflow-hidden border rounded-[12px] h-[400px] no-underline">
-                                        <div class="h-[300px]">
+                    <div class="mx-[10px] basis-1/4">
+                            <div class="my-[10px] ">
+                                    <a href="#" class=" block overflow-hidden border rounded-[12px] h-[350px] no-underline">
+                                        <div class="h-[75%]">
                                             <div class="flex relative w-full h-full">
                                                 <div class="w-full h-full m-0 p-0 relative items-scretch">
                                                     <img class="h-full w-full" src="https://img.atlasobscura.com/tOzOP0kmp5WAau5Zb3JPPlFqRhahsP9k7LEMmDK_iJU/rt:fit/w:1280/q:81/sm:1/scp:1/ar:1/aHR0cHM6Ly9hdGxh/cy1kZXYuczMuYW1h/em9uYXdzLmNvbS91/cGxvYWRzL2Fzc2V0/cy81YmI4OWQ1NTJm/ZjNkMDM1ZjVfc2h1/dHRlcnN0b2NrXzE1/NjA3MTcxLmpwZw.jpg" alt="">
@@ -456,20 +457,30 @@
     
 </template>
 <script setup>
-    const {typeObject,quantityRoom, direction } = getData()
-    const filter = JSON.parse(sessionStorage.getItem('filter')) || {}
+    const {typeObject,quantityRoom, direction,mobileOrDesktop } = getData()
+    const {active,showMadoal,isShow} = useSwitch()
+    // const {typeButton} = data()
     
-    filter.dealType = 'Продажа'
-    filter.typeObject = 'Квартира в новостройке'
-    filter.quantityRoom = []
-    sessionStorage.setItem('filter',JSON.stringify(filter))
-    typeObject.value = JSON.parse(sessionStorage.getItem('filter')).typeObject || ''
+    
+    const router = useRouter()
+    const route = useRoute()
+    const filter = {
+        'typeObject':route.query.typeObject || 'Квартира',
+        'dealType':route.query.dealType || 'Продажа',
+        // 'quantityRoom':route.query.quantityRoom || '',
+    }
+    
+    
+    // filter.dealType = 'Продажа'
+    // filter.typeObject = 'Квартира в новостройке'
+    // filter.quantityRoom = []
+
 const dealType = ref([
     {name:'Купить', value:"Продажа"},
     {name:'Снять', value:"Аренда"},
     {name:'Посуточно',value:'Посуточно'},
     {name:'Оценить',value:'Оценить'},
-    {name:'Разместить объявление',value:'Разместить объявление'},
+    {name:'fРазместить объявление',value:'Разместить объявление'},
 ])
 
 
@@ -481,7 +492,7 @@ const showCat = ref(false)
 const showQuan = ref(false)
 function isActive(type){
     const lists = document.querySelectorAll('.list-none > .items');
-    lists.forEach((item)=>{
+    lists.forEach( (item) => {
         if (item.textContent == type.name) {
             item.classList.add('select')
             showQuan.value = showCat.value = showP.value = false
@@ -489,7 +500,7 @@ function isActive(type){
             item.classList.remove('select')
         }
         if (type.name == 'Разместить объявление') {
-                const {active,showMadoal} = useSwitch()
+                
                 document.body.style.overflow ='hidden';
                 direction.value = '/announ'
                 showMadoal.value = true 
@@ -497,8 +508,22 @@ function isActive(type){
         }
     })
     filter.dealType = type.value
-    sessionStorage.setItem('filter',JSON.stringify(filter))
+    // sessionStorage.setItem('filter',JSON.stringify(filter))
+    router.push({
+        path:'/',
+        query:{...filter}
+    })
+    
 }
+// watchEffect((value) => {
+//   router.replace({
+//     path:'/',
+//     query:{...route.query}
+//   })
+//   loadDataFromQuery(route.query)
+
+// }, { immediate: true  })
+
 function showCategory() {
     showP.value = false
 
@@ -512,19 +537,14 @@ function showQuantity(){
 }
 
 
-const showC = ref(false)
+// const showC = ref(false)
 const showR = ref(true)
 function showRes(){    
-    showR.value = true;
-    showC.value = false
+    filter.realEstate = event.target.textContent
+    filter.realEstate == 'Жилая'? showR.value = true:showR.value = false;
+    
+    
 }
-
-function showCom(){
-    showC.value = true
-    showR.value = false
-}
-
-
 
 
 function showPrice(){
@@ -547,14 +567,40 @@ function getCity(){
     sessionStorage.setItem('filter', JSON.stringify(filter))
 }
 
-const {isShow} = useSwitch() 
-function next(){
-    window.location.replace('/list')
+// const {isShow} = useSwitch() 
+async function next(){
     isShow.value = false
+
+    await new Promise(resolve => setTimeout(resolve, 0));
+    console.log(route.query);
+    
+    await router.push({
+        path:`/list-announ`,
+        query:
+            route.query
+        
+    })
+    
 }
-onMounted(()=>{
-    city.value = filter.city
+onMounted(() => {
+  // Заполняем filter из URL query при первой загрузке
+  Object.assign(filter, route.query)
+  router.replace({
+        path:'/',
+        query:{...route.query}
+    })
+  // Если хочешь преобразовать строки в массивы, делай это тут
+  if (typeof filter.quantityRoom === 'string') {
+    filter.quantityRoom = [filter.quantityRoom]
+  }
+
+  loadDataFromQuery(route.query)
 })
+
+
+function loadDataFromQuery(query) {
+  console.log('Загрузка данных с параметрами:', query)
+}
 </script>
 
 

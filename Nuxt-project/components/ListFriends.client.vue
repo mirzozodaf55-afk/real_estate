@@ -13,7 +13,7 @@
     </div>
 </template>
 <script setup>
-
+useHead({title:'Пользователи'})
 const owner = ref()
 const {user} = getUserByServer(JSON.parse(localStorage.getItem('token')))
 const friends = ref([])
@@ -31,11 +31,14 @@ fetch('http://127.0.0.1:8000/api/get_all_users',{
     }
 }).then(r=>r.json())
 .then(res=>{
-    friends.value = res
+    friends.value = res[0]
+    
 })
 
 function startMessae(user){
-    router.push(`chat-${owner.value.id}-${user.id}`)    
+    router.push({
+        path: `chat-${owner.value.id}${owner.value.uniq_id}-${user.id}${user.uniq_id}`,
+    })    
 }
 
 

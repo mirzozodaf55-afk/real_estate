@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class messageUser extends Model
 {
     use HasFactory;
-    protected $fillable=[
+    protected $fillable = [
         'owner_id',
         'friend_id',
         'message_id'

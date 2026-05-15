@@ -1,24 +1,19 @@
 б<template>
-  <div > 
-        <NuxtLayouts >
-          <NavBar v-if="showNavBar" :key="3"/>
-        </NuxtLayouts>
-        <!-- <Chat/> -->
-        <NuxtPage />
-        <Register v-if="showMadoal" />
-        <MobilePage v-if="isShow && mobileOrDesktop" :pictures="pictures"/>
-        <DesktopPage  v-if="isShow && mobileOrDesktop < 1"/>
-        <!-- <Chat/> -->
-  </div>
+  <NuxtLayout>
+    <NavBar v-if="showNavBar"/>
+  </NuxtLayout>
+    <ClientOnly>
+      <NuxtPage />
+      <Register v-if="showMadoal" />
+      <MobilePage v-if="isShow && mobileOrDesktop" :pictures="pictures" />
+      <DesktopPage v-if="isShow && mobileOrDesktop < 1" />
+    </ClientOnly>
 </template>
+
 <script setup>
 // import auth from './middleware/auth'
 
-definePageMeta({
 
-  middleare: [
-  ]
-})
 
 useHead({
   script:[
@@ -41,7 +36,23 @@ useHead({
   const route = useRoute()
   const mobileOrDesktop = ref()
   const pictures = ref([]);
+  
+  // watch(() => route.path, (newPath) => {
+    // isShow.value = newPath === '/'
+    // })
+    // isShow.value = route.path === '/'
+    watch(
+  () => route.path,
+  (newPath) => {
+    isShow.value = newPath === '/'
+  },
+  { immediate: true }
+)
+
+
+
     onMounted(async () =>{
+
       // const {Notification} = window
 // let permission = Notification.permission
 //     let result = await Notification.requestPermission();
@@ -55,15 +66,20 @@ useHead({
 //         alert('Разрешение не получено!');
 //     }
 
-
       mobileOrDesktop.value =  navigator.maxTouchPoints 
      setTimeout(()=>{
-       if (route.fullPath == '/') {
-         isShow.value = true
-       }else{
-         isShow.value = false
-       }
+     isShow.value = route.path === '/'
+       
      },200)
+
+     setInterval(async () => {
+      await fetch('http://127.0.0.1:8000/api/get_user', {
+      method: 'GET',
+      headers: {
+        Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token')), 
+      }
+    })
+     },5000)
       
       // if (navigator.maxTouchPoints < 1 && route.fullPath == '/announ') {
       //   isShow.value = false
@@ -71,18 +87,18 @@ useHead({
     const announId = ref([])
     const {announ} = getData()
     
-      if (!JSON.parse(localStorage.getItem('token'))) {
-        fetch('http://127.0.0.1:8000/api/get_data')
-    .then(res=>res.json())
-    .then(res=>{
-      for (const item of res[0]) {
-        announId.value.push(item.id);
-        // responce
+    //   if (!JSON.parse(localStorage.getItem('token'))) {
+    //     fetch('http://127.0.0.1:8000/api/get_data')
+    // .then(res=>res.json())
+    // .then(res=>{
+    //   for (const item of res[0]) {
+    //     announId.value.push(item.id);
+    //     // responce
         
-      }
-      })
-      }
-    
+    //   }
+    //   })
+    //   }
+
   
     const infrastructure = ["автомойка",
      "автосервис",

@@ -23,7 +23,8 @@ useHead({
         isRent.value = btn.textContent;
         AnnounOgj.value.rent = btn.textContent
         announData.value.rent = btn.textContent
-
+        console.log(announData.value.rent);
+        
         if (AnnounOgj.rent == 'Продажа') {
             AnnounOgj.value.typeRent = 'Длительно'
             announData.value.typeObject = 'Длительно'
@@ -320,7 +321,7 @@ useHead({
                                 </div>
                                 <div class="all__contents" v-if="announData.Estate == 'Жилая'">
 
-                                    <div class="field__content">
+                                    <div class="field__content ">
                                         <div class="type-radio">
                                             <label for="label1">Квартира</label>
                                             <input :checked="announData.objects == `Квартира`" name="house" data-name="Квартира" type="radio" @change="selectObjectFromSale"  id="label1">

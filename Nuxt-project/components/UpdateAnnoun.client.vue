@@ -14,6 +14,12 @@
 <script setup>
 const {typeObjectCommercial} = data()
 const {images} = getData()
+const pic = ref(null)
+watch(images, (value)=>{
+    pic.value = value
+})
+
+
 let updateAnnounData = JSON.parse(sessionStorage.getItem('update'))
 let announ = ref({})
 onMounted( async ()=>{
@@ -45,11 +51,17 @@ async function changeAnnouncement(){
     for (let i = 0; i < images.value.length; i++) {
         if (images.value[i].file) {
             formData.append('images[]',images.value[i].file)
-            formData.append(`image-data[${i}]`,images.value)
         }
     }
     
-        await fetch('http://127.0.0.1:8000/api/update-announ',{
+    const imageData = images.value.map(img => ({
+        position: img.position,
+        rotation: img.rotation,
+    }));
+    formData.append(`image-data`,JSON.stringify(imageData))
+    console.log(formData.getAll('image-data'));
+    
+    await fetch('http://127.0.0.1:8000/api/update-announ',{
             method:'post',
             headers:{
                 "Content-Type": 'application/json',
@@ -60,7 +72,9 @@ async function changeAnnouncement(){
         .then(res=>res.json())
         .then(res=>{
             console.log(res);
+            
         })
+
         
     if (formData.getAll('images[]').length) {
         await fetch('http://127.0.0.1:8000/api/update-announ',{

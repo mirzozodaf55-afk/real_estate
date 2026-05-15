@@ -43,7 +43,7 @@
       <button @click="navigateTo('/listfriend')" class="ml-[10px] text-[gray] text-[19px]">
         <font-awesome-icon :icon="['fa-solid', 'fa-chevron-left']" />
       </button>
-      <div  class="flex justify-between items-center min-w-[50%] h-full absolute left-[20px]">
+      <div v-if="!wait" class="flex justify-between items-center min-w-[50%] h-full absolute left-[20px]">
         <div class="w-[45px] mx-[5px] h-[45px] rounded-[50%] border bg-cover bg-center"
         :style="`background-image:url('http://127.0.0.1:8000/api/avatar/${friend.avatar}');`"
         ></div>
@@ -61,7 +61,7 @@
     :style="`background-image: linear-gradient(45deg,#${color},#${color2});`"
     >
       <div  
-      class="space-y-2 w-full rounded my-[5px]" 
+      class="space-y-2 w-full rounded my-[5px] flex" :class="mess.isMyMessage?'justify-end items-center':''" 
       v-for="(mess,i) of messageList" :key="i" @contextmenu="menuMessage">
         <div class="message flex items-start p-[2px] 
          rounded my-[10px] bg-[none]"
@@ -70,7 +70,7 @@
           v-if="mess.type =='message'"
           class="
            ml-2 text-[20px] 
-           max-w-[80%]
+           max-w-[100%]
            mr-[5px]
            relative  top-[15px]
            cursor-default shadow 
@@ -83,38 +83,57 @@
            
            >
            <p class="text-[20px] mb-[0]">{{ mess.text}}</p>
-            <p class="text-[13px] mb-[0] mt-[15px] ml-[10px]">{{ mess.time }}</p>
+           <p v-if="mess.pending" class="text-[13px] mb-[0] mt-[15px] ml-[10px]">
+            <font-awesome-icon :icon="['fas', 'spinner']" spin-pulse />
+           </p>
+            <p v-else class="text-[13px] mb-[0] mt-[15px] ml-[10px]">{{ mess.time }}</p>
           </div>
-           <div @click="showPicture(mess)" v-if="mess.type == 'picture'" class="
+          
+           <div v-if="mess.type == 'picture'" class="
            ml-2 text-[20px] text-[white]
-           max-w-[65%]
+           max-w-[50%]
            mr-[5px]
            relative
            top-[15px]
-           min-w-[50%]
+           min-w-[78%]
            cursor-pointer
            min-h-[180px]
            bg-[white]
-           h-[100px]
+           h-[100px] relative
            shadow text-[black] p-[2px]
            overflow-hidden
-           text-gray-700
+           text-gray-700 relative
            " 
            style="border-radius: 7px;"
            :style="mess.isMyMessage?`background: darkblue; color:white;border-top-right-radius: 0px;`:'border-bottom-left-radius: 0px;'"
            >
-           <img  class="w-full h-full " 
+           <img @click.stop="showPicture(mess)" class="w-full h-full min-w-[78%]" 
            style="border-radius: 7px;"
            :style="mess.isMyMessage?`border-top-right-radius: 0px;`:'border-bottom-left-radius: 0px;'"
-           :src="`http://127.0.0.1:8000/api/filemessage/${mess.name}`" :alt="mess.type"/>
-           
-           <p class="text-[13px] bg-[black]/50 absolute 
+           :src="mess.urlImage" :alt="mess.type"/>
+           <p v-if="mess.pending" class="absolute bg-[black]/50 
+           bottom-[5px] right-[10px] text-[13px] mb-[0] mt-[15px]
+           ml-[10px] text-[white] rounded-[3px] px-[4px]">
+            <font-awesome-icon :icon="['fas', 'spinner']" spin-pulse />
+           </p>
+            <p v-else class="text-[13px] bg-[black]/50 absolute 
            bottom-[-5px] text-[white] px-[4px] rounded-[3px]
            right-[10px]">{{ mess.time }}</p>
+           <!-- <button @click.stop="removeFile(mess)" v-if="!mess.pending"
+           style="transform: translate(-50%,-50%); pointer-events: none;"
+           class="flex items-center 
+              w-[30px] h-[30px] justify-center left-[50%]
+              top-[50%]
+              bg-[black]/50 border absolute rounded">
+              <font-awesome-icon data-name="video"
+            style="pointer-events: none;"
+          class="text-white bg-[none] text-[17px] absolute" 
+          :icon="['fa', 'times']" />
+        </button> -->
           </div>
 
           
-          <div @click="showPicture(mess)" v-if="mess.type == 'video'" class="
+          <div v-if="mess.type == 'video'" class="
            ml-2 text-[20px] text-[white]
            max-w-[50%]
            mr-[5px]
@@ -124,38 +143,60 @@
            cursor-pointer
            h-[180px]
            bg-[white]
-           h-[100px] 
+           h-[100px] relative
            shadow text-[black] p-[2px]
            text-gray-700
            flex justify-center items-center
            " 
            style="border-radius: 7px;"
-           :style="mess.isMyMessage?`background: orange; color:white;border-bottom-right-radius: 0px;`:'border-bottom-left-radius: 0px;'"
+           :style="mess.isMyMessage?`background: orange;
+           color:white;border-bottom-right-radius: 0px;`:'border-bottom-left-radius: 0px;'"
            >
            <video ref="videoRef" @click="showVideo(mess)"
            style="border-radius: 7px; object-fit: cover;"
            v-if="mess.type == 'video'"
            :style="mess.isMyMessage?`border-bottom-right-radius: 0px;`:'border-bottom-left-radius: 0px;'"
-            :src="`http://127.0.0.1:8000/api/filemessage/original/${mess.name}`"
-           class="w-full bg-[black]/80 h-full"
+            :src="mess.urlVideo"
+           class="w-full bg-[black]/80 h-full min-w-[65%]"
            >
            <div class="bg-[red] h-[30px]">{{ mess.time }}</div>
            <!--  -->
           </video> 
-          <p class="text-[13px] bg-[black]/50 absolute 
-          bottom-[-5px] text-[white] px-[4px] rounded-[3px]
-          right-[10px]">{{ mess.time }}</p>
+          <p v-if="mess.pending" class="absolute bg-[black]/50 
+           bottom-[5px] right-[10px] text-[13px] mb-[0] mt-[15px]
+           ml-[10px] text-[white] rounded-[3px] px-[4px]">
+           <font-awesome-icon :icon="['fas', 'spinner']" spin-pulse />
+          </p>
+          <p v-else class="absolute 
+           right-[10px] text-[13px] bg-[black]/50 
+           bottom-[-5px] text-[white] px-[4px] rounded-[3px]
+           right-[10px]">{{ mess.time }}
+          </p>
           <!-- <progress id="progress-bar"></progress> -->
-          <div @click="playVideo(mess)" class="flex items-center 
+          <div @click="removeFile(mess)" v-if="mess.pending" class="flex items-center 
           w-[30px] h-[30px] justify-center
-          bg-[black]/50 border absolute rounded-[50%]">
+          bg-[black]/50 border absolute rounded">
+              <font-awesome-icon data-name="video"
+            style="pointer-events: none;"
+          class="text-white bg-[none] text-[17px] absolute" 
+          :icon="['fa', 'times']" />
+        </div>
+          <div v-else @click="playVideo(mess)" class="flex items-center 
+          w-[30px] h-[30px] justify-center
+          bg-[black]/50 border absolute rounded">
               <font-awesome-icon data-name="video"
             style="pointer-events: none;"
         class="text-white bg-[none] text-[17px] absolute" 
         :icon="['fa', mess.isPlay?'pause':'play']" />
       </div>
+      
         </div>
           </div>
+          <!-- <div>
+            <input v-if="mess.isMyMessage" type="checkbox" name="select-message" class="mr-[5px] top-[50%]"
+            style="transform: translateY(-50%);"
+            :id="`check-${i+1}`">
+          </div> -->
         </div>
         
         <!-- <div v-if="value" class="w-[100px] flex h-[30px] bg-[white] rounded absolute left-[0] bottom-[0]">
@@ -191,7 +232,8 @@
           
           <form 
           @submit.prevent="sendMessage"
-          enctype="multipart/form-data"  class="flex space-x-2 w-full"  action=""><input
+          enctype="multipart/form-data"  class="flex space-x-2 w-full" 
+          action=""><input
           v-model="message"
           type="text"
           placeholder="Type a message..."
@@ -201,7 +243,7 @@
           type="file" @change.prevent="handleFileChange"
            style="display: none;" ref="fileInput" id="sendfile" >
           <button id="file"
-          @click="open"
+          @click.prevent="open"
           class="outline-none p-2 text-silver rounded-md
            hover:bg-blue-200"
           >
@@ -225,7 +267,7 @@
   <!--  -->
 </template>
 <script setup>
-import Hls from 'hls.js'
+// import Hls from 'hls.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -239,10 +281,12 @@ const message = ref('')
 const isTyping=ref(false)
 const owner = ref({})
 const typingMessage = ref('online')
+const wait = ref(false)
 const userMessage = ref('')
+const messagePenging = useState('messagePenging',()=>false)
+const xhr = new XMLHttpRequest();
 // const value = ref('')
 const {user} = getUserByServer(JSON.parse(localStorage.getItem('token')))
-console.log(JSON.parse(localStorage.getItem('token')));
 
 watch(user,(value)=>{
   owner.value = value
@@ -254,37 +298,54 @@ function scrollTobottom(){
 }
 
 function sendTyping(typing){
+  owner.value = user.value
   $axios.post('/api/typing',
   { 
     value:message.value,
     userId:owner.value.id,
     userName:owner.value.name,
+    lastName:owner.value.last_name,
     typing:typing,
   },
+  
 )
+
 }
 const videoUrl = ref('')
 const videoRef = ref(null)
 const isPlay = ref(false)
 
 const props = defineProps({
-  videoId: String
+  videoId: String,
+  error: Object
+
 })
 
 function playVideo(mess){
   const video = event.target.offsetParent.children[0]
   
-  
   messageList.value.forEach(elem=>{
-    if (elem.type == 'video'&&elem.isPlay) {
-      elem.isPlay=false
-      mess.isPlay = !mess.isPlay;
-      mess.isPlay || video.paused ? video.play(): video.pause()
+    elem.isPlay = false
+    mess.isPlay = !mess.isPlay;
+    if (elem.type == 'video' && elem.isPlay) {
       document.querySelectorAll('video').forEach(v=>v.pause());
-      
+      mess.isPlay ? video.play(): video.pause()
+      setInterval(()=>{
+    localStorage.setItem('time',video.currentTime)
+    },1000)
     }
+    
   })
   
+}
+
+function removeFile(file){
+  event.stopPropagation()
+  messageList.value = messageList.value.filter(mess=> mess.name !== file.name
+  )
+  if (file.type === 'video') {
+    xhr.abort()
+  }
 }
 
 function showVideo(mess){
@@ -309,7 +370,7 @@ const showFile =ref(false);
 
 const open = (e)=>{
 
-  if (e.target.dataset.name==='picture') {
+  if (e.target.dataset.name === 'picture') {
     document.querySelector('#sendfile').setAttribute('accept','image/*')
 
   }
@@ -341,18 +402,40 @@ const m = date.getMinutes()
 const addZero = zero=>zero <= 9 ? '0'+zero:zero;
 
 const handleFileChange = async (event) => {
+  close()
+
   const formdata = new FormData()
   const file = event.target.files[0];
-  formdata.append('userId',route.params.owner_id)
-  formdata.append('friendId',route.params.friends_id)
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const objFiles = {
+    userId:parseInt(route.params.uid),
+    isMyMessage:true,
+    name:file.name,
+    type:(file.type.includes('image')?'picture':'video'),
+    isTemp:true,
+    pending: watch(messagePenging,(v)=>{return v}),
+    urlVideo:e.target.result,
+    urlImage:e.target.result,
+  }
+  messageList.value.push(objFiles)
+  console.log(objFiles);
+  } 
+  
+  reader.readAsDataURL(event.target.files[0])
+  
+  formdata.append('userId',route.params.uid)
+  formdata.append('friendId',route.params.fid)
   formdata.append('time',`${h}:${addZero(m)}`)
+  let fileMessages = []
   
   let files = null;
   if (file && file.type.includes('image')) {
     files = file
     formdata.append('file',files)
     formdata.append('type','picture')
-
+    
+    messagePenging.value = true
     await fetch('http://127.0.0.1:8000/api/send-file', {
       method: 'POST',
       headers: {
@@ -360,77 +443,45 @@ const handleFileChange = async (event) => {
       },
       body: formdata,
     }).then(r=>r.json())
-    .then(res=>{
-      console.log(formdata.get('time'));
-      
-      close()
-  })
-    
+    // .then(res=>{
+    // })
+    messagePenging.value = false
   }
   
-  // if (file && file.type.includes('video')) {
-  //   // files = null
-  //   files = file
-  //   formdata.append('video',files)
-  //   formdata.append('types','video')
-
-  //   await fetch('http://127.0.0.1:8000/api/send-video', {
-  //     method: 'POST',
-  //     headers: {
-  //       Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token')), 
-  //     },
-  //     body: formdata,
-  //   }).then(r=>r.json())
-  //   .then(res=>{
-      
-  //     close()
-  // })
-  // }
   if (file && file.type.includes('video')) {
     files = file
-    console.log(formdata.get('time'));
+    // console.log(formdata.get('time'));
     
-  // Создаем объект FormData
-  // const formdata = new FormData();
   formdata.append('video', file);
   formdata.append('types', 'video');
 
-  // Создаем новый XMLHttpRequest
-  const xhr = new XMLHttpRequest();
   
-  // Устанавливаем метод и URL для запроса
+  messagePenging.value =true
   xhr.open('POST', 'http://127.0.0.1:8000/api/send-video', true);
 
-  // Устанавливаем заголовок авторизации
   xhr.setRequestHeader('Authorization', 'Bearer ' + JSON.parse(localStorage.getItem('token')));
 
-  // Обработчик прогресса загрузки
   xhr.upload.onprogress = function(event) {
     if (event.lengthComputable) {
       const percent = (event.loaded / event.total) * 100;
-      console.log(`Загрузка: ${percent.toFixed(2)}%`);
-
-      // Можно обновить прогрессбар или вывести прогресс в интерфейсе
-      // document.getElementById('progress-bar').style.width = `${percent}%`;
     }
   };
 
-  // Обработчик успешной загрузки
-  // xhr.onload = function() {
-  //   if (xhr.status === 200) {
-  //     const res = JSON.parse(xhr.responseText);
-  //     console.log('Файл загружен', res);
-  //     close();
-  //   } else {
-  //     console.log('Ошибка при загрузке файла');
-  //   }
-  // };
+  xhr.onload = function() {
+    if (xhr.status === 200) {
+      const res = JSON.parse(xhr.responseText);
+      console.log('Файл загружен', res);
+      close();
+    } else {
+      console.log('Ошибка при загрузке файла');
+    }
+  };
   xhr.upload.addEventListener('progress', function (e) {
     if (e.lengthComputable) {
       const progress = (e.loaded / e.total) * 100;
       console.log(`Загрузка: ${progress.toFixed(2)}%`);
       // Здесь можно обновить UI, например, прогресс-бар
-      updateProgressBar(progress);
+      // updateProgressBar(progress);
     }
   });
 
@@ -441,15 +492,17 @@ const handleFileChange = async (event) => {
 
   // Отправляем запрос
   xhr.send(formdata);
+  close()
+  messagePenging.value=false
 }
 
-function updateProgressBar(progress) {
-  const progressBar = document.getElementById('progress-bar'); // Пример
-  progressBar.style.width = `${progress}%`;
-  progressBar.textContent = `${progress.toFixed(2)}%`;
-  console.log(progress);
+// function updateProgressBar(progress) {
+//   const progressBar = document.getElementById('progress-bar'); // Пример
+//   progressBar.style.width = `${progress}%`;
+//   progressBar.textContent = `${progress.toFixed(2)}%`;
+//   console.log(progress);
   
-}
+// }
   
 };
 import Pusher from 'pusher-js';
@@ -472,48 +525,67 @@ const channel = pusher.subscribe('your-channel'),
  fileChannel = pusher.subscribe('file'),
  typingChanel = pusher.subscribe('typing')
 
+ const head = ref('')
+
  typingChanel.bind('userTyping',function(data){
+  owner.value = user.value
   if (data.data.userId!==owner.value.id) {
     typingMessage.value = 
-    data.data.typing?
+    data.data.typing ? 
     `${data.data.userName} печатает...`:'online'
-    // userMessage.value = data.data.value
+    head.value = data.data.typing ? 
+    `${data.data.userName[0]}. ${data.data.lastName[0]} печатает...`:
+    friend.value.name + ' ' + friend.value.last_name
     
-    // value.value = data.data.value
   }
   
+  useHead({title:head.value?head.value:friend.value.name + ' ' + friend.value.last_name})
  })
 
-
 fileChannel.bind('sendFile', function(data){
+  watch(messageList.value,async ()=>{
+  await nextTick()
+  scrollTobottom()
+})
+  owner.value = user.value
   const currentUserId = owner.value.id
   const isMyMessage = currentUserId === data.data.user_id
+  const idx = messageList.value.findIndex(m=>m.isTemp&&m.type ===data.data.type)
 
-  messageList.value.push({
+  if (idx !== -1) {
+    messageList.value[idx] = {
       userId:data.data.user_id,
       isMyMessage,
       ...(data.data.type == 'message'?{text:data.data.text}:{name:data.data.text}),
       ...(data.data.type == 'video'?{isPlay:false}:''),
       avatar:data.data.avatar,
       type:data.data.type,
-      time:data.data.time
-    });
+      time:data.data.time,
+      urlVideo:`http://127.0.0.1:8000/api/filemessage/original/${data.data.text}`,
+      urlImage:`http://127.0.0.1:8000/api/filemessage/${data.data.text}`
+    }
+  }else{
+    messageList.value.push({
+        userId:data.data.user_id,
+        isMyMessage,
+        ...(data.data.type == 'message'?{text:data.data.text}:{name:data.data.text}),
+        ...(data.data.type == 'video'?{isPlay:false}:''),
+        avatar:data.data.avatar,
+        type:data.data.type,
+        time:data.data.time,
+        urlVideo:`http://127.0.0.1:8000/api/filemessage/original/${data.data.text}`,
+        urlImage:`http://127.0.0.1:8000/api/filemessage/${data.data.text}`
+      });
+  }
     
+    setTimeout(()=>{
+      if (!isMyMessage) {
+      playNotificationSound()
+    }
+    },200)
 })
 // Обрабатываем событие
-channel.bind('MyEvent', function(data) {
-  const currentUserId = owner.value.id
-  const isMyMessage = currentUserId === data.data.user_id
-    messageList.value.push({
-      userId:data.data.user_id,
-      ...(data.data.type == 'message'?{text:data.data.text}:{name:data.data.text}),
-      isMyMessage,
-      avatar:data.data.avatar,
-      type:data.data.type,
-      time:data.data.time
-    });
-    
-});
+
 // В случае подписки на канал
 channel.bind('pusher:subscription_succeeded', function() {
 });
@@ -551,37 +623,96 @@ function menuMessage(e){
     
   }
 }
+let unSendedMessage = JSON.parse(localStorage.getItem('unSendedMessage')) ?? []
+//Здесь нужно timeout если скорость
+// интернеть низкая сообшения отправляются 
+// медленне и локльная хранилиша быстро очишается
+if (window.navigator.onLine && unSendedMessage.length) {
+      unSendedMessage.forEach(mess=>sendMessageWithFetch(mess))
+      localStorage.setItem('unSendedMessage',JSON.stringify([]))
+  }
+  
 function sendMessage(e){
   e.preventDefault()
+  const msg = {
+      type:'message',
+      text:message.value,
+      userId:owner.value.id,
+      friendId:route.params.fid,
+      isMyMessage:owner.value.id,
+      pending: watch(messagePenging,(v)=>{return v}),
+      isTemp:true}
+  unSendedMessage.push(msg)
+  unSendedMessage.forEach(mess=>messageList.value.push(mess))
+  localStorage.setItem('unSendedMessage',JSON.stringify(unSendedMessage))
+  unSendedMessage = []
+  // if (window.navigator.onLine == false) {
+  // }
+  // messageList.value.push(msg)
+  sendMessageWithFetch(message.value)
+  message.value=''
   
-    if (message.value.trim()) {
-        fetch('http://127.0.0.1:8000/api/send-message',{
+}
+async function sendMessageWithFetch(mess){
+  if (mess.trim()) {
+    messagePenging.value =true
+       await fetch('http://127.0.0.1:8000/api/send-message', {
           method:'POST',
           headers:{
             "Content-Type":'application/json',
             Authorization:'Bearer '+JSON.parse(localStorage.getItem('token'))
           },
           body:JSON.stringify({
-            text:message.value,
+            text:mess,
             userId:owner.value.id,
-            friendId:route.params.friends_id,
+            friendId:route.params.fid,
             type:'message',
             time:`${addZero(h)}:${addZero(m)}`
           })
         }).then(r=>r.json())
         .then(res=>{
-          // messageList.value.push(res)
           avatar.value = res.avatar
           ownerData.value = res
-          
-          
-          
+          localStorage.setItem('unSendedMessage',JSON.stringify([]))
         })
+        messagePenging.value=false
     }
-    message.value=''
 }
 
-
+channel.bind('MyEvent', function(data) {
+  watch(messageList.value,async ()=>{
+  await nextTick()
+  scrollTobottom()
+})
+  owner.value = user.value
+  const currentUserId = owner.value.id
+  const isMyMessage = currentUserId === data.data.user_id
+  const idx = messageList.value.findIndex(m=>m.isTemp && m.text === data.data.text)
+  
+  if (idx !== -1) {
+    messageList.value[idx] = {
+      userId:data.data.user_id,
+      ...(data.data.type == 'message'?{text:data.data.text}:{name:data.data.text}),
+      isMyMessage,
+      avatar:data.data.avatar,
+      type:data.data.type,
+      time:data.data.time
+    }
+  } else {
+  messageList.value.push({
+      userId:data.data.user_id,
+      ...(data.data.type == 'message'?{text:data.data.text}:{name:data.data.text}),
+      isMyMessage,
+      avatar:data.data.avatar,
+      type:data.data.type,
+      time:data.data.time
+    });
+  }
+  if (!isMyMessage) {
+      playNotificationSound()
+    }
+  
+});
 function setColor(){
   for (let i = 0; i < 6; i++) {
   color.value+= hash.value[Math.floor(Math.random()*hash.value.length)]
@@ -590,15 +721,25 @@ function setColor(){
   return '#'+color.value
 }
 
+const playNotificationSound = () => {
+  const audio = new Audio('/voice/notify.mp3')
+  // audio.ontimeupdate=()=>audio.currentTime == audio.duration 
+  // ?audio.pause():audio.play()
+  audio.play().catch((e) => {
+    console.warn('Ошибка воспроизведения звука:', e)
+  })
+}
 
-onMounted(()=>{
+
+onMounted(async ()=>{
   
   setTimeout(()=>{
     const el = document.querySelector('#chat-container')
     el.scrollTop += el.scrollHeight 
   },100)
   
-  fetch('http://127.0.0.1:8000/api/get-message',{
+  wait.value =true
+ await fetch('http://127.0.0.1:8000/api/get-message',{
     method:'POST',
     headers:{
       "Content-Type":'application/json',
@@ -612,13 +753,16 @@ onMounted(()=>{
   .then(r=>r.json())
   .then(res=>{
     friend.value = res.users.friend
+    console.log(res);
     
+    
+    useHead({title:`${res.users.friend.name} ${res.users.friend.last_name}`})
     
     res.message.forEach(el => {
   const currentUserId = user.value.id 
   //owner.value.id
   const isMyMessage = currentUserId === el.user_id
-  console.log(currentUserId , el.user_id);
+  // console.log(currentUserId , el.user_id);
   
   messageList.value.push({
           userId:el.user_id,
@@ -627,7 +771,9 @@ onMounted(()=>{
           avatar:el.avatar.avatar,
           isMyMessage, 
           type: el.type=='message'?'message':el.type=='picture'?'picture':'video',
-          time:el.time
+          time:el.time,
+          urlVideo:`http://127.0.0.1:8000/api/filemessage/original/${el.message}`,
+          urlImage:`http://127.0.0.1:8000/api/filemessage/${el.message}`
         })
         if (el.type=='video') {
                 const { getQuality } = useNetworkSpeed()
@@ -637,6 +783,7 @@ onMounted(()=>{
       });
 
   })
+  wait.value =false
  setTimeout(()=>{
  },100)
   
@@ -659,8 +806,5 @@ watch(message,async (value)=>{
   
 })
 
-watch(messageList.value,async ()=>{
-  await nextTick()
-  scrollTobottom()
-})
+
 </script>

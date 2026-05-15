@@ -2,6 +2,7 @@
 <template>
     <div class="flex flex-col w-[100vw] h-[max-contetnt]">
             <div class="z-[3] w-[100%] bg-[white] h-[50px] flex md:flex responce" style="border-bottom:1px solid silver">
+                
                 <div class="h-full flex items-center justify-center w-[100%] mx-[2px]">
                     <div>
                         <font-awesome-icon class="text-primary mr-[2px]" :icon="['fas', 'filter']" />
@@ -27,13 +28,12 @@
                     </button>
                 </div>
             </div>
-            <div class="min-w-[100%] justify-between md:flex-col-reverse lg:flex-row lg:items-center px-[20px] d-none h-[90px] lg:h-[55px] desktop-filter" style="box-shadow:0 0 8px silver;">
+            <div class="min-w-[100%] justify-between md:flex-col lg:flex-row lg:items-center px-[20px] d-none py-[5px] lg:h-[55px] desktop-filter" style="box-shadow:0 0 8px silver;">
                 <div class="flex mb-[5px] mt-[5px]">
-
                 <div>
                     <div class="dropdown">
                     <button class="btn w-[max-content] border" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-                        {{ typeDeal == 'Продажа'?'Купить':typeDeal == 'Аренда'?'Снять':typeDeal == 'Посуточно'?'Посуточно':'Купить' }}
+                        {{ filteredData.dealType == 'Продажа'?'Купить':filteredData.dealType == 'Аренда'?'Снять':filteredData.dealType == 'Посуточно'?'Посуточно':'Купить' }}
                     </button>
                     <ul class="dropdown-menu border-0" aria-labelledby="dropdownMenuButton1" style="box-shadow:0 0 10px silver;">
                         <li  v-for="(type,i) of dealType" :key="i" :style="type.value == filteredData.dealType ?'background: rgb(0, 102, 255); color:white':''" @click="selectDealType(type)">
@@ -44,7 +44,7 @@
                 <div class="ml-[10px] ">
                     <div class="dropdown">
                         <button class="btn border truncate" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-                            {{  typeObject ? typeObject: filteredData.typeObject }}
+                            {{  filteredData.typeObject }}
                         </button>
                     <div >
 
@@ -56,7 +56,7 @@
                 </div>
                 <div class="ml-[10px]" v-if="typeObject == 'Квартира' || typeObject == 'Комната' || typeObject == 'Квартира в новостройке'">
                     <div class="dropdown" >
-                    <button class="btn border" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                        <button class="btn border" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
                         <!-- <span v-for="(qtRoom,i) of filteredData.quantityRoom" :key="i">{{ qtRoom }}</span> -->
                         <span class="truncate">
                             {{quantityRoom.join('-')}}{{quantityRoom.length?' комнать':''}}
@@ -68,10 +68,12 @@
                     </ul>
                     </div>
                 </div>
+                <!-- <div v-if="showNotifyMe" class="fixed top-[150px]">Уведомить меня</div> -->
+                 <NotifyMe v-if="showNotifyMe"/>
                 <div>
                     <div class="dropdown ml-[10px]">
                     <button class="btn border" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
-                        Цена
+                        Ценна
                     </button>
                     <ul class="dropdown-menu border-0" aria-labelledby="dropdownMenuButton1">
                         <DesktopPrice/>
@@ -102,14 +104,14 @@
             <div v-if="announLoader" class="w-full h-full items-center fixed top-[30px] bottom-0 flex justify-center" style="z-index:20; background-color:rgba(255, 255, 255, 0.438);">
                 <div class="lds-spinner"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
             </div>
-            <div v-if="data.length" class="flex items-center  h-[50px] mt-[4px] w-full">
+            <div v-if="data.length" class="flex items-center h-[50px] mt-[4px] w-full">
                 <div class="mx-[20px]">
                     <h2>{{ filteredData.dealType }}{{ filteredData.quantityRooms?filteredData.quantityRooms:'' }} {{ filteredData.typeObject }} {{ filteredData.dealType =='Аренда'?'на длительный срок':'' }}</h2>
                 </div>
 
             </div>
-            <div v-if="data.length" class="ml-[20px] flex text-[gray]">
-                <p class="p-0 m-[0] mr-[10px]">найдено {{ data.length }} объявления</p>
+            <div v-if="data.length" class="ml-[170px] flex text-[gray]">
+                <p class="p-0 m-[0] mr-[10px]">найденно {{ data.length }} объявления</p>
                 <button
             class="py-[2px] px-[6px] h-[25px] text-[15px] rounded items-center bg-[rgba(4,104,255,.1)] flex flex-nowrap"
             @click="goToMap"
@@ -127,12 +129,12 @@
               >На карте</span
             >
           </button>
-            </div>
+        </div>
             <div  class="box-border py-[0] ">
-                <div class=" flex flex-col w-full px-[20px]">
-                    <article  v-for="(item,i) of data"  :key="item.id" class="entered relative my-[10px] w-full h-[max-content] rounded mx-[0px]" style="box-shadow: 0 0 9px rgb(134, 134, 134);">
+                <div class=" flex flex-col w-full px-[20px] items-center">
+                    <article  v-for="(item,i) of data"  :key="item.id" class="entered  xl:max-w-[80%] 2xl:max-w-[80%] relative my-[10px] w-full h-[max-content] rounded mx-[0px]" style="box-shadow: 0 0 9px rgb(134, 134, 134);">
                         <div class="flex lg:flex-row md:flex-row md:px-[10px] w-full flex-col  transition-all cursor-pointer rounded-[0]" style="padding:15px 15px;">
-                            <NuxtLink class="flex relative bg-[black]/10 h-[300px]">
+                            <NuxtLink class="flex relative bg-[black]/10 h-[350px]">
                                 <div :id="`carouselExampleIndicators-${i}`" class="carousel slide" data-bs-ride="carousel" style="overflow: hidden; height: 100%;">
                                     <div class="carousel-indicators">
                                         <button v-for="(elem, index) in data[i].image" :key="`indicator-${i}-${index}`"  
@@ -142,10 +144,17 @@
                                             :aria-label="`Slide 0`">
                                         </button> 
                                     </div> 
-                                    <div class="h-full md:w-[350px]">
+                                    <div class="h-full md:w-[400px]">
                                         <div v-for="(elem, index) in data[i].image" :key="`slide-${i}-${index}`"
                                         style="height: 100%;" 
                                             :class="{ 'carousel-item': true, 'active': index === 0 }">
+                                            <div class="flex absolute right-[5px] top-[5px] text-[white] 
+                                                bg-[black]/40 px-[5px] z-[30]">
+                                                    <button>
+                                                        <font-awesome-icon :icon="['fas', 'camera']" />
+                                                    </button>
+                                                    <div><span>&nbsp;{{ index+1 }}</span> / <span>{{ data[i].image.length }}</span></div>
+                                                </div>
                                             <img :style="`transform:rotate(${elem.rotation}deg)`" :src="`http://127.0.0.1:8000/api/image/large/${elem.pictures}`" class="h-full" >
                                         </div>
                                     </div>
@@ -159,6 +168,7 @@
                                     </button>
                                 </div>
                             </NuxtLink>
+                            
                             <div class="flex w-[100%] relative sm:flex-col justify-between md:flex-row lg:flex-row">
 
                                 <div @click="showAnnoun(filteredData,item)" class="lg:mx-[10px] flex flex-col  items-start ml-[0px] md:ml-[15px] block w-full ">
@@ -213,7 +223,7 @@
     
                                         
     
-                                <div class="w-[200px] rounded-[5px] regular-w bg-[rgba(13,110,253,.15)] h-[max-content] md:d-none mr-[0] h-[100px]" >
+                                <div class="w-[200px] rounded-[5px] regular-w border rounded-[20px] h-[max-content] md:d-none mr-[0] h-[100px]" >
                                     <div class="flex flex-col items-center my-[15px] relative">
                                         <div class="overflow-hidden flex justify-center items-center w-[80px] avatar_image shadow rounded-[15%] h-[80px] bg-[red]">
                                             <img style="object-fit: cover;" class="w-full h-full bg-[lime]" :src="`http://127.0.0.1:8000/api/avatar/${item.owner && item.owner.avatar ? item.owner.avatar : 'avatar.jpg'}`" :alt="item.owner && item.owner.name ? item.owner.name : ''">
@@ -222,7 +232,7 @@
                                             <h5 class="text-[17px]">{{ item.owner && item.owner.name ? item.owner.name : '' }} {{ item.owner && item.owner.last_name ? item.owner.last_name : '' }}</h5>
                                         </div>
                                         <div class="w-[90%] flex flex-col items-center justify-around px-[10px] pt-[15px]">
-                                            <a type="tel" class="
+                                            <NuxtLink v-if="user.id !== item.owner.id" type="tel" class="
                                             w-full text-[14px]
                                             py-[2px]
                                             flex
@@ -237,8 +247,8 @@
                                             overflow-hidden
                                             "
                                             style="letter-spacing: 2px;text-decoration: none; text-overflow: ellipsis; white-space: nowrap;"
-                                            ><span class="mx-[10px] overflow-hidden" style="text-overflow: ellipsis; white-space: nowrap;">{{owner.phone_number && item.owner.phone_number ?"+992"+ item.owner.phone_number : 'показать номер телефон'}}</span></a>
-                                            <button @click="goToChat(item)" class="
+                                            ><span class="mx-[10px] overflow-hidden" style="text-overflow: ellipsis; white-space: nowrap;">{{user.phone_number && item.owner.phone_number ?"+992"+ item.owner.phone_number : 'показать номер телефон'}}</span></NuxtLink>
+                                            <button v-if="user.id !== item.owner.id" @click="goToChat(item)" class="
                                             w-full 
                                             mx-[10px] text-[14px]
                                             justify-center
@@ -322,10 +332,18 @@
         </div>
 </template>
 <script setup>
+import { Swiper, SwiperSlide } from "swiper/vue"
+import { Thumbs } from 'swiper/modules'
+import 'swiper/css'
+import 'swiper/css/navigation'
+import 'swiper/css/pagination'
+import 'swiper/css/thumbs'
+
 const data = ref([])
 const images = ref([])
 const router = useRouter()
 const route = useRoute()
+const thumbsSwiper = ref(null)
 const {responce, showAnnouns, typeObject, quantityRoom, priceFrom, priceTo, typeDeal} = getData()
 const {showNavBar,showMadoal,showFIlterModal,showObject} = useSwitch()
 let owner = {} 
@@ -335,7 +353,8 @@ watch(user,(value)=>{
 })
 const announLoader = ref(false)
 const city = ref('')
-const filteredData = JSON.parse(sessionStorage.getItem('filter'))
+const filteredData = reactive({...route.query})
+
 function showAnnoun(datafilter,item){
     event.stopPropagation()
     router.push(`/show_announ-${JSON.stringify(item)}`)
@@ -349,16 +368,16 @@ function goToChat(item){
     
 }
 
-function searchCIty(){
-    filteredData.city = city.value
-    sessionStorage.setItem('filter',JSON.stringify(filteredData))
-}
+// function searchCIty(){
+//     // filteredData.city = city.value
+//     sessionStorage.setItem('filter',JSON.stringify(filteredData))
+// }
 
 function filters(){
     window.location.replace('/filters/buy')
-    if (route.fullPath == '/filters/buy') {
-        showNavBar.value = false
-    }
+    // if (route.fullPath == '/filters/buy') {
+    //     showNavBar.value = false
+    // }
 }
 const isLike = ref(false)
 async function addLikes(item){
@@ -373,14 +392,15 @@ async function addLikes(item){
         },
         body:JSON.stringify({
             announ_id:item.id,
+            user_id:owner.id
         })
     }).then(r=>r.json())
     .then(res=>{
         item.likes = res
-        console.log(res);
         
     })
 }
+const showNotifyMe = ref(false)
 async function goToMap(){
 
     await fetch("http://127.0.0.1:8000/api/filter", {
@@ -394,7 +414,12 @@ async function goToMap(){
     .then((res) => {
         let uniqueSet = new Set(res.map(JSON.stringify));
         data.value = Array.from(uniqueSet).map(JSON.parse)
-        router.push('/yandex-map')
+        router.push({
+            path:'/yandex-map',
+            query:route.query
+        })
+        console.log(filteredData);
+        
     });
 }
 async function getAnnouns(filter){
@@ -406,7 +431,8 @@ async function getAnnouns(filter){
     await fetch('http://127.0.0.1:8000/api/get_announs',{
         method:'post',
         headers:{
-            "Content-Type":'application/json'
+            "Content-Type":'application/json',
+            Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))
         },
         body:JSON.stringify(filter)
     })
@@ -428,22 +454,24 @@ async function getAnnouns(filter){
                     res[0][i]['create_time']=calculateDate(res[0][i]['created_at'])
         }
         data.value = res[0];
-        console.log(res);
-        
-        data.value.forEach(item=>{
-            window.ymaps.ready(() => {
-            window.ymaps.geocode([item['coord_x'],item['coord_y']])
-            .then((res) => {
-            const firstGeoObject = res.geoObjects.get(0)
-
-            const locality = firstGeoObject.getLocalities()[0] || ''
-
-            item.city = firstGeoObject.getAddressLine()
+        res[0].length === 0 ? showNotifyMe.value = true:showNotifyMe.value = false
+        try {
+            data.value.forEach(item=>{
+                window.ymaps.ready(() => {
+                window.ymaps.geocode([item['coord_x'],item['coord_y']])
+                .then((res) => {
+                const firstGeoObject = res.geoObjects.get(0)
+    
+                const locality = firstGeoObject.getLocalities()[0] || ''
+    
+                item.city = firstGeoObject.getAddressLine()
+                })
+                })  
             })
-        })
-
+        } catch(e) {
+            console.error(e);
             
-        })
+        }
         
     })
 
@@ -473,7 +501,6 @@ async function getAnnouns(filter){
         }
 
     }
-    announLoader.value =false
     let ownerWithAd = []
     for (let i = 0; i < data.value.length; i++) {
         ownerWithAd.push(data.value[i].owner_id);
@@ -489,7 +516,6 @@ async function getAnnouns(filter){
     .then(res=>res.json())
     .then(res=>{
         ownerWithAd = res[1]
-        console.log(ownerWithAd);
         
         // announWithUser = res[0]
     })
@@ -502,20 +528,22 @@ async function getAnnouns(filter){
         }
 
     }
+    announLoader.value = false
+
 }
 
 
 const dealType = ref([
-    {name:'Купить',value:'Продажа'},
-    {name:'Снять',value:'Аренда'},
-    {name:'',value:'Посуточно'},
+    {name: 'Купить', value: 'Продажа'},
+    {name: 'Снять', value: 'Аренда'},
+    {name: '', value: 'Посуточно'},
 
 ])
 
 
 function selectDealType(item){
-    quantityRoom.value = filteredData.quantityRoom ? filteredData.quantityRoom:[]
-    filteredData.quantityRoom = quantityRoom.value?quantityRoom.value:[]
+    quantityRoom.value = filteredData.quantityRoom.length ? filteredData.quantityRoom :[]
+    filteredData.quantityRoom = quantityRoom.value.length ? quantityRoom.value : []
     filteredData.dealType = typeDeal.value = item.value
     if (item.value == 'Посуточно') {
         filteredData.dealType = 'Аренда'
@@ -526,6 +554,10 @@ function selectDealType(item){
     if (item.value == 'Снять') {
         filteredData.typeObject = 'Квартира'
     }
+    router.push({
+        path:`list-announ`,
+        query:{...filteredData}
+    })
     sessionStorage.setItem('filter',JSON.stringify(filteredData))
 }
 
@@ -541,22 +573,22 @@ function isShowHideModal(){
     showFIlterModal.value = true
 }
 
-city.value = filteredData.city
+// city.value = filteredData.city
  
 window.onscroll = function(event){
-setTimeout(()=>{
-    typeDeal.value = JSON.parse(sessionStorage.getItem('filter')).dealType
-},2000)
-if (route.fullPath == '/list') {
-    if(event.target.scrollingElement.scrollTop > 50){
-        const filterEl = document.querySelector('.responce');
-        filterEl.classList.add('sticky')
-        filterEl.classList.add('top-[0]')
-    }else{
-        // filterEl.classList.remove('sticky')
-        // filterEl.classList.remove('top-[0]')
+// setTimeout(()=>{
+//     typeDeal.value = JSON.parse(sessionStorage.getItem('filter')).dealType
+// },2000)
+if (route.fullPath.includes('/list-announ')) {
+    // if(event.target.scrollingElement.scrollTop > 50){
+    //     const filterEl = document.querySelector('.responce');
+    //     filterEl.classList.add('sticky')
+    //     filterEl.classList.add('top-[0]')
+    // }else{
+    //     // filterEl.classList.remove('sticky')
+    //     // filterEl.classList.remove('top-[0]')
 
-    }
+    // }
 }else{
     return
 }

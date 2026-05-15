@@ -7,10 +7,15 @@ export default defineNuxtConfig({
   nitro: {
     preset: 'node-server'
   },
-  // server: {
-  //   host: '0.0.0.0',  // Чтобы сервер был доступен для всех IP
-  //   port: 3000
+  // runtimeConfig: {
+  //   public: {
+  //     apiBase: 'http://127.0.0.1:8000', // ← твой Laravel backend
+  //   }
   // },
+  devServer: {
+    host: '0.0.0.0',  // Чтобы сервер был доступен для всех IP
+    port: 3000
+  },
   devtools: { enabled: false },
   css: [
     '@fortawesome/fontawesome-svg-core/styles.css',

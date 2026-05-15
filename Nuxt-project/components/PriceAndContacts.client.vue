@@ -51,9 +51,9 @@
                 style="border: none; outline: none"
               />
               <div
-                class="text-[20px] d-flex justify-center bg-[white] top-[-1px] items-center w-[15%] relative right-[-30px]"
+                class="text-[20px] h-full d-flex justify-center bg-[white] top-[-1px] items-center w-[15%] relative right-[-10px]"
               >
-                <span class="h-full flex leading-[40px]">c</span>
+                <span class="h-full flex absolute">$</span>
               </div>
             </div>
               <p v-if="!announData.price || announData.price < 100" class="text-[red] text-[14px]">Введите цена</p>
@@ -127,6 +127,7 @@
                 >
               </div>
             </div>
+            
           </div>
         </div>
         <!-- <div draggable="false" class="w-full border flex flex-wrap rounded-[24px] min-h-[100px]">
@@ -208,7 +209,7 @@ function choosePeriod(event) {
 }
 const image = ref([]);
 async function place(event) {
-  if (!images.value.length) {
+  if (images.value.length == 0) {
     return
   }else{
   event.target.disabled = true
@@ -219,28 +220,34 @@ async function place(event) {
   for (const item of images.value) {
     formD.append("images[]", item.file);
   }
-    formD.append('announs',JSON.stringify(announData.value))
+    formD.append('announs', JSON.stringify(announData.value))
     formD.append("dataImage", JSON.stringify(images.value))
 
-  loading.value = true;   
-await fetch("http://127.0.0.1:8000/api/create/announ", {
-    method: "post",
-    headers: {
-      Authorization:'Bearer '+JSON.parse(localStorage.getItem('token')) 
-    },
-    body:formD
-  })
-    .then((res) =>{
-      if (res.ok) {
-        navigateTo('/personal_area/my_announ')
-      }
-      return res.json()
-    })
-    .then((announ) => {
-      console.log(announ);
-    });
-    loading.value = false;
-    event.target.disabled = false
+    try{  
+    loading.value = true;   
+    await fetch("http://127.0.0.1:8000/api/create/announ", {
+        method: "post",
+        headers: {
+          Authorization:'Bearer '+JSON.parse(localStorage.getItem('token')) 
+        },
+        body:formD
+      })
+        .then((res) =>{
+          if (res.ok) {
+            navigateTo('/personal_area/my_announ')
+            getUserByServer()
+          }
+          return res.json()
+        })
+        .then((announ) => {
+          console.log(announ);
+        });
+        loading.value = false;
+        event.target.disabled = false
+  } catch(err){
+    console.log('something went wrong');
+    
+  }
   }
   }
 

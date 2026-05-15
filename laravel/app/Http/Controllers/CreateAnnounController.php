@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Events\NotifyMe as EventsNotifyMe;
 use App\Models\Announ;
 use App\Models\ConditionAnnoun;
 use App\Models\Facilities;
@@ -11,6 +12,7 @@ use App\Models\InfrastructureAnnoun;
 use App\Models\Likes;
 use App\Models\Message;
 use App\Models\messageUser;
+use App\Models\NotifyMe;
 use App\Models\Owner;
 use Intervention\Image\Facades\Image;
 use App\Models\Pictures;
@@ -102,7 +104,44 @@ public function createResidentAnnoun(Request $request){
                 InfrastructureAnnoun::firstOrCreate(['infrastructure_id'=>$value,'announ_id'=>$announ->id]);
                 }
             }
-            return ['you have successfully placed ads'];
+
+            $allfilters = NotifyMe::all();
+
+            function matchesFilters($ad,$filters){
+                // if (isset($filters['min_price']) && $ad['price'] < $filters['min_price']) {
+                //     return false;
+                // }
+                // if (isset($filters['max_price']) && $ad['price'] > $filters['max_price']) {
+                //     return false;
+                // }
+            
+                // // Проверяем тип сделки
+                if (isset($filters['dealType']) && $ad['deal_type'] !== $filters['dealType']) {
+                    return false;
+                }
+            
+                // Проверяем тип объекта
+                if (isset($filters['typeObject']) && $ad['type_object'] !== $filters['typeObject']) {
+                    return false;
+                }
+            
+                // Проверяем локацию (пример — простое сравнение)
+                // if (isset($filters['location']) && $ad['location'] !== $filters['location']) {
+                //     return false;
+                // }
+            
+                // Если все проверки пройдены — объявление совпадает с фильтром
+                return true;
+            }
+
+            foreach ($allfilters as $notify) {
+                $filters = json_decode($notify->filters, true);
+                if(matchesFilters($announ, $filters)){
+                    event(new EventsNotifyMe($announ->owner_id,$announ));
+                }
+            }
+
+            return ['you have successfully placed ads',$allfilters];
         }
 
 
@@ -142,11 +181,11 @@ public function createResidentAnnoun(Request $request){
             $query->WhereIn('quantity_room', $quantityRoom);
         }
     
-        if ($request->priceFrom) {
-            $query->where('price', '>=',$request->priceFrom);
+        if ($request->min_price) {
+            $query->where('price', '>=',$request->min_price);
         }
-        if ($request->priceTo) {
-            $query->where('price', '<=',$request->priceTo);
+        if ($request->max_price) {
+            $query->where('price', '<=',$request->max_price);
         }
         
         
@@ -230,16 +269,29 @@ public function createResidentAnnoun(Request $request){
             'fullUrl' => $request->fullUrl()
         ];
         for ($i = 0; $i < count($data) ; $i++) { 
-           $picture[] = Pictures::where('announ_id',$data[$i]['id'])->get();   
-           $count[] = Likes::where('announ_id',$data[$i]['id'])->get();
+           $picture[] = Pictures::where('announ_id',$data[$i]['id'])->get();
+           //->pluck('pictures')->toArray();   
+           $count[] = Likes::where('announ_id',$data[$i]['id'])->pluck('id')->toArray();
            $data[$i]['likes-count'] = count($count[$i]); 
            $data[$i]['like'] = $count;
-           $data[$i]['watch_user'] = $request['user_id'];
+           $data[$i]['isLike'] = false;
+           $data[$i]['watch_user'] = $request->user('sanctum')->id;
             for ($j=0; $j < count($count[$i]); $j++) { 
                 $likes[] = $count[$i][$j];
             }
         }
-        
+        $like = [];
+        $ads = [];
+        // $like = Likes::where('user_id',$request->user('sanctum')->id)->pluck('announ_id')->toArray();
+        // foreach ($like as $key =>  $value) {
+        //     $ads[$key][] = Announ::where('id',$value['announ_id'])->get();
+        // }
+
+
+        for ($i=0; $i < count($like); $i++) { 
+            $ads[$i] = Announ::where('id',$like[$i]['announ_id'])->first();
+            $ads[$i]['isLike'] = true;
+        }
         $coord = [];
         foreach ($data as $value) {
             $coord[] = [
@@ -247,20 +299,24 @@ public function createResidentAnnoun(Request $request){
                 $value['coord_y']
             ];
         }
+
         
-        return [$data, $picture, $coord, $user];
+        
+        return [$data, $picture, $coord, $user, $ads];
     }
 
+  
+
+
     public function getAnnounByUser(Request $request){
-        $announ = Announ::where('owner_id',$request->id)->withTrashed()
+        $announ = Announ::where('owner_id',$request->user()->id)->withTrashed()
         ->get();
         $data = $announ;
         $picture = [];
         $likes = [];
         for ($i = 0; $i < count($data); $i++) { 
-            $picture[] = Pictures::where('announ_id',$data[$i]['id'])
-            ->where('position','<',1)
-            ->first();
+            $picture[$i] = Pictures::where('announ_id',$data[$i]['id'])
+            ->get();
             $likes[] = Likes::where('announ_id',$data[$i]['id'])->get();
             $data[$i]['likes'] = count($likes[$i]);
         }
@@ -271,7 +327,7 @@ public function createResidentAnnoun(Request $request){
                     'pictures'=>'deafault.jpg'
                 ];
             }
-            $data[$x]['image'] = $picture[$x]['pictures'];
+            $data[$x]['image'] = $picture[$x];
             $allData[] = $data[$x]; 
             // //$picture[$i]['pictures'];
             // return $picture;

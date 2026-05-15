@@ -1,6 +1,6 @@
 <template>
         <div>
-        <NavBar :key="1"/>
+        <!-- <NavBar /> -->
         <slot />
         </div>
 

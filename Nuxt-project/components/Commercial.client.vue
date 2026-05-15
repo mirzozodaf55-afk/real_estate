@@ -2,7 +2,7 @@
     <div>
         <ul  style="margin:0; padding:0; box-sizing:border-box;">
             <li style="margin-top:10px" >
-                <ul class="form-check" style="paddong:0;" >
+                <ul class="form-check" >
                     <li style="list-style:none; padding:4px 0; margin:0; " class="flex flex-column" >
                         <label @click="selectTypeCommercial(comm)" v-for="(comm,idx) of commercial" :key="idx" :for="`check${idx}`" class="form-check-label my-[5px]">
                             <input :checked="typeObject == comm.name" class="form-check-input" :id="`check${idx}`" name="commersial" type="radio" style="box-shadow:none;">
@@ -28,9 +28,11 @@ const commercial = ref([
     {name:'Торговая плолщадь'},
     {name:'Коммерчемкая земля'},
 ])
+const Route = useRoute()
+const Router = useRouter()
 const {typeObject} = getData()
 
-typeObject.value = JSON.parse(sessionStorage.getItem('filter')).typeObject || ''
+// typeObject.value = JSON.parse(sessionStorage.getItem('filter')).typeObject || ''
 const filter = {}
 
 let typeHome = ref([])

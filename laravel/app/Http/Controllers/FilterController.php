@@ -36,11 +36,11 @@ class FilterController extends Controller
                 $query->WhereIn('quantity_room', $quantityRoom);
             }
         
-            if ($request->priceFrom) {
-                $query->where('price', '>=',$request->priceFrom);
+            if ($request->min_price) {
+                $query->where('price', '>=',$request->min_price);
             }
-            if ($request->priceTo) {
-                $query->where('price', '<=',$request->priceTo);
+            if ($request->max_price) {
+                $query->where('price', '<=',$request->max_price);
             }
             
             

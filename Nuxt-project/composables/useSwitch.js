@@ -7,6 +7,8 @@ export default function useSwitch(){
     const showFIlterModal = useState('showFIlterModal',()=>false)
     const showObject = useState('showObject',()=>false)
     const showMessage = useState('showMessage',()=>false)
+    const mobileOrDesktop = useState('mobileOrDesktop',()=>0)
     const toggleShow = () => isShow.value = !isShow.value
-    return {showMessage,showObject, showCity,showNavBar, showMadoal, isShow, toggleShow, active, showFIlterModal }
+    return {showMessage,showObject, showCity,showNavBar, showMadoal, isShow,
+         toggleShow, active, showFIlterModal,mobileOrDesktop }
 }

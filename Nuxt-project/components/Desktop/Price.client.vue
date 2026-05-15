@@ -3,7 +3,7 @@
         <div class="flex relative flex-nowrap justify-between">
             <div class=" rounded hover:border-sky-600 h-[28px]  w-[100%] text-sm border-[2px] overflow-hidden flex relative">
                 <div class="absolute overflow-hidden  pl-[8px] pt-[4px]">
-                    <input v-model="priceFrom" @input="enterPrice" type="number" placeholder="от" class="block outline-none w-[100%] h-[100%]">
+                    <input v-model="filter.min_price" @input="enterPrice" type="number" placeholder="от" class="block outline-none w-[100%] h-[100%]">
                 </div>
                 <span class="flex items-center justify-center h-[100%] absolute right-[0]  w-[20px]" style="background-color:white;">
                 <div>с.</div>
@@ -12,7 +12,7 @@
             
             <div class="rounded hover:border-sky-600 h-[28px] w-[100%] ml-[8px] text-sm border-[2px] flex relative overflow-hidden ">
                 <div class=" absolute overflow-hidden pl-[8px] pt-[4px]">
-                    <input v-model="priceTo" @input="enterPrice" type="number" style="font-size:inherit; line-height:inherit; padding:0;" placeholder="до" class="block outline-none w-[100%] h-[100%]">
+                    <input v-model="filter.max_price" @input="enterPrice" type="number" style="font-size:inherit; line-height:inherit; padding:0;" placeholder="до" class="block outline-none w-[100%] h-[100%]">
                 </div>
                 <span class="flex items-center  justify-center h-[100%] absolute right-[0]  w-[20px]" style="background-color:white;">
                     <div>с.</div>
@@ -22,8 +22,18 @@
     </div>
 </template>
 <script setup>
-const filter = JSON.parse(sessionStorage.getItem('filter'))||{}
 const {priceFrom, priceTo, quantityRoom} = getData()
+const router = useRouter()
+const route = useRoute()
+let filter = reactive({
+    typeObject: route.query.typeObject || '',
+    dealType: route.query.dealType || 'Жилая',
+    quantityRoom: route.query.quantityRoom || quantityRoom.value,
+    realEstate: route.query.realEstate || '',
+    max_price: route.query.max_price || '',
+    min_price: route.query.min_price || ''
+})
+
 
 function enterPrice(){
     filter.priceFrom = priceFrom.value  
@@ -31,6 +41,9 @@ function enterPrice(){
     filter.quantityRoom = quantityRoom.value
     sessionStorage.setItem('filter',JSON.stringify(filter))
 }
+watch(filter,(val)=>{
+    router.replace({query:{...val}})
+})
 
 onMounted(()=>{
     priceFrom.value = filter.priceFrom

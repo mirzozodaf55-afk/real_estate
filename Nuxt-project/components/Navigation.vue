@@ -1,17 +1,17 @@
 <template>
     <div class="navigations">
             <ul class="list" @click="show">
-                <li v-if="loading" class="service" @click="logOut()">
+                <li v-if="user.phone_number" class="service" @click="logOut()">
                     <div>
                         <font-awesome-icon style="font-size:1.15em;" :icon="['fas', 'right-to-bracket']" />   
                     </div>
-                    <a >Войти</a>
+                    <a>Войти</a>
                 </li>
-                <li v-else class="flex w-[200px] ml-[5px] items-center" @click="logOut">
-                    <div  class="user"  :style="`background-image: url('http://127.0.0.1:8000/api/avatar/${user.avatar}');`">
+                <li v-if="!user.phone_number" class="flex w-[200px] ml-[5px] items-center" @click="logOut">
+                    <div v-if="!user.phone_number" class="user"  :style="`background-image: url('http://127.0.0.1:8000/api/avatar/${user.avatar}');`">
                         
                     </div>
-                    <span  class="ml-[10px] font-bold" >
+                    <span v-if="!user.phone_number" class="ml-[10px] font-bold" >
                         <span style="font-family: Lato,Arial,sans-serif;">{{user.name + user.last_name ? user.last_name +' '+ user.name: `+992 ${user.phone_number}`}}</span> 
                     </span>
                 </li>
@@ -25,15 +25,20 @@
 <script setup>
 const {isShow,active,showMadoal} = useSwitch()
 const {responce,direction} = getData()
-const {user,loading} = getUserByServer(JSON.parse(localStorage.getItem('token')))
+const {user, loading} = getUserByServer()
 const data = ref()
+user.value = user.value || {name: '', last_name: '', phone_number: ''}
 watch(user,(value)=>{
+    user.value = user.value || {name: '', last_name: '', phone_number: ''}
     data.value = value
+
 })
 
     const phone = ref()
     function logOut(){
-        if (data.phone_number) {
+        console.log(data.value.phone_number);
+        
+        if (data.value.phone_number) {
         active.value = false
         document.body.style.overflow ='auto';    
         navigateTo('/personal_area/profile')
@@ -46,7 +51,9 @@ watch(user,(value)=>{
         
     }
     onMounted(()=>{
+        user.value = user.value || {name: '', last_name: '', phone_number: ''}
         data.value = user.value
+
     })
 </script>
 

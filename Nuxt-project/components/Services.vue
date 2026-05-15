@@ -45,12 +45,12 @@ const route = useRoute()
 const {isShow,showMadoal, toggleShow, active} = useSwitch()
 const {responce,direction} = getData()
 responce.value = JSON.parse(localStorage.getItem('owner')) || []
-const data = responce.value[0] || {}
+const data = responce.value || {}
 function Announ(){
+    
     if (navigator.maxTouchPoints) {
         active.value = false
         localStorage.removeItem('announ')
-        
         document.body.style.overflow = 'auto'
         isShow.value = true
         if (data.phone_number) {

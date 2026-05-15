@@ -18,6 +18,7 @@ title:{
   type:String,
   required:true
 },
+error: Object,
 tag:{
   type:String,
   required:true

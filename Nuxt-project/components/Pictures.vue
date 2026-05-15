@@ -29,7 +29,7 @@
       </p>
     <div
       v-if="pictures.length"
-      class="flex overflow-hidden mt-[10px] w-[100%] min-h-[50px] rounded-[13px] border"
+      class="flex overflow-hidden mt-[10px] w-[100%] min-h-[70px] rounded-[13px] border"
     >
       <div
         id="areaBorder"
@@ -51,7 +51,11 @@
           draggable="true"
           id="images"
           
-          class="bg-[black] relative flex responsive mx-[auto] m-[10px] w-[48%] h-[150px] sm:h-[170px] sm:w-[250px] sm:h-[170px] md:w-[200px] md:h-[120px] lg:min-w-[180px] lg:h-[120px] overflow-hidden rounded"
+          class="bg-[black] my-[3px] mx-[10px] relative flex responsive
+          mx-[auto] w-[48%] h-[150px]
+          sm:h-[170px] sm:w-[250px] sm:h-[170px] md:w-[200px]
+          md:h-[120px] lg:min-w-[180px] lg:h-[120px]
+          overflow-hidden rounded"
         >
         <div class="cursor-grab" >
 
@@ -84,7 +88,9 @@
 const props = defineProps({
   image:{
     type:Array,
-    required:true
+    required:true,
+    error: Object
+
   }
 })
 
@@ -107,7 +113,7 @@ function saveImages(e) {
           if (this.width > 800 && this.height > 400) {
             formD.value.append("images[]", files[i]);
             pictures.value.push({
-              url: e.target.result,
+            url: e.target.result,
             position: pictures.value.length,
             rotation:0,
             file: files[i],
@@ -122,6 +128,7 @@ function saveImages(e) {
         } 
       
         images.value = pictures.value;
+        
       } 
           reader.readAsDataURL(files[i]);
     };
@@ -135,7 +142,7 @@ function saveImages(e) {
 
 
   setTimeout(()=>{
-  if (props.image.length) {
+  if (props.image&&props.image.length) {
     pictures.value = props.image
     images.value = props.image
   }

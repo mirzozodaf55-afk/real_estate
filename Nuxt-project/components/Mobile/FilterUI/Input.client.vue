@@ -120,6 +120,8 @@ updateLandArea:{
   type:Function,
   required:true
 },
+error: Object
+
 })
 
 let timeout = null

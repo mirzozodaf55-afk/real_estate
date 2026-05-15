@@ -45,7 +45,9 @@ const props = defineProps({
   filter:Object,
   updateData:Function,
   loader:Boolean,
-  updateLoader:Function
+  updateLoader:Function,
+  error: Object
+
 });
 
 

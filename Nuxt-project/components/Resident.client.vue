@@ -4,12 +4,16 @@
             <div style="margin-top:10px" >
                 <ul class="form-check p-[0]"  >
                     <li style="list-style:none; padding:4px 0; margin:0; " >
-                        <label v-if="typeDeal == 'Продажа'" for="check1" class="my-[5px] block form-check-label">
-                            <input :checked="typeObject == 'Квартира в новостройке'" @change="selectTypeResident" class="form-check-input" id="check1" name="radio" type="radio" style="box-shadow:none;">
+                        <label v-if="filter.dealType == 'Продажа'" for="check1" class="my-[5px] block form-check-label">
+                            <input :checked="filter.typeObject == 'Квартира в новостройке'" @change="selectTypeResident" class="form-check-input" id="check1" name="radio" type="checkbox" style="box-shadow:none;">
                             <span style="font-size:15px; font-weight:normal;">Квартира в новостройке</span>
                         </label>
-                        <label for="check2" class="my-[5px] block">
-                            <input :checked="typeObject == 'Квартира'" @change="selectTypeResident" id="check2" class="form-check-input" name="radio" type="radio" style="box-shadow:none;">
+                        <label v-if="filter.dealType == 'Продажа'" for="check0" class="my-[5px] block form-check-label">
+                            <input :checked="filter.typeObject == 'Квартира'" @change="selectTypeResident" class="form-check-input" id="check0" name="radio" type="checkbox" style="box-shadow:none;">
+                            <span style="font-size:15px; font-weight:normal;">Квартира</span>
+                        </label>
+                        <label v-if="filter.dealType == 'Аренда'" for="check2" class="my-[5px] block">
+                            <input :checked="filter.typeObject == 'Квартира'" @change="selectTypeResident" id="check2" class="form-check-input" name="radio" type="radio" style="box-shadow:none;">
                             <span style="font-size:15px; font-weight:normal;">Квартира</span>
                         </label>
                     </li>
@@ -19,7 +23,8 @@
                 <ul class="form-check p-[0]" >
                     <li style="list-style:none; padding:4px 0">
                         <label for="check3">
-                            <input :checked="typeObject =='Комната'" @change="selectTypeResident" id="check3" class="form-check-input" name="radio" type="radio" style="box-shadow:none;">
+                            <input :checked="filter.typeObject =='Комната'" @change="selectTypeResident" 
+                            id="check3" class="form-check-input" name="radio" type="checkbox" style="box-shadow:none;">
                             <span style="font-size:15px; font-weight:normal;">Комната</span>
                         </label>
                     </li>
@@ -29,7 +34,7 @@
                 <div class="form-check p-[0]" >
                     <div class="flex flex-col" style="list-style:none; padding:4px 0">
                         <label v-for="(home,index) of house" :key="index" :for="`checks${index}`" class="mt-[5px]">
-                            <input :checked="typeObject == home.name" @change="selectTypeResident(home)" :id="`checks${index}`" class="form-check-input" name="radio" type="radio" style="box-shadow:none;">
+                            <input :checked="filter.typeObject == home.name" @change="selectTypeResident(home)" :id="`checks${index}`" class="form-check-input" name="radio" type="checkbox" style="box-shadow:none;">
                             <span style="font-size:15px; font-weight:normal;">{{ home.name }}</span>
                             <!-- <p>{{ typeHome[index] }}</p> -->
                         </label>
@@ -41,16 +46,24 @@
 </template>
 <script setup>
 const {typeObject,typeDeal,quantityRoom} = getData()
+const {user} = getUserByServer(JSON.parse(localStorage.getItem('token')))
+let owner = {}
 
-if (!typeObject.value) {
-    typeObject.value = JSON.parse(sessionStorage.getItem('filter')).typeObject
-}
+// if (!typeObject.value) {
+//     typeObject.value = JSON.parse(sessionStorage.getItem('filter')).typeObject
+// }
 // if (!typeDeal.value) {
 //     typeDeal.value = JSON.parse(sessionStorage.getItem('filter')).dealType
 // }
+const route = useRoute()
+const router = useRouter()
 
-
-let filter = JSON.parse(sessionStorage.getItem('filter'))
+let filter = reactive({
+    typeObject: route.query.typeObject || typeObject.value,
+    dealType: route.query.dealType,
+    quantityRoom: route.query.quantityRoom || quantityRoom.value,
+    realEstate: route.query.realEstate || '',
+})
 //  
 const house = ref([
     {name:'Дом/Дача', checked:false},
@@ -67,12 +80,15 @@ function selectTypeResident(home){
             filter.quantityRoom = quantityRoom.value
         }
             filter.typeObject = typeObject.value
-            sessionStorage.setItem('filter',JSON.stringify(filter))
-        // filter.dealType = typeDeal.value
     }
-    // if (!event.target.checked) {
-    //     typeHome.value.splice(typeHome.value.indexOf(event.target.nextSibling.textContent),1)
-    // }
-    // console.log(filter.typeObject);
+    router.replace({query:{...filter}})
+    // console.log(route.query);
+    
 }
+
+// watch(filter, (value) => {
+//     // value.user_id = owner.id
+//   router.replace({ query: { ...value } }) 
+// }, { deep: true })
+watch(user,(value)=>owner = value)
 </script>

@@ -26,12 +26,13 @@ class CreateOwnerController extends Controller
         $today->format('Y-m-d H:i:s');
 
         $verificationCode = strval(random_int(100000, 999999));
+        $uniq_id = strval(random_int(00000000,99999999));
         $owner = Owner::firstOrCreate([
-            'phone_number' => $phone,
+            'phone_number' => $phone
         ]);
         $token = $owner->createToken('user');
         $owner->where('phone_number',$phone)
-        ->update(['verification_code' => $verificationCode]);
+        ->update(['verification_code' => $verificationCode,'uniq_id'=>$uniq_id]);
         //  if ($owner->created_at < Carbon::now()->subMinutes(1)) {
         //     $owner->update([
         //         'verification_code'=>null,
@@ -50,6 +51,7 @@ class CreateOwnerController extends Controller
     }
     
     public function UpdateOwner(Request $request){
+        $request->user()->update(['last_seen_at' => now()]);
         $owner = Owner::where('phone_number', $request->phone)->first();
        
              $owner->update([
@@ -63,7 +65,13 @@ class CreateOwnerController extends Controller
     }
 
     public function getUser(Request $request){
-    return $request->user();
+        $user = Owner::where('phone_number',$request->user()->phone_number)->first();
+        // $request->user()->update(['last_seen_at'=>now()]);
+        
+        // if ($request->user()->last_seen_at === null || now()->diffInSeconds($request->user()->last_seen_at) > 60) {
+            $request->user()->update(['last_seen_at' => now()]);
+        // }
+        return $user;
     }
 
 

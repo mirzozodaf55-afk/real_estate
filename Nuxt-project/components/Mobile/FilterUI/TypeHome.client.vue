@@ -78,7 +78,8 @@ const props = defineProps({
   loader:Boolean,
   updateLoader:Function,
   uploadQuantityRoom:Function,
-  updateFilters:Object
+  updateFilters:Object,
+  error: Object
 });
 
   const filters = ref()
