@@ -7,30 +7,30 @@
              <div class="w-[45px] ml-[7px] h-[45px] rounded-[50%] border">
                  <img :src="`http://127.0.0.1:8000/api/avatar/${users.avatar}`" class="w-full h-full rounded-[50%]" alt="">
              </div>
-             <div class="ml-[5px]">{{ users.name&&users.last_name?`${users.name} ${users.last_name}`:users.phone_number }}</div>
+             <div class="ml-[5px]">{{ users.name && users.last_name ? `${users.name} ${users.last_name}`: users.phone_number }}</div>
          </div>
         </div>
     </div>
 </template>
 <script setup>
-useHead({title:'Пользователи'})
+useHead({title: 'Пользователи'})
 const owner = ref()
 const {user} = getUserByServer(JSON.parse(localStorage.getItem('token')))
 const friends = ref([])
 const route = useRoute()
 const router = useRouter()
-watch(user,(value)=>{
-owner.value = value
+watch(user, (value) => {
+  owner.value = value
 })
 owner.value = user.value
 fetch('http://127.0.0.1:8000/api/get_all_users',{
-    method:'GET',
-    headers:{
-        'Content-Type':'aplication/json',
-        Authorization:'Bearer '+JSON.parse(localStorage.getItem('token')),
+    method: 'GET',
+    headers: {
+        'Content-Type': 'aplication/json',
+        Authorization: 'Bearer '+JSON.parse(localStorage.getItem('token')),
     }
-}).then(r=>r.json())
-.then(res=>{
+}).then(r => r.json())
+.then(res => {
     friends.value = res[0]
     
 })

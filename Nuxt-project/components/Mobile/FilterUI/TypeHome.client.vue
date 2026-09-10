@@ -1,7 +1,7 @@
 <template>
   <div class="mt-[26px]">
     <div class="px-[8px]">
-      <div class="dropup  border" style="width: 100%">
+      <div class="dropdown  border" style="width: 100%">
         <button
           class="btn w-100 select focus:border-0"
           type="button"
@@ -17,7 +17,7 @@
         </div>
         </button>
         <ul
-          class="dropdown-menu mt-[10px] w-100 rounded-0"
+          class="dropdown-menu mt-[10px] w-100 rounded-0 max-h-[50vh] overflow-y-auto"
           aria-labelledby="dropdownMenuButton1"
         >
           <li
@@ -59,19 +59,7 @@ const apartament = ref(items.value.filter(item=>item.label == 'Квартира'
 const house = ref(items.value.filter(item=>item.label == 'Дом/дача'|| item.label =='Коттедж'))
 const land = ref(items.value.filter(item=>item.label == 'Участок'))
 const text = ref([]);
-const typeObject = JSON.parse(sessionStorage.getItem('filter')).typeObject
-    const selectedItems = items.value
-        .filter((item) => item.checked)
-        .map((item) => item.label);
-      text.value = selectedItems.slice();
 
-      props.filter.typeObject = text.value;
-      // sessionStorage.setItem('filter', JSON.stringify(props.filter));
-      if (props.filter.typeObject.length && props.filter.typeObject.indexOf('Квартира') !== -1) {
-        props.uploadQuantityRoom(true)
-      }else{
-        props.uploadQuantityRoom(false)
-      }
 const props = defineProps({
   filter:Object,
   updateData:Function,
@@ -82,9 +70,32 @@ const props = defineProps({
   error: Object
 });
 
+function readFilter() {
+  try {
+    return JSON.parse(sessionStorage.getItem('filter')) || {}
+  } catch (e) {
+    return {}
+  }
+}
+const typeObject = readFilter().typeObject
+    const selectedItems = items.value
+        .filter((item) => item.checked)
+        .map((item) => item.label);
+      text.value = selectedItems.slice();
+
+      if (text.value.length && props.filter) {
+        props.filter.typeObject = text.value;
+      }
+      // sessionStorage.setItem('filter', JSON.stringify(props.filter));
+      if (props.filter && props.filter.typeObject && props.filter.typeObject.length && props.filter.typeObject.indexOf('Квартира') !== -1) {
+        props.uploadQuantityRoom && props.uploadQuantityRoom(true)
+      }else{
+        props.uploadQuantityRoom && props.uploadQuantityRoom(false)
+      }
+
   const filters = ref()
 
-    let fil = props.updateFilters
+    let fil = props.updateFilters || {}
     if (fil.dealType) {
       if (fil.dealType !== 'Продажа') {
         items.value.pop()
@@ -112,7 +123,7 @@ const props = defineProps({
         props.filter.buildingType = []
       }
       sessionStorage.setItem('filter', JSON.stringify(props.filter));
-      if (props.filter.typeObject.length && props.filter.typeObject.indexOf('Квартира') !== -1) {
+      if (props.filter.typeObject && props.filter.typeObject.length && props.filter.typeObject.indexOf('Квартира') !== -1) {
         props.uploadQuantityRoom(true)
       }else{
         props.uploadQuantityRoom(false)

@@ -403,13 +403,10 @@ useHead({title:'Аренда и Продажа Квартир'})
         min-width: 96%;
     }
     .filters{
-        min-width: 320px;
+        min-width: 0;
+        width: 100%;
         position: relative;
-        /* width: 95%; */
         max-width: 640px;
-    }
-    .filter{
-        position: absolute;
     }
     /* .list-addition{
         min-width: 320px;
@@ -449,12 +446,13 @@ useHead({title:'Аренда и Продажа Квартир'})
 .filters{
     display: grid;
     grid-template-columns: 1fr 1fr;
-    grid-template-rows: 60px 60px 60px;
+    grid-auto-rows: minmax(60px, auto);
     grid-column-gap: 6px;
     position: relative;
     grid-gap: 10px;
     justify-content: space-between;
-    min-width: 350px;
+    width: 100%;
+    min-width: 0;
     max-width: 650px;
 }
 .filter *{
@@ -480,13 +478,14 @@ useHead({title:'Аренда и Продажа Квартир'})
     border-radius: 7px;
     border: 1px solid silver;
     gap: 8px;
+    padding: 4px 8px;
     text-decoration: none;
 }
 .filter span{
-    font-size: 16px;
+    font-size: 15px;
     font-style:normal;
     letter-spacing: 0;
-    line-height: 10px;
+    line-height: 1.15;
     font-weight: normal;
     color: #000;
     font-family: Lato,Arial,sans-serif;

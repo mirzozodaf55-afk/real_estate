@@ -33,7 +33,8 @@ const selected = ref(false);
 
 
 async function getAddress(){
-const suggestResponse = await fetch(`https://suggest-maps.yandex.ru/v1/suggest?apikey=e0aec847-3d84-4153-8955-4d0520b28188&text=${encodeURIComponent(address.value)}&lang=ru_RU&results=10`);
+const suggestResponse = 
+    await fetch(`https://suggest-maps.yandex.ru/v1/suggest?apikey=e0aec847-3d84-4153-8955-4d0520b28188&text=${encodeURIComponent(address.value)}&lang=ru_RU&results=10`);
 const suggestData = await suggestResponse.json();
 fullAddress.value = suggestData.results
 }

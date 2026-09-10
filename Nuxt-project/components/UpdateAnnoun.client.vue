@@ -3,7 +3,7 @@
         <div class="w-[80%] shadow px-[20px] h-[max-content] mt-[20px]">
             <!-- {{ updateAnnounData }} -->
             <input type="text" class="border p-[5px] rounded outline-0 text-[15px] shadow-none w-[max-content]" v-model="updateAnnounData.type_object">
-            <Pictures :image="updateAnnounData.pictures?updateAnnounData.pictures:announ.pictures"/>
+            <Pictures :image="updateAnnounData.pictures ? updateAnnounData.pictures : announ.pictures"/>
             <div class="w-full flex justify-end py-[10px]">
                 <button class="btn btn-primary mr-[5px]" @click="navigateTo('/personal_area/my_announ')">Назад</button>
                 <button @click="changeAnnouncement" class="btn btn-success">Изменить</button>
@@ -65,9 +65,9 @@ async function changeAnnouncement(){
             method:'post',
             headers:{
                 "Content-Type": 'application/json',
-                Authorization:'Bearer '+JSON.parse(localStorage.getItem('token'))
+                Authorization:'Bearer '+ JSON.parse(localStorage.getItem('token'))
             },
-            body:JSON.stringify({img:images.value,announ:updateAnnounData})
+            body: JSON.stringify({img:images.value,announ:updateAnnounData})
         })
         .then(res=>res.json())
         .then(res=>{

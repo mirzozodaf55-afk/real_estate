@@ -69,7 +69,7 @@ public function createResidentAnnoun(Request $request){
             foreach ($images as $image) {
                 $names[] = $name = uniqid() . '.' . $image->getClientOriginalExtension();
                 $filename[] = [
-                    'name'=>$name,
+                    'name'=> $name,
                     'xsmall' => 'xsmall/' . $name,
                     'small' => 'small/' . $name,
                     'medium' => 'medium/' . $name,
@@ -86,7 +86,7 @@ public function createResidentAnnoun(Request $request){
                 $img->fit(350, 200)->save(public_path('xsmall/' . $name));  
             }
 
-            for ($i=0; $i < count($dataImage); $i++) { 
+            for ($i = 0; $i < count($dataImage); $i++) { 
                 Pictures::create([
                 'pictures'=>$names[$i],
                 'position'=>$dataImage[$i]['position'],
@@ -107,7 +107,7 @@ public function createResidentAnnoun(Request $request){
 
             $allfilters = NotifyMe::all();
 
-            function matchesFilters($ad,$filters){
+            function matchesFilters($ad, $filters){
                 // if (isset($filters['min_price']) && $ad['price'] < $filters['min_price']) {
                 //     return false;
                 // }
@@ -141,7 +141,7 @@ public function createResidentAnnoun(Request $request){
                 }
             }
 
-            return ['you have successfully placed ads',$allfilters];
+            return ['you have successfully placed ads', $allfilters];
         }
 
 
@@ -288,8 +288,8 @@ public function createResidentAnnoun(Request $request){
         // }
 
 
-        for ($i=0; $i < count($like); $i++) { 
-            $ads[$i] = Announ::where('id',$like[$i]['announ_id'])->first();
+        for ($i = 0; $i < count($like); $i++) { 
+            $ads[$i] = Announ::where('id', $like[$i]['announ_id'])->first();
             $ads[$i]['isLike'] = true;
         }
         $coord = [];
@@ -309,13 +309,13 @@ public function createResidentAnnoun(Request $request){
 
 
     public function getAnnounByUser(Request $request){
-        $announ = Announ::where('owner_id',$request->user()->id)->withTrashed()
+        $announ = Announ::where('owner_id', $request->user()->id)->withTrashed()
         ->get();
         $data = $announ;
         $picture = [];
         $likes = [];
         for ($i = 0; $i < count($data); $i++) { 
-            $picture[$i] = Pictures::where('announ_id',$data[$i]['id'])
+            $picture[$i] = Pictures::where('announ_id', $data[$i]['id'])
             ->get();
             $likes[] = Likes::where('announ_id',$data[$i]['id'])->get();
             $data[$i]['likes'] = count($likes[$i]);

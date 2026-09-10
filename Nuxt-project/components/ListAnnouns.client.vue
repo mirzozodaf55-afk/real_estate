@@ -179,7 +179,7 @@
                                         <span v-if="item.type_object !== 'Участок'" class="block font-bold leading-[28px] text-[16px] tracking-normal m-0 p-0">
                                              {{`${item.quantity_room !== null ? item.quantity_room+'-комн.': item.type_real_estate == "Жилая"?item.quantity_bedrooms+'-мест':item.numberSeats+'-мест'}`}}
                                              {{item.total_area !== null? item.total_area : item.house_area}} <span>М<sup>2</sup></span>,
-                                            {{`${item.floor?item.floor+'/':''}`}}{{`${item.floor_in_house}`}} этаж
+                                            {{`${item.floor?item.floor + '/' : ''}`}}{{`${item.floor_in_house}`}} этаж
                                         </span>
                                         <span v-if="item.type_object == 'Участок'">
                                             участка: {{item.land_area}} сот.
@@ -345,20 +345,19 @@ const router = useRouter()
 const route = useRoute()
 const thumbsSwiper = ref(null)
 const {responce, showAnnouns, typeObject, quantityRoom, priceFrom, priceTo, typeDeal} = getData()
-const {showNavBar,showMadoal,showFIlterModal,showObject} = useSwitch()
+const {showNavBar, showMadoal, showFIlterModal, showObject} = useSwitch()
 let owner = {} 
 const {user} = getUserByServer(JSON.parse(localStorage.getItem('token')))
-watch(user,(value)=>{
+watch(user, (value) => {
     owner = value
 })
 const announLoader = ref(false)
 const city = ref('')
 const filteredData = reactive({...route.query})
 
-function showAnnoun(datafilter,item){
+function showAnnoun(datafilter, item){
     event.stopPropagation()
-    router.push(`/show_announ-${JSON.stringify(item)}`)
-    
+    router.push(`/show_announ-${JSON.stringify(item)}`)    
 }
 
 function goToChat(item){
@@ -381,7 +380,7 @@ function filters(){
 }
 const isLike = ref(false)
 async function addLikes(item){
-    item.isLike =!item.isLike 
+    item.isLike = !item.isLike 
     
     event.preventDefault()
     await fetch('http://127.0.0.1:8000/api/likes',{
@@ -390,9 +389,9 @@ async function addLikes(item){
             "Content-Type":'application/json',
             Authorization:'Bearer '+JSON.parse(localStorage.getItem('token'))
         },
-        body:JSON.stringify({
-            announ_id:item.id,
-            user_id:owner.id
+        body: JSON.stringify({
+            announ_id: item.id,
+            user_id: owner.id
         })
     }).then(r=>r.json())
     .then(res=>{
@@ -415,8 +414,8 @@ async function goToMap(){
         let uniqueSet = new Set(res.map(JSON.stringify));
         data.value = Array.from(uniqueSet).map(JSON.parse)
         router.push({
-            path:'/yandex-map',
-            query:route.query
+            path: '/yandex-map',
+            query: route.query
         })
         console.log(filteredData);
         
@@ -429,19 +428,19 @@ async function getAnnouns(filter){
     localStorage.setItem('filter', JSON.stringify(filteredData))
     data.value = []
     await fetch('http://127.0.0.1:8000/api/get_announs',{
-        method:'post',
-        headers:{
+        method: 'post',
+        headers: {
             "Content-Type":'application/json',
             Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token'))
         },
-        body:JSON.stringify(filter)
+        body: JSON.stringify(filter)
     })
-    .then(res=>res.json())
-    .then(res=>{
+    .then(res => res.json())
+    .then(res => {
       let uniqueSet = new Set(res[0].map(JSON.stringify));
       res[0] = Array.from(uniqueSet).map(JSON.parse)
       let uniqPicture = new Set(res[1].map(JSON.stringify));
-      res[1]= Array.from(uniqPicture).map(JSON.parse)
+      res[1] = Array.from(uniqPicture).map(JSON.parse)
         for (let i = 0; i < res[0].length; i++) {
             if (res[1][i].length > 0) {
                 res[0][i]['image'] = res[1][i] 
@@ -451,12 +450,12 @@ async function getAnnouns(filter){
             let newDate = new Date()
                 let result;
                 result = d.getDate()
-                    res[0][i]['create_time']=calculateDate(res[0][i]['created_at'])
+                    res[0][i]['create_time'] = calculateDate(res[0][i]['created_at'])
         }
         data.value = res[0];
-        res[0].length === 0 ? showNotifyMe.value = true:showNotifyMe.value = false
+        res[0].length === 0 ? showNotifyMe.value = true : showNotifyMe.value = false
         try {
-            data.value.forEach(item=>{
+            data.value.forEach(item => {
                 window.ymaps.ready(() => {
                 window.ymaps.geocode([item['coord_x'],item['coord_y']])
                 .then((res) => {
@@ -486,7 +485,7 @@ async function getAnnouns(filter){
         let Month = Math.abs(Math.floor(Weeks / 4))
 
 
-        if (Month>1) {
+        if (Month > 1) {
             return `${Month} месяц. назад`
         }else if (Weeks > 0) {
             return `${Weeks} неделя. назад`
@@ -511,10 +510,10 @@ async function getAnnouns(filter){
         headers:{
             "Content-Type":'application/json'
         },
-        body:JSON.stringify({owner_id:ownerWithAd})
+        body:JSON.stringify({owner_id: ownerWithAd})
     })
-    .then(res=>res.json())
-    .then(res=>{
+    .then(res => res.json())
+    .then(res =>{
         ownerWithAd = res[1]
         
         // announWithUser = res[0]

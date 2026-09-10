@@ -17,7 +17,7 @@
       </div>
     </button>
 
-    <ul class="dropdown-menu rounded-0 w-100" aria-labelledby="drop23">
+    <ul class="dropdown-menu rounded-0 w-100 max-h-[50vh] overflow-y-auto" aria-labelledby="drop23">
       <li
         @click="selectCity"
         class="flex h-[40px] items-center p-[10px] mx-[3px] my-[3px] justify-between"

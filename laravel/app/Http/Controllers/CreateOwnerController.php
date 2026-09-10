@@ -11,16 +11,6 @@ use Illuminate\Support\Facades\Log;
 class CreateOwnerController extends Controller
 {
     public function createOwner(Request $request){
-        // $owner = Owner::firstOrCreate(['phone_number'=> $request->phone]);
-        // $token = $owner->createToken('user');
-        // sleep(0);
-        // return ;
-        // $currentDate = date("Y-m-d H:i:s");
-        // $minute = date('i');
-        // $request->validate([
-        //     'phone_number' => 'required|unique:owners',
-        // ]);
-
         $phone = $request->phone;
         $today = Carbon::now();
         $today->format('Y-m-d H:i:s');
@@ -30,23 +20,13 @@ class CreateOwnerController extends Controller
         $owner = Owner::firstOrCreate([
             'phone_number' => $phone
         ]);
-        $token = $owner->createToken('user');
         $owner->where('phone_number',$phone)
         ->update(['verification_code' => $verificationCode,'uniq_id'=>$uniq_id]);
-        //  if ($owner->created_at < Carbon::now()->subMinutes(1)) {
-        //     $owner->update([
-        //         'verification_code'=>null,
-        //     ]);
-        //     return [$owner->created_at,$token->plainTextToken];
-        //  }
-        //  $owner->where('created_at', '<', Carbon::now()->subMinutes(1))->update(['verification_code'=> null]);
-        //  update(['verification_code'=>null]);
+        $token = $owner->createToken('user');
         return [$verificationCode,$token->plainTextToken];
     }
     public function verifyUser(Request $request){
-        // $owner = Owner::where('phone_number',$request->phone)->get();
         $user = Owner::where('verification_code',$request->code)->get();
-        // $token = $owner->createToken('user');
         return $user;
     }
     
