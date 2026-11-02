@@ -1,184 +1,350 @@
 <template>
-  <button @click="goBack" class="absolute flex items-center z-[1000] py-[2px] px-[5px] bg-primary cursor-pointer my-[3px] text-[white]
-  rounded-full w-[50px] h-[50px] justify-center border font-bold mt-0 top-[55px]
-  border-white ml-[4px] text-[20px] mb-[3px]">
-<p class="m-0 ">
-  <font-awesome-icon :icon="['fa-solid', 'fa-chevron-left']" />
-</p>
-</button>
-  <div class="flex justify-center" style="height: 96vh;">
-    <div
-      id="map-yandex"
-      class="border-5 w-[100vw]"
-      style="height: 96vh; box-shadow: 0 0 6px silver"
-    ></div>
+  <div class="map-page flex bg-[#f4f6fb]">
+    <!-- Список слева (на телефоне скрыт — там вся ширина под карту) -->
+    <aside class="hidden lg:flex flex-col w-[380px] shrink-0 bg-white border-r border-[#e8edf3]">
+      <div class="px-[16px] pt-[14px] pb-[12px] border-b border-[#eef2f7]">
+        <NuxtLink :to="{ path: '/list-announ', query: route.query }" class="inline-flex items-center gap-[6px] text-[13.5px] font-semibold text-[#0468ff] no-underline hover:underline">
+          <font-awesome-icon :icon="['fas', 'list']" /> Списком
+        </NuxtLink>
+        <h1 class="text-[20px] font-bold text-[#152242] mt-[6px] mb-0">
+          {{ loading ? 'Загружаем…' : `${onMap.length} ${plural(onMap.length, ['объявление', 'объявления', 'объявлений'])} на карте` }}
+        </h1>
+        <p v-if="filterLabel" class="text-[13px] text-[#64748b] mt-[2px] mb-0 truncate">{{ filterLabel }}</p>
+        <p v-if="!loading && withoutCoords" class="text-[12px] text-[#94a3b8] mt-[4px] mb-0">Ещё {{ withoutCoords }} без адреса на карте — они есть в списке</p>
+      </div>
+
+      <div class="flex-1 overflow-y-auto p-[10px] flex flex-col gap-[8px]">
+        <template v-if="loading">
+          <div v-for="n in 4" :key="n" class="h-[96px] rounded-[12px] bg-[#f1f5f9] animate-pulse"></div>
+        </template>
+        <p v-else-if="error" class="text-center text-[14px] text-[#b91c1c] p-[20px]">{{ error }}</p>
+        <p v-else-if="!onMap.length" class="text-center text-[14px] text-[#64748b] p-[20px]">По этим условиям нет объявлений с адресом на карте.</p>
+        <button v-for="a of onMap" :key="a.id" :ref="(el) => (cardEls[a.id] = el)"
+          @mouseenter="setActive(a.id)" @mouseleave="setActive(null)" @click="openAnnoun(a)" :data-test="`map-card-${a.id}`"
+          class="w-full text-left flex gap-[10px] p-[8px] rounded-[12px] border transition-all"
+          :class="activeId === a.id ? 'border-[#0468ff] bg-[#f5f9ff] shadow-[0_4px_14px_rgba(4,104,255,0.15)]' : 'border-[#eef2f7] hover:border-[#cbd5e1]'">
+          <div class="w-[110px] h-[80px] rounded-[9px] overflow-hidden bg-[#e2e8f0] shrink-0">
+            <img v-if="a.pictures?.[0]" :src="photoUrl(a, 'small')" class="w-full h-full object-cover" alt="" loading="lazy" />
+          </div>
+          <div class="min-w-0 flex-1">
+            <div class="text-[16px] font-bold text-[#152242] leading-tight">{{ formatNumber(a.price) }} с.<span class="text-[12px] font-normal text-[#64748b]">{{ priceSuffix(a) }}</span></div>
+            <div class="text-[13px] font-semibold text-[#0468ff] line-clamp-2 leading-[1.3] mt-[2px]">{{ a.title || a.type_object }}</div>
+            <div class="text-[12px] text-[#64748b] mt-[2px] truncate">{{ facts(a) }}</div>
+          </div>
+        </button>
+      </div>
+    </aside>
+
+    <!-- Карта -->
+    <div class="relative flex-1 min-w-0">
+      <div id="map-yandex" class="absolute inset-0"></div>
+
+      <div v-if="!mapReady" class="absolute inset-0 grid place-items-center bg-[#eef2f7] text-[#64748b] text-[14px]">
+        <span><font-awesome-icon :icon="['fas', 'spinner']" spin-pulse class="mr-[6px]" /> Загружаем карту…</span>
+      </div>
+
+      <!-- Телефон: сверху — назад и счётчик -->
+      <div class="lg:hidden absolute top-[12px] left-[12px] right-[12px] flex items-center gap-[8px] pointer-events-none">
+        <NuxtLink :to="{ path: '/list-announ', query: route.query }" aria-label="Списком"
+          class="pointer-events-auto h-[40px] px-[14px] rounded-full bg-white shadow-md text-[14px] font-semibold text-[#152242] flex items-center gap-[6px] no-underline">
+          <font-awesome-icon :icon="['fas', 'list']" /> Списком
+        </NuxtLink>
+        <span v-if="!loading" class="pointer-events-auto h-[40px] px-[14px] rounded-full bg-white/95 shadow-md text-[13.5px] text-[#334155] flex items-center">
+          {{ onMap.length }} на карте
+        </span>
+      </div>
+
+      <!-- Телефон: выбранное объявление снизу (наведения на тач-экране нет) -->
+      <button v-if="selected" @click="openAnnoun(selected)" data-test="map-sheet"
+        class="lg:hidden absolute left-[12px] right-[12px] bottom-[44px] flex gap-[10px] p-[10px] rounded-[16px] bg-white shadow-[0_10px_30px_rgba(15,23,42,0.25)] text-left">
+        <div class="w-[96px] h-[76px] rounded-[10px] overflow-hidden bg-[#e2e8f0] shrink-0">
+          <img v-if="selected.pictures?.[0]" :src="photoUrl(selected, 'small')" class="w-full h-full object-cover" alt="" />
+        </div>
+        <div class="min-w-0 flex-1">
+          <div class="text-[16px] font-bold text-[#152242]">{{ formatNumber(selected.price) }} с.<span class="text-[12px] font-normal text-[#64748b]">{{ priceSuffix(selected) }}</span></div>
+          <div class="text-[13px] font-semibold text-[#0468ff] line-clamp-2 leading-[1.3]">{{ selected.title || selected.type_object }}</div>
+          <div class="text-[12px] text-[#64748b] truncate">{{ facts(selected) }}</div>
+        </div>
+        <span class="self-center text-[#0468ff]"><font-awesome-icon :icon="['fas', 'chevron-right']" /></span>
+      </button>
+    </div>
   </div>
 </template>
 
 <script setup>
+useHead({ title: 'Объявления на карте' })
 
-// import { onMounted, defineProps } from 'vue'
-let coords = []
-let announ = []
-// const filteredData = JSON.parse(sessionStorage.getItem('filter'))
-let arr = []
-const router = useRouter()
 const route = useRoute()
-function goBack(){
-  router.back()
-}
-
-const data = ref([])
-async function getAnnouns(filter){
-    data.value = []
-    await fetch('http://127.0.0.1:8000/api/get_announs',{
-        method:'post',
-        headers:{
-            "Content-Type":'application/json',
-            Authorization: `Bearer ${JSON.parse(localStorage.getItem('token'))}`
-        },
-        body:JSON.stringify(filter)
-    })
-    .then(res=>res.json())
-    .then(res=>{
-      let uniqueSet = new Set(res[0].map(JSON.stringify));
-      res[0] = Array.from(uniqueSet).map(JSON.parse)
-      let uniqPicture = new Set(res[1].map(JSON.stringify));
-      res[1]= Array.from(uniqPicture).map(JSON.parse)
-        for (let i = 0; i < res[0].length; i++) {
-            if (res[1][i].length > 0) {
-                res[0][i]['image'] = res[1][i] 
-            }
-        }
-        data.value = res[0];
-        console.log(res);
-        coords=res[2]
-        announ=res[0]
-        for (let i = 0; i < announ.length; i++) {
-          if (coords[i][0] == res[0][i]['coord_x']&&coords[i][1] == res[0][i]['coord_y']) {
-            arr.push(res[0][i])
-          }
-        }
-        
-    })
-    let ownerWithAd = []
-    for (let i = 0; i < data.value.length; i++) {
-        ownerWithAd.push(data.value[i].owner_id);
-        
-    }
-    await fetch('http://127.0.0.1:8000/api/get_user_with_announ',{
-        method:'post',
-        headers:{
-            "Content-Type":'application/json'
-        },
-        body:JSON.stringify({owner_id:ownerWithAd})
-    })
-    .then(res=>res.json())
-    .then(res=>{
-        ownerWithAd = res[1]
-        // announWithUser = res[0]
-    })
-    
-    for (let i = 0; i < data.value.length; i++) {
-        for (let j = 0; j < ownerWithAd.length; j++) { 
-            if (data.value[i].owner_id == ownerWithAd[j].id) {
-                data.value[i].owner = ownerWithAd[j]
-            }
-        }
-
-    }
-}
-
-
-
-
-// Пропсы: список городов и цветов
-const hash ='0123456789abcdefgh'
-console.log(arr);
-
-const props = defineProps({
-  cities: {
-    type: Array,
-    default: () => [
-      { name: 'Душанбе', color: 'red' },
-      { name: 'Вахдат', color: 'blue' },
-      { name: 'Гиссар', color: 'green' },
-      { name: 'Вашгирд', color: 'pink' },
-      { name: 'Варзоб', color: '' },
-    ]
-  },
-  error: Object,
-  center: {
-    type: Array,
-    default: () => [38.559772, 68.787038] // Центр Таджикистана
-  },
-  zoom: {
-    type: Number,
-    default: 9
-  }
-})
-
-// Показываем навбар (если используешь)
+const router = useRouter()
 const { showNavBar } = useSwitch()
 showNavBar.value = true
 
+const items = ref([])
+const loading = ref(true)
+const error = ref('')
+const mapReady = ref(false)
+const activeId = ref(null)
+const selected = ref(null)
+const cardEls = {}
 
-onMounted(() => {
-  
-  getAnnouns(route.query)
-  
-  const checkYMaps = setInterval(() => {
-  if (window.ymaps) {
-    clearInterval(checkYMaps)
+// Границы Таджикистана: по ним центрируем карту, чтобы одна точка с ошибочным адресом не отдаляла всё до соседних стран
+const TJ = { lat: [36.6, 41.1], lon: [67.3, 75.2] }
+const hasCoords = (a) => a.coord_x && a.coord_y && !Number.isNaN(+a.coord_x) && !Number.isNaN(+a.coord_y)
+const onMap = computed(() => items.value.filter(hasCoords))
+const withoutCoords = computed(() => items.value.length - onMap.value.length)
+const filterLabel = computed(() => (Object.keys(route.query).length ? describeFilters(route.query) : ''))
 
-    window.ymaps.ready(() => {
-      const myMap = new window.ymaps.Map('map-yandex', {
-        center: coords[0] || [0, 0], // Центрируем на первой координате, если есть
-        zoom: 10,
-        controls: ['zoomControl', 'fullscreenControl'],
-        type:'yandex#map'
+const photoUrl = (a, size) => `${apiBase()}/api/image/${size}/${a.pictures[0].pictures}`
+function facts(a) {
+  const area = a.total_area || a.house_area || a.building_area
+  return [a.type_object, a.quantity_room && `${a.quantity_room}-комн.`, area && `${area} м²`,
+    a.floor && a.floor_in_house && `${a.floor}/${a.floor_in_house} эт.`].filter(Boolean).join(' · ')
+}
+// Коротко для ценника на карте: 650 000 → «650 тыс.», 1 250 000 → «1,3 млн»
+function shortPrice(p) {
+  p = Number(p) || 0
+  if (p >= 1e6) return `${(p / 1e6).toLocaleString('ru-RU', { maximumFractionDigits: 1 })} млн`
+  if (p >= 1e4) return `${Math.round(p / 1e3)} тыс.`
+  return p.toLocaleString('ru-RU')
+}
+
+function openAnnoun(a) {
+  router.push(`/show_announ-${a.id}`)
+}
+
+// --- Данные: тот же поиск, что и в списке, с теми же фильтрами из адреса
+async function load() {
+  loading.value = true
+  error.value = ''
+  try {
+    const all = []
+    let page = 1
+    let last = 1
+    do {
+      const res = await fetch(`${apiBase()}/api/announs/search`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json', ...(getToken() ? { Authorization: 'Bearer ' + getToken() } : {}) },
+        body: JSON.stringify({ ...route.query, page, perPage: 50 }),
       })
-
-      coords.forEach((coord, index) => {
-        const announ = arr[index]
-        const placemark = new window.ymaps.Placemark(coord, {
-          hintContent: `
-          <div id="announs" class='w-[200px] mb-1 text-primary h-[150px] flex flex-col truncate items-center'>
-            <strong>${announ.title||'no title'}</strong>
-            ${announ.image.length?
-            `<img class='w-full h-full' src="http://127.0.0.1:8000/api/image/large/${announ.image[Math.floor(Math.random()*announ.image.length)].pictures}" width="100">`
-            :''}
-            <p>${announ.deal_type=='Аренда'?announ.deal_type+'плата:':'ценна:'} ${announ.price} сомони</p>
-          </div>
-          `,
-          balloonContent: `Координаты: ${coord.join(', ')}`
-        })
-
-        myMap.geoObjects.add(placemark)
-      })
-    })
-    
+      if (!res.ok) throw new Error()
+      const json = await res.json()
+      all.push(...json.data)
+      last = json.last_page
+      page++
+    } while (page <= last && page <= 10) // не больше 500 точек — карте этого хватает
+    items.value = all
+  } catch (e) {
+    error.value = 'Не удалось загрузить объявления'
+  } finally {
+    loading.value = false
   }
-}, 1500)
-console.log(document.querySelectorAll('#announs'));
+}
 
+// --- Карта
+let map = null
+let clusterer = null
+const placemarks = {}
 
+function waitForYmaps() {
+  return new Promise((resolve) => {
+    const tick = () => (window.ymaps ? window.ymaps.ready(resolve) : setTimeout(tick, 200))
+    tick()
+  })
+}
+
+function initMap() {
+  const ymaps = window.ymaps
+  map = new ymaps.Map('map-yandex', { center: [38.56, 68.79], zoom: 11, controls: ['zoomControl', 'geolocationControl', 'fullscreenControl'] }, { suppressMapOpenBlock: true })
+
+  // рядом стоящие объявления собираются в кружок с числом; клик по нему приближает
+  clusterer = new ymaps.Clusterer({
+    preset: 'islands#invertedBlueClusterIcons',
+    groupByCoordinates: false,
+    clusterDisableClickZoom: false,
+    clusterOpenBalloonOnClick: false,
+    gridSize: 64,
+  })
+  map.geoObjects.add(clusterer)
+  mapReady.value = true
+  drawPlacemarks()
+  // карта меряет контейнер в момент создания — после того как вёрстка устоялась, пересчитываем (иначе полоса справа)
+  setTimeout(fitMap, 300)
+}
+
+function fitMap() {
+  map?.container.fitToViewport()
+}
+
+function drawPlacemarks() {
+  if (!map) return
+  const ymaps = window.ymaps
+  clusterer.removeAll()
+  Object.keys(placemarks).forEach((k) => delete placemarks[k])
+
+  // Ценник-маркер; при наведении (на карточку слева или сам маркер) — активный стиль.
+  // {{ }} в шаблонах Яндекса экранирует HTML, так что заголовок из объявления безопасен
+  const PriceLayout = ymaps.templateLayoutFactory.createClass(
+    '<div class="ym-price{% if properties.active %} ym-price--active{% endif %}">{{ properties.priceLabel }}</div>',
+  )
+  // Карточка при наведении на маркер
+  const HintLayout = ymaps.templateLayoutFactory.createClass(
+    '<div class="ym-hint">' +
+      '{% if properties.photo %}<img class="ym-hint__img" src="{{ properties.photo }}" alt="">{% endif %}' +
+      '<div class="ym-hint__body">' +
+        '<div class="ym-hint__price">{{ properties.priceFull }}</div>' +
+        '<div class="ym-hint__title">{{ properties.title }}</div>' +
+        '<div class="ym-hint__facts">{{ properties.facts }}</div>' +
+        '<div class="ym-hint__more">Нажмите, чтобы открыть →</div>' +
+      '</div>' +
+    '</div>',
+  )
+  const touch = window.matchMedia('(hover: none)').matches
+
+  for (const a of onMap.value) {
+    const label = shortPrice(a.price)
+    const pm = new ymaps.Placemark([+a.coord_x, +a.coord_y], {
+      priceLabel: label,
+      priceFull: `${formatNumber(a.price)} сомони${priceSuffix(a)}`,
+      title: a.title || a.type_object || 'Объявление',
+      facts: facts(a),
+      photo: a.pictures?.[0] ? photoUrl(a, 'small') : '',
+      hintContent: a.title || ' ',
+      active: false,
+    }, {
+      iconLayout: PriceLayout,
+      // область, по которой ловятся наведение и клик: ценник стоит над точкой и растёт с длиной цены
+      iconShape: { type: 'Rectangle', coordinates: [[-(label.length * 4.5 + 14), -38], [label.length * 4.5 + 14, 0]] },
+      hintLayout: touch ? undefined : HintLayout,
+      openHintOnHover: !touch,
+      hasBalloon: false,
+    })
+    pm.events.add('mouseenter', () => setActive(a.id, true))
+    pm.events.add('mouseleave', () => setActive(null))
+    pm.events.add('click', () => {
+      // на телефоне первое нажатие показывает карточку снизу, переход — по нажатию на неё
+      if (touch) selected.value = a
+      else openAnnoun(a)
+    })
+    placemarks[a.id] = pm
+    clusterer.add(pm)
+  }
+
+  // центрируем по точкам в Таджикистане; если таких нет — по всем
+  const inside = onMap.value.filter((a) => +a.coord_x >= TJ.lat[0] && +a.coord_x <= TJ.lat[1] && +a.coord_y >= TJ.lon[0] && +a.coord_y <= TJ.lon[1])
+  const points = (inside.length ? inside : onMap.value).map((a) => [+a.coord_x, +a.coord_y])
+  if (points.length === 1) map.setCenter(points[0], 14)
+  else if (points.length > 1) map.setBounds(ymaps.util.bounds.fromPoints(points), { checkZoomRange: true, zoomMargin: 60 })
+}
+
+function setActive(id, fromMap = false) {
+  if (activeId.value && placemarks[activeId.value]) placemarks[activeId.value].properties.set('active', false)
+  activeId.value = id
+  if (id && placemarks[id]) placemarks[id].properties.set('active', true)
+  // навели на маркер — показываем его карточку в списке
+  if (id && fromMap) cardEls[id]?.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+}
+
+watch(() => route.query, () => load(), { deep: true })
+watch(onMap, () => drawPlacemarks())
+
+onMounted(async () => {
+  load()
+  window.addEventListener('resize', fitMap)
+  await waitForYmaps()
+  initMap()
 })
-
-
+onUnmounted(() => {
+  window.removeEventListener('resize', fitMap)
+  map?.destroy()
+  map = null
+})
 </script>
+
 <style scoped>
-#map-yandex::after {
-  content: "";
+.map-page {
+  height: calc(100vh - 70px);
+}
+</style>
+
+<!-- Не scoped: эти элементы рисует Яндекс.Карта вне компонента -->
+<style>
+.ym-price {
   position: absolute;
-  top: 50px; 
-  /* bottom: 0; */
-  left: 0;
-  width: 100%; 
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.1); /* затемнение */
-  pointer-events: none;
-  z-index: 1000;
-}</style>
-
-
+  transform: translate(-50%, calc(-100% - 6px));
+  white-space: nowrap;
+  padding: 5px 10px;
+  border-radius: 999px;
+  background: #fff;
+  color: #152242;
+  font: 700 13px/1.2 'Trebuchet MS', Arial, sans-serif;
+  box-shadow: 0 3px 10px rgba(15, 23, 42, 0.22);
+  border: 1.5px solid #fff;
+  cursor: pointer;
+  transition: transform .12s, background-color .12s, color .12s;
+}
+.ym-price::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-bottom: 0;
+  border-top-color: #fff;
+}
+.ym-price--active {
+  background: #0468ff;
+  color: #fff;
+  border-color: #0468ff;
+  transform: translate(-50%, calc(-100% - 6px)) scale(1.12);
+  z-index: 10;
+}
+.ym-price--active::after {
+  border-top-color: #0468ff;
+}
+.ym-hint {
+  width: 250px;
+  background: #fff;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 12px 32px rgba(15, 23, 42, 0.25);
+  font-family: 'Trebuchet MS', Arial, sans-serif;
+  transform: translate(-50%, calc(-100% - 52px));
+}
+.ym-hint__img {
+  display: block;
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+  background: #e2e8f0;
+}
+.ym-hint__body {
+  padding: 10px 12px 12px;
+}
+.ym-hint__price {
+  font-size: 17px;
+  font-weight: 700;
+  color: #152242;
+}
+.ym-hint__title {
+  margin-top: 3px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #0468ff;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.ym-hint__facts {
+  margin-top: 3px;
+  font-size: 12px;
+  color: #64748b;
+}
+.ym-hint__more {
+  margin-top: 6px;
+  font-size: 11.5px;
+  color: #94a3b8;
+}
+</style>

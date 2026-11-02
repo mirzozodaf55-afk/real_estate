@@ -20,7 +20,7 @@ export default function getData(){
     const show_video = useState('show_video',()=>false)
     const loadImage = useState('loadImage',()=>false)
 
-    // const token = useState('token',()=>JSON.parse(localStorage.getItem('token'))) 
+    // const token = useState('token',()=>getToken()) 
      
     return{
         show_video,

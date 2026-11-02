@@ -11,5 +11,8 @@ class NotifyMe extends Model
         'user_id',
         'filters',
     ];
+
+    protected $casts = ['filters' => 'array'];
+
     use HasFactory;
 }

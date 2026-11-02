@@ -1,711 +1,482 @@
 <template>
     <main>
-        <section class="w-full">
-            <div class="pt-8  relative w-full" style="height:490px;">
-        <div class="absolute top-0 left-0 bottom-0 z-2 w-full h-full bg-black/30">
-        </div>
-        <div class="w-full h-full bg-cover block absolute top-0 left-0 z-1 bg-no-repeat bg-center" style="background-image: url('http://127.0.0.1:8000/api/image/large/photo.jpeg');"></div>    
-        <div class="relative z-3 py-0 px-16 mt-20">
-            <div class="relative my-0 mx-auto w-100 max-w-6xl">
-                <div class="relative z-5">
-                    <div class="my-0 mx-auto">
-                        <div class="mb-10 text-white font-bold text-4xl" style="text-shadow:0 2px 4px rgba(0,0,0,.5);line-height: 1.21;"> 
-                            Если недвижимость, то Циан
-                        </div>
-                        <ul class="list flex m-0 p-0 list-none">
-                            <li :class="filter.dealType == type.value ? 'select' : '' " @click="isActive(type)" v-for="type of dealType" :key="type.name" class="cursor-pointer font-bold bg-black/40 items"  style="padding: 9px 16px 16px; margin-bottom:-8px; border-radius:4px 4px 0 0;" >{{ type.name }}</li>
-                        </ul>
+        <!-- z-10 и без overflow-hidden: выпадающие панели должны выходить за нижний край блока -->
+        <section class="hero relative z-10 w-full">
+            <div class="absolute inset-0 overflow-hidden pointer-events-none">
+                <!-- Фото фона загружает админ (Админка → Оформление); поверх — затемнение, чтобы белый текст читался -->
+                <template v-if="site.hero_image">
+                    <div class="absolute inset-0 bg-cover bg-center" :style="{ backgroundImage: `url('${site.hero_image}')` }" data-test="hero-photo"></div>
+                    <div class="absolute inset-0" :style="{ background: heroOverlay }"></div>
+                </template>
+                <template v-else>
+                    <div class="absolute -top-[120px] -right-[80px] w-[420px] h-[420px] rounded-full bg-[#38bdf8]/25 blur-[90px]"></div>
+                    <div class="absolute -bottom-[160px] left-[10%] w-[380px] h-[380px] rounded-full bg-[#6366f1]/25 blur-[90px]"></div>
+                </template>
+            </div>
 
-                        <div class="flex relative w-[100%] rounded-lg bg-white" style=" height:60px; box-shadow: 0 10px 20px 0 rgba(0,0,0,.1)">
-                            <div  class="flex w-full">
-                                <div class="form-select relative hover:bg-sky-100" style="height:100%; border-right:1px solid #f4f4f4; min-width:140px; max-width:316px;">
-                                    <button @click="showCategory" class="text-btn truncate" style="border-top-left-radius:8px; line-height:1.22; border-bottom-left-radius: 8px;">
-                                        {{ route.query.typeObject }}
-                                    </button>
+            <div class="relative max-w-[1160px] mx-auto px-[24px] pt-[64px] pb-[72px]">
+                <h1 class="m-0 text-white font-bold text-[40px] leading-[1.15] tracking-[-0.01em] max-w-[720px]">
+                    Найдите жильё, которое подходит именно вам
+                </h1>
+                <p class="mt-[12px] mb-[32px] text-[17px] text-white/80 max-w-[620px]">
+                    Квартиры, дома и коммерческая недвижимость — купить, снять надолго или посуточно
+                </p>
 
-                                    <div class="drop-down radio-group  ml-[-12px]" v-if="showCat">
-                                        <div style="margin-top:16px;">
-                                            <div class="flex flex-wrap" style="margin-top:-4px;margin-bottom:-4px;">
+                <div class="flex flex-wrap items-center justify-between gap-[12px] mb-[12px]">
+                    <div class="inline-flex p-[4px] rounded-[12px] bg-white/15 backdrop-blur-sm" role="tablist">
+                        <button v-for="deal of DEALS" :key="deal.value" type="button" role="tab"
+                            :aria-selected="form.dealType === deal.value" @click="setDeal(deal.value)"
+                            class="px-[18px] h-[38px] rounded-[9px] text-[15px] font-semibold transition-colors"
+                            :class="form.dealType === deal.value ? 'bg-white text-[#152242] shadow-sm' : 'text-white hover:bg-white/15'">
+                            {{ deal.label }}
+                        </button>
+                    </div>
+                    <button type="button" @click="postAnnoun"
+                        class="h-[38px] px-[16px] rounded-[10px] border border-white/40 text-white text-[14px] font-semibold hover:bg-white hover:text-[#0468ff] transition-colors">
+                        <font-awesome-icon :icon="['fas', 'plus']" class="mr-[6px]" />Разместить объявление
+                    </button>
+                </div>
 
-                                                <input type="radio" class="btn-check" name="options" id="option1" :checked="showR">
-                                                <label @click="showRes" style="margin-top:-4px; margin-bottom:4px; border-top-left-radius:5px;border-bottom-left-radius:5px;" class="cursor-pointer px-2 py-1 border-1" for="option1">Жилая</label>
+                <form ref="card" @submit.prevent="submit"
+                    class="relative bg-white rounded-[16px] shadow-[0_20px_50px_rgba(2,12,40,0.25)] p-[8px] grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1.25fr_1fr_1.1fr_1.6fr_auto] gap-[4px]">
 
-                                                <input type="radio" class="btn-check" name="options" id="option2"  :checked="showC" >
-                                                <label @click="showRes" style="margin-top:-4px; margin-bottom:4px; border-top-right-radius:5px;border-bottom-right-radius:5px;" class="cursor-pointer px-2 py-1 border-1" for="option2">Коммерческая</label>
-                                            </div>
-
-                                            <Commercial v-if="!showR"/>
-                                            <Resident v-if="showR"/>
-                                        </div>
-                                    </div>
-                                </div>
-
-
-                                <div class="form-select quantity-room relative hover:bg-sky-100"  style="height:100%; border-right:1px solid #f4f4f4; min-width:140px; max-width:316px;">
-                                    <button @click="showQuantity" class="text-btn truncate">{{quantityRoom.join('-')+' комнать'}}</button>
-                                    <DesktopQuantityRoom v-if="showQuan"/>
-                                </div>
-
-                                <div class="w-[156px]">
-                                    <button @click="showPrice" class="form-select hover:bg-sky-100 h-[100%] border-0" style="color:#7A7A7A; font-size:14px; box-shadow:none;">Цена</button>
-                                    <DesktopPrice v-if="showP"/>
-                                </div>
-
-                                <div style="flex:1 0 380px;border-left:1px solid silver" >
-                                    <div class="relative ">
-                                        <div class="relative">
-                                            <input @input="getCity" v-model="city"  @click="search" class="addres text-[16px] overflow-hidden" type="text" maxlength="255" autocomplete="off" placeholder="Город, адрес, район, улица и др.">
-                                        </div>
-                                    </div>
-                                </div>
+                    <!-- Тип недвижимости -->
+                    <div class="relative">
+                        <button type="button" class="field" :class="{ 'field-open': panel === 'type' }" @click="toggle('type')" data-test="field-type">
+                            <span class="field-label">Тип недвижимости</span>
+                            <span class="field-value">{{ form.typeObject || 'Любой тип' }}</span>
+                            <font-awesome-icon :icon="['fas', 'chevron-down']" class="field-chevron" :class="{ 'rotate-180': panel === 'type' }" />
+                        </button>
+                        <div v-if="panel === 'type'" class="panel w-[300px]">
+                            <div class="grid grid-cols-2 p-[3px] rounded-[10px] bg-[#f1f5f9] mb-[10px]">
+                                <button v-for="c of CATEGORIES" :key="c.value" type="button" @click="category = c.value"
+                                    class="h-[32px] rounded-[8px] text-[14px] font-semibold transition-colors"
+                                    :class="category === c.value ? 'bg-white text-[#152242] shadow-sm' : 'text-[#64748b]'">{{ c.label }}</button>
                             </div>
-
+                            <button v-for="t of typeOptions" :key="t || 'any'" type="button" @click="setType(t)"
+                                class="option" :class="{ 'option-active': form.typeObject === t }">
+                                <span class="radio" :class="{ 'radio-on': form.typeObject === t }"></span>
+                                {{ t || 'Любой тип' }}
+                            </button>
                         </div>
-                        <div class="flex w-[100%] justify-flex-end items-flex-end">
-                            <span class="flex grow justify-end">
-                                <span class="relative cursor-pointer" style="margin:12px 0 0;">
-                                    <a class="bg-white
-                                     flex
-                                     justify-center
-                                     transition
-                                     
-                                     border-0 rounded
-                                     py-0 px-[16px] min-w-[112px]
-                                     h-[40px]
-                                     text-[#152242]
-                                     font-bold
-                                     items-center
-                                     hover:text-[#0468ff]
-                                     "
-                                     
-                                     style="line-height:40px; text-decoration:none;" href="#">Показать на карте</a>
-                                </span>
-                                <button @click="next" class="relative cursor-pointer" style="margin:12px 0 0; margin-left:8px;">
-                                    <a class="
-                                     flex
-                                     justify-center
-                                     
-                                     transition
-                                     border-0 rounded
-                                     py-0 px-[16px] min-w-[112px]
-                                     h-[40px]
-                                     font-semibold
-                                     items-center
-                                     bg-[#0468ff]
-                                     text-base
-                                     hover:bg-[#055de1]
-                                     text-white
-                                     "
-                                     style="font-family: Lato,Arial,sans-serif; line-height:40px;
-                                      text-decoration:none;" href="#">Найти</a>
+                    </div>
+
+                    <!-- Комнаты -->
+                    <div class="relative">
+                        <button type="button" class="field" :class="{ 'field-open': panel === 'rooms', 'opacity-50': !roomsApply }" :disabled="!roomsApply"
+                            @click="toggle('rooms')" data-test="field-rooms" :title="roomsApply ? '' : 'Не применяется к этому типу'">
+                            <span class="field-label">Комнаты</span>
+                            <span class="field-value">{{ roomsLabel }}</span>
+                            <font-awesome-icon :icon="['fas', 'chevron-down']" class="field-chevron" :class="{ 'rotate-180': panel === 'rooms' }" />
+                        </button>
+                        <div v-if="panel === 'rooms'" class="panel w-[260px]">
+                            <div class="text-[13px] text-[#64748b] mb-[10px]">Можно выбрать несколько</div>
+                            <div class="flex gap-[8px]">
+                                <button v-for="r of ROOMS" :key="r.value" type="button" @click="toggleRoom(r.value)" :aria-pressed="form.quantityRoom.includes(r.value)"
+                                    class="flex-1 h-[40px] rounded-[10px] border text-[15px] font-semibold transition-colors"
+                                    :class="form.quantityRoom.includes(r.value) ? 'bg-[#0468ff] border-[#0468ff] text-white' : 'border-[#e2e8f0] text-[#152242] hover:border-[#0468ff]'">
+                                    {{ r.label }}
                                 </button>
-                            </span>
+                            </div>
                         </div>
                     </div>
-                </div>
+
+                    <!-- Цена -->
+                    <div class="relative">
+                        <button type="button" class="field" :class="{ 'field-open': panel === 'price' }" @click="toggle('price')" data-test="field-price">
+                            <span class="field-label">Цена, сомони</span>
+                            <span class="field-value">{{ priceLabel }}</span>
+                            <font-awesome-icon :icon="['fas', 'chevron-down']" class="field-chevron" :class="{ 'rotate-180': panel === 'price' }" />
+                        </button>
+                        <div v-if="panel === 'price'" class="panel w-[300px]">
+                            <div class="flex items-center gap-[8px]">
+                                <input :value="formatNumber(form.priceFrom)" @input="setPrice('priceFrom', $event)" inputmode="numeric" placeholder="от" data-test="price-from"
+                                    class="w-full h-[40px] px-[12px] rounded-[10px] border border-[#e2e8f0] outline-none focus:border-[#0468ff] text-[15px]" />
+                                <span class="text-[#94a3b8]">—</span>
+                                <input :value="formatNumber(form.priceTo)" @input="setPrice('priceTo', $event)" inputmode="numeric" placeholder="до" data-test="price-to"
+                                    class="w-full h-[40px] px-[12px] rounded-[10px] border border-[#e2e8f0] outline-none focus:border-[#0468ff] text-[15px]" />
+                            </div>
+                            <button v-if="form.priceFrom || form.priceTo" type="button" @click="form.priceFrom = form.priceTo = ''"
+                                class="mt-[10px] text-[13px] text-[#0468ff] hover:underline">Сбросить цену</button>
+                        </div>
+                    </div>
+
+                    <!-- Поиск по тексту объявления -->
+                    <label class="field cursor-text">
+                        <span class="field-label">Поиск</span>
+                        <input v-model="form.q" @focus="panel = null" type="text" maxlength="255" autocomplete="off" data-test="field-q"
+                            placeholder="Район, улица или ключевое слово"
+                            class="w-full bg-transparent outline-none text-[15px] text-[#152242] placeholder:text-[#94a3b8] p-0 border-0" />
+                    </label>
+
+                    <div class="flex gap-[6px] p-[2px] sm:col-span-2 lg:col-span-1">
+                        <button type="button" @click="openMap" title="Показать на карте" aria-label="Показать на карте"
+                            class="h-[56px] w-[56px] shrink-0 rounded-[12px] bg-[#f1f5f9] text-[#152242] hover:bg-[#e2e8f0] transition-colors grid place-items-center">
+                            <font-awesome-icon :icon="['fas', 'location-dot']" class="text-[18px]" />
+                        </button>
+                        <button type="submit" data-test="submit"
+                            class="h-[56px] flex-1 lg:flex-none px-[26px] rounded-[12px] bg-[#0468ff] hover:bg-[#0353cc] text-white text-[16px] font-bold transition-colors">
+                            <font-awesome-icon :icon="['fas', 'magnifying-glass']" class="mr-[8px]" />Найти
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <div class="bg-[#f4f6fb] pb-[56px]">
+            <div class="max-w-[1160px] mx-auto px-[24px]">
+                <!-- Новые объявления -->
+                <section class="pt-[36px]">
+                    <div class="flex items-end justify-between gap-[12px] mb-[16px]">
+                        <div>
+                            <h2 class="m-0 text-[26px] font-bold text-[#152242]">Новые объявления</h2>
+                            <p class="text-[14px] text-[#64748b] mt-[4px] mb-0">Только что опубликованные — проверены модератором</p>
+                        </div>
+                        <NuxtLink to="/list-announ" class="shrink-0 h-[40px] px-[16px] rounded-[10px] border border-[#e2e8f0] bg-white text-[14px] font-semibold text-[#152242] flex items-center gap-[8px] no-underline hover:border-[#0468ff] hover:text-[#0468ff]">
+                            Все объявления <font-awesome-icon :icon="['fas', 'arrow-right']" class="text-[12px]" />
+                        </NuxtLink>
+                    </div>
+
+                    <div v-if="latestLoading" class="grid grid-cols-2 lg:grid-cols-4 gap-[16px]">
+                        <div v-for="n in 4" :key="n" class="h-[290px] rounded-[18px] bg-[#e2e8f0] animate-pulse"></div>
+                    </div>
+                    <div v-else-if="!latest.length" class="rounded-[18px] bg-white border border-[#e8edf3] p-[32px] text-center">
+                        <p class="text-[16px] font-semibold text-[#152242] m-0">Пока нет опубликованных объявлений</p>
+                        <p class="text-[14px] text-[#64748b] mt-[4px] mb-[14px]">Станьте первым — это займёт пару минут</p>
+                        <button type="button" @click="postAnnoun" class="h-[42px] px-[18px] rounded-[10px] bg-[#0468ff] text-white text-[14px] font-semibold">Разместить объявление</button>
+                    </div>
+                    <div v-else class="grid grid-cols-2 lg:grid-cols-4 gap-[16px]" data-test="home-latest">
+                        <NuxtLink v-for="a of latest" :key="a.id" :to="`/show_announ-${a.id}`"
+                            class="group rounded-[18px] bg-white border overflow-hidden no-underline transition-shadow hover:shadow-[0_12px_32px_rgba(15,23,42,0.1)]"
+                            :class="a.promo_active === 'vip' ? 'promo-vip border-[#f5c451]' : 'border-[#e8edf3]'">
+                            <div class="relative aspect-[4/3] bg-[#e2e8f0] overflow-hidden">
+                                <img v-if="a.pictures?.[0]" :src="`${apiBase()}/api/image/medium/${a.pictures[0].pictures}`"
+                                    class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.04]" alt="" loading="lazy" />
+                                <div v-else class="w-full h-full grid place-items-center text-[#94a3b8] text-[26px]"><font-awesome-icon :icon="['far', 'image']" /></div>
+                                <div class="absolute left-[10px] top-[10px] flex gap-[6px]">
+                                    <span v-if="a.promo_active === 'vip'" class="promo-badge-vip px-[7px] py-[2px] rounded-[8px] text-[11.5px] font-extrabold text-[#5b3a00] shadow-sm"><font-awesome-icon :icon="['fas', 'crown']" class="text-[9px] mr-[3px]" />VIP</span>
+                                    <span v-else-if="a.promo_active === 'top'" class="px-[7px] py-[2px] rounded-[8px] bg-[#0468ff] text-[11.5px] font-extrabold text-white shadow-sm"><font-awesome-icon :icon="['fas', 'arrow-up']" class="text-[9px] mr-[3px]" />ТОП</span>
+                                    <span class="px-[8px] py-[2px] rounded-[8px] bg-white text-[12px] font-semibold text-[#152242] shadow-sm">{{ dealLabel(a) }}</span>
+                                </div>
+                                <span v-if="a.pictures?.length > 1" class="absolute right-[10px] bottom-[10px] px-[7px] py-[1px] rounded-[8px] bg-black/55 text-white text-[11px]">
+                                    <font-awesome-icon :icon="['fas', 'camera']" class="text-[10px]" /> {{ a.pictures.length }}
+                                </span>
+                            </div>
+                            <div class="p-[12px]">
+                                <div class="text-[18px] font-bold text-[#152242]">{{ formatNumber(a.price) }} <span class="text-[13px]">сомони</span><span class="text-[12px] font-normal text-[#64748b]">{{ priceSuffix(a) }}</span></div>
+                                <div class="text-[14px] font-semibold text-[#0468ff] line-clamp-1 mt-[2px]">{{ a.title || a.type_object }}</div>
+                                <div class="text-[12.5px] text-[#64748b] truncate mt-[3px]">{{ announFacts(a) }}</div>
+                                <div v-if="a.address" class="text-[12px] text-[#94a3b8] truncate mt-[4px]"><font-awesome-icon :icon="['fas', 'location-dot']" class="mr-[3px]" />{{ a.address }}</div>
+                            </div>
+                        </NuxtLink>
+                    </div>
+                </section>
+
+                <!-- Промо -->
+                <section class="pt-[44px] grid grid-cols-1 lg:grid-cols-2 gap-[16px]">
+                    <div class="relative overflow-hidden rounded-[20px] p-[26px] bg-gradient-to-br from-[#0468ff] to-[#4f46e5] text-white">
+                        <div class="absolute -right-[40px] -bottom-[60px] w-[220px] h-[220px] rounded-full bg-white/10"></div>
+                        <div class="relative">
+                            <div class="text-[13px] font-semibold text-white/75 uppercase tracking-[0.08em]">Собственникам</div>
+                            <h3 class="m-0 mt-[6px] text-[22px] font-bold leading-tight">Разместите объявление бесплатно</h3>
+                            <p class="text-[14.5px] text-white/85 mt-[8px] mb-[18px] max-w-[380px]">Укажите адрес на карте, добавьте фото — ИИ поможет написать описание. После проверки модератором объявление увидят все.</p>
+                            <button type="button" @click="postAnnoun" class="h-[44px] px-[20px] rounded-[12px] bg-white text-[#0468ff] text-[15px] font-bold hover:bg-[#eef4ff]">
+                                <font-awesome-icon :icon="['fas', 'plus']" class="mr-[6px]" />Разместить
+                            </button>
+                        </div>
+                    </div>
+                    <NuxtLink to="/yandex-map" class="relative overflow-hidden rounded-[20px] p-[26px] bg-white border border-[#e8edf3] no-underline group">
+                        <div class="absolute right-[18px] top-1/2 -translate-y-1/2 w-[150px] h-[150px] rounded-full bg-[#eef4ff] grid place-items-center text-[#0468ff] text-[54px] transition-transform group-hover:scale-105">
+                            <font-awesome-icon :icon="['fas', 'map-location-dot']" />
+                        </div>
+                        <div class="relative max-w-[60%]">
+                            <div class="text-[13px] font-semibold text-[#64748b] uppercase tracking-[0.08em]">Поиск по карте</div>
+                            <h3 class="m-0 mt-[6px] text-[22px] font-bold leading-tight text-[#152242]">Смотрите объявления рядом с нужным местом</h3>
+                            <p class="text-[14.5px] text-[#64748b] mt-[8px] mb-[18px]">Цены прямо на карте, фото — при наведении.</p>
+                            <span class="inline-flex items-center gap-[8px] h-[44px] px-[20px] rounded-[12px] bg-[#0468ff] text-white text-[15px] font-bold">Открыть карту <font-awesome-icon :icon="['fas', 'arrow-right']" class="text-[13px]" /></span>
+                        </div>
+                    </NuxtLink>
+                </section>
+
+                <!-- Быстрые ссылки -->
+                <section class="pt-[44px]">
+                    <h2 class="m-0 mb-[16px] text-[26px] font-bold text-[#152242]">Быстрые ссылки</h2>
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-[16px]">
+                        <div v-for="g of QUICK_LINKS" :key="g.title" class="rounded-[18px] bg-white border border-[#e8edf3] p-[18px]">
+                            <div class="text-[16px] font-bold text-[#152242] mb-[8px]">{{ g.title }}</div>
+                            <ul class="list-none m-0 p-0 flex flex-col">
+                                <li v-for="l of g.links" :key="l.label">
+                                    <NuxtLink :to="{ path: '/list-announ', query: l.query }"
+                                        class="flex items-center justify-between py-[7px] text-[14.5px] text-[#334155] no-underline hover:text-[#0468ff]">
+                                        {{ l.label }} <font-awesome-icon :icon="['fas', 'chevron-right']" class="text-[10px] text-[#cbd5e1]" />
+                                    </NuxtLink>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Как это работает -->
+                <section class="pt-[44px]">
+                    <h2 class="m-0 mb-[16px] text-[26px] font-bold text-[#152242]">Как это работает</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-[16px]">
+                        <div v-for="(s, i) of STEPS" :key="s.title" class="rounded-[18px] bg-white border border-[#e8edf3] p-[20px]">
+                            <div class="flex items-center gap-[12px]">
+                                <span class="w-[42px] h-[42px] rounded-[12px] bg-[#eef4ff] text-[#0468ff] grid place-items-center text-[17px]"><font-awesome-icon :icon="['fas', s.icon]" /></span>
+                                <span class="text-[13px] font-bold text-[#94a3b8]">Шаг {{ i + 1 }}</span>
+                            </div>
+                            <h3 class="m-0 mt-[12px] text-[17px] font-bold text-[#152242]">{{ s.title }}</h3>
+                            <p class="text-[14px] text-[#64748b] mt-[6px] mb-0 leading-[1.55]">{{ s.text }}</p>
+                        </div>
+                    </div>
+                </section>
             </div>
         </div>
-    </div> 
-        </section>
-
-        <section>
-            <div class="max-h-[100vh] mb-[20px] container-2xl" >
-                <div class=" h-full ">
-
-                <h2 class="
-                overflow-hidden
-                font-bold
-                whitespace-nowrap
-                text-elipsis
-                text-[26px]
-                leading-[33px]
-                mx-2
-                font-[550]
-
-                " style="font-family: Lato,Arial,sans-serif;  margin:20px 0 16px;">Полезные ссылки</h2>
-
-                <div class="grid frid-rows-4 ">
-                    <div class="flex w-[100%] mt-2 h-[200px] ">
-                        <div class="w-[50%] overflow-hidden rounded-[4px] flex h-full m-2 mx-2 shadow" >
-                            <div class="w-[50%] h-full ">
-                                <img class="w-full h-full " src="https://i.ytimg.com/vi/zumJJUL_ruM/maxresdefault.jpg" alt="">
-                            </div>
-                            <div class="w-[50%] h-full ">
-                                <div class="relative box-border bg-center bg-cover w-full h-full" style="padding:17px 16px 12px 24px;">
-                                    <h5 style="margin: 0 0 3px;" class="text-[black] font-bold text-[16px] leading-[18px]">
-                                        Купить квартиру
-                                    </h5>
-                                    <ul class="m-0 p-0 list-none">
-                                        <li style="margin-bottom:2px;">
-                                            <a style="font-family:Lato,Arial,sans-serif; border-bottom:1px solid transparent;" class="no-underline min-h-[18px] font-[100] text-[14px] text-[#2b87db] leading-[18px] transition cursor-pointer " href="#">1 - комнатные</a>
-                                            <span class="ml-[7px] text-[#7a7a7a] text-[13px]">0</span>
-
-                                        </li>
-                                        <li style="margin-bottom:2px;">
-                                            <a style="font-family:Lato,Arial,sans-serif; border-bottom:1px solid transparent;" class="no-underline min-h-[18px] font-[100] text-[14px] text-[#2b87db] leading-[18px] transition cursor-pointer " href="#">2 - комнатные</a>
-                                            <span class="ml-[7px] text-[#7a7a7a] text-[13px]">0</span>
-                                        </li>
-                                        <li style="margin-bottom:2px;">
-                                            <a style="font-family:Lato,Arial,sans-serif; border-bottom:1px solid transparent;" class="no-underline min-h-[18px] font-[100] text-[14px] text-[#2b87db] leading-[18px] transition cursor-pointer " href="#">3 - комнатные</a>
-                                            <span class="ml-[7px] text-[#7a7a7a] text-[13px]">0</span>
-                                        </li>
-                                        <li style="margin-bottom:2px;">
-                                            <a style="font-family:Lato,Arial,sans-serif; border-bottom:1px solid transparent;"
-                                            class="no-underline min-h-[18px] font-[100] text-[14px] text-[#2b87db] leading-[18px] transition cursor-pointer " href="#">
-                                            Свободная планировка</a>
-                                            <span class="ml-[7px] text-[#7a7a7a] text-[13px]">0</span>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="w-[50%] flex h-full overflow-hidden m-2 rounded-[4px] shadow" >
-                            <div class="w-[50%] h-full ">
-                                <img class="w-full h-full " src="https://foyr.com/learn/wp-content/uploads/2021/12/how-to-choose-the-exterior-colors-of-a-house.png" alt="">
-                            </div>
-                            <div class="w-[50%] h-full ">
-                                <div class="relative box-border bg-center bg-cover w-full h-full" style="padding:17px 16px 12px 24px;">
-                                    <h5 style="margin: 0 0 3px;" class="text-[black] font-bold text-[16px] leading-[18px]">
-                                        Снять квартиру
-                                    </h5>
-                                    <ul class="m-0 p-0 list-none">
-                                        <li style="margin-bottom:2px;">
-                                            <a style="font-family:Lato,Arial,sans-serif; border-bottom:1px solid transparent;" class="no-underline min-h-[18px] font-[100] text-[14px] text-[#2b87db] leading-[18px] transition cursor-pointer " href="#">1 - комнатные</a>
-                                            <span class="ml-[7px] text-[#7a7a7a] text-[13px]">0</span>
-                                        </li>
-                                        <li style="margin-bottom:2px;">
-                                            <a style="font-family:Lato,Arial,sans-serif; border-bottom:1px solid transparent;" class="no-underline min-h-[18px] font-[100] text-[14px] text-[#2b87db] leading-[18px] transition cursor-pointer " href="#">2 - комнатные</a>
-                                            <span class="ml-[7px] text-[#7a7a7a] text-[13px]">0</span>
-                                        </li>
-                                        <li style="margin-bottom:2px;">
-                                            <a style="font-family:Lato,Arial,sans-serif; border-bottom:1px solid transparent;" class="no-underline min-h-[18px] font-[100] text-[14px] text-[#2b87db] leading-[18px] transition cursor-pointer " href="#">3 - комнатные</a>
-                                            <span class="ml-[7px] text-[#7a7a7a] text-[13px]">0</span>
-
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex w-[100%] mt-2 h-[200px] ">
-                        <div class="w-[50%] flex h-full overflow-hidden m-2 rounded-[4px] shadow" >
-                            <div class="w-[50%] h-full ">
-                                <img class="w-full h-full " src="https://assets.thesparksite.com/uploads/sites/205/2021/02/pexels-photo-1396122.jpeg" alt="">
-                            </div>
-                            <div class="w-[50%] h-full ">
-                                <div class="relative box-border bg-center bg-cover w-full h-full" style="padding:17px 16px 12px 24px;">
-                                    <h5 style="margin: 0 0 3px;" class="text-[black] font-bold text-[16px] leading-[18px]">
-                                        Снять посуточно
-                                    </h5>
-                                    <ul class="m-0 p-0 list-none">
-                                        <li style="margin-bottom:2px;">
-                                            <a style="font-family:Lato,Arial,sans-serif; border-bottom:1px solid transparent;" class="no-underline min-h-[18px] font-[100] text-[14px] text-[#2b87db] leading-[18px] transition cursor-pointer " href="#">Квартиры посуточно</a>
-                                            <span class="ml-[7px] text-[#7a7a7a] text-[13px]">0</span>
-                                        </li>
-                                        <li style="margin-bottom:2px;">
-                                            <a style="font-family:Lato,Arial,sans-serif; border-bottom:1px solid transparent;" class="no-underline min-h-[18px] font-[100] text-[14px] text-[#2b87db] leading-[18px] transition cursor-pointer " href="#">Коттеджи на сутки</a>
-                                            <span class="ml-[7px] text-[#7a7a7a] text-[13px]">0</span>
-                                        </li>
-                                        <li style="margin-bottom:2px;">
-                                            <a style="font-family:Lato,Arial,sans-serif; border-bottom:1px solid transparent;" class="no-underline min-h-[18px] font-[100] text-[14px] text-[#2b87db] leading-[18px] transition cursor-pointer " href="#">Комнаты на сутки </a>
-                                            <span class="ml-[7px] text-[#7a7a7a] text-[13px]">0</span>
-
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="w-[50%] flex h-full overflow-hidden m-2 rounded-[4px] shadow" >
-                            <div class="w-[50%] h-full ">
-                                <img class="w-full h-full " src="https://lh3.googleusercontent.com/ls8o3EBkV3cRF6MoXXXtiUxXVQErWvEiVDRdp2ghaN9CulBqPbpV604k2Eg46PFsWh7lGXPh7XiEsEmCs7HmoAl0PvLzxyUceXr9xbDNpwic3xOBREOnXyESBlvxmA9L17LfPJAL" alt="">
-                            </div>
-                            <div class="w-[50%] h-full ">
-                                <div class="relative box-border bg-center bg-cover w-full h-full" style="padding:17px 16px 12px 24px;">
-                                    <h5 style="margin: 0 0 3px;" class="text-[black] font-bold text-[16px] leading-[18px]">
-                                        Коммерческая недвижимость
-                                    </h5>
-                                    <ul class="m-0 p-0 list-none">
-                                        <li style="margin-bottom:2px;">
-                                            <a style="font-family:Lato,Arial,sans-serif;
-                                            border-bottom:1px solid transparent;"
-                                            class="no-underline min-h-[18px] font-[100]
-                                            text-[14px] text-[#2b87db] leading-[18px]
-                                            transition cursor-pointer " href="#">
-                                            Купить склад</a>
-                                            <span class="ml-[7px] text-[#7a7a7a] text-[13px]">0</span>
-                                        </li>
-                                        <li style="margin-bottom:2px;">
-                                            <a style="font-family:Lato,Arial,sans-serif; border-bottom:1px solid transparent;"
-                                            class="no-underline min-h-[18px] font-[100] text-[14px] text-[#2b87db] leading-[18px] 
-                                            transition cursor-pointer " href="#">Купить офис</a>
-                                            <span class="ml-[7px] text-[#7a7a7a] text-[13px]">0</span>
-                                        </li>
-                                        <li style="margin-bottom:2px;">
-                                            <a style="font-family:Lato,Arial,sans-serif; border-bottom:1px solid transparent;"
-                                            class="no-underline min-h-[18px] font-[100] text-[14px] text-[#2b87db] leading-[18px]
-                                            transition cursor-pointer " href="#">Арендовать офис</a>
-                                            <span class="ml-[7px] text-[#7a7a7a] text-[13px]">0</span>
-                                        </li>
-                                        <li style="margin-bottom:2px;">
-                                            <a style="font-family:Lato,Arial,sans-serif; border-bottom:1px solid transparent;"
-                                            class="no-underline min-h-[18px] font-[100] text-[14px] text-[#2b87db] leading-[18px]
-                                            transition cursor-pointer " href="#">Арендовать помещение</a>
-                                            <span class="ml-[7px] text-[#7a7a7a] text-[13px]">0</span>
-                                        </li>
-                                        <li style="margin-bottom:2px;">
-                                            <a style="font-family:Lato,Arial,sans-serif; border-bottom:1px solid transparent;"
-                                            class="no-underline min-h-[18px] font-[100] text-[14px] text-[#2b87db] leading-[18px]
-                                            transition cursor-pointer " href="#">Арендовать торговую площадь</a>
-                                            <span class="ml-[7px] text-[#7a7a7a] text-[13px]">0</span>
-                                        </li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                </div>
-            </div>
-        </section>
-<section class="mt-[19px]">
-    <div class="w-full mx-[auto]  mt-[10px] h-[max-content]">
-                    <div class="h-full mt-[120px]"> 
-                    <span style="font-family:Lato,Arial,sans-serif;" 
-                    class="mx-[10px] block text-[#152242]
-                    font-bold text-[28px]">Могут подойти</span>
-                    </div>
-            
-            <div class="mt-[24px] w-full mx-auto w-full mb-[10px]">
-                <div class="flex justify-center flex-basis-[25%]">
-                    <div class="mx-[10px] basis-1/4">
-                                <div class="my-[10px] ">  
-                                    <a href="#" class="block overflow-hidden border rounded-[12px]  h-[350px] no-underline">
-                                        <div class="h-[75%]">
-                                            <div class="flex relative w-full h-full">
-                                                <div class="w-full h-full m-0 p-0 relative items-scretch">
-                                                    <img class="h-full w-full" src="https://images.adsttc.com/media/images/5014/01bd/28ba/0d3b/4500/0b8c/large_jpg/stringio.jpg?1414576505" alt="">
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div style="margin:8px 12px 12px;" class="flex flex-col">
-                                            <span class="font-bold leading-[22px] text-[22px] text-[#152242] block ">1500 c</span>
-                                            <span class="overflow-hidden text-[#152242] text-[16px] leading-[24px] text-ellipsis whitespace-nowrap">
-                                                1-комн. кв. 23м 4/5 этаж
-                                            </span>
-                                            <span class="overflow-hidden mt-1 text-[rgba(21,34,66,.6)] text-[17px]">Душанбе</span>
-                                        </div>
-                                    </a>
-                                </div>
-                    </div>
-                    <div class="mx-[10px] basis-1/4">
-                        <div class="my-[10px] ">
-                                    <a href="#" class="block overflow-hidden border rounded-[12px]  h-[350px] no-underline">
-                                        <div class="h-[75%]">
-                                            <div class="flex relative w-full h-full">
-                                                <div class="w-full h-full m-0 p-0 relative items-scretch">
-                                                    <img class="h-full w-full" src="https://img.freepik.com/premium-vector/vector-living-room-interior-with-big-windows-sofa-armchair-with-old-style-pendulum-clock_730604-489.jpg?w=2000" alt="">
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div style="margin:8px 12px 12px;" class="flex flex-col">
-                                            <span class="font-bold leading-[22px] text-[22px] text-[#152242] block ">1500 c</span>
-                                            <span class="overflow-hidden text-[#152242] text-[16px] leading-[24px] text-ellipsis whitespace-nowrap">
-                                                1-комн. кв. 23м 4/5 этаж
-                                            </span>
-                                            <span class="overflow-hidden mt-1 text-[rgba(21,34,66,.6)] text-[17px]">Хучанд</span>
-                                        </div>
-                                    </a>
-                                </div>
-                    </div>
-                    <div class="mx-[10px] basis-1/4">
-                        <div class="my-[10px] ">
-                                    <a href="#" class="block overflow-hidden border rounded-[12px]  h-[350px] no-underline">
-                                        <div class="h-[75%]">
-                                            <div class="flex relative w-full h-full">
-                                                <div class="w-full h-full m-0 p-0 relative items-scretch">
-                                                    <img class="h-full w-full" src="https://media.istockphoto.com/id/1142747548/photo/modern-house-interior-design.jpg?s=170667a&w=0&k=20&c=mBDJY0o0fojTcvfKBfp6qbKcRB0BmHbA4IRqSDF72uU=" alt="">
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div style="margin:8px 12px 12px;" class="flex flex-col">
-                                            <span class="font-bold leading-[22px] text-[22px] text-[#152242] block ">1500 c</span>
-                                            <span class="overflow-hidden text-[#152242] text-[16px] leading-[24px] text-ellipsis whitespace-nowrap">
-                                                1-комн. кв. 23м 4/5 этаж
-                                            </span>
-                                            <span class="overflow-hidden mt-1 text-[rgba(21,34,66,.6)] text-[17px]">Варзоб</span>
-
-                                        </div>
-                                    </a>
-                                </div>
-                    </div>
-                    <div class="mx-[10px] basis-1/4">
-                        <div class="my-[10px] ">
-                                    <a href="#" class="block overflow-hidden border rounded-[12px] h-[350px] no-underline">
-                                        <div class="h-[75%]">
-                                            <div class="flex relative w-full h-full">
-                                                <div class="w-full h-full m-0 p-0 relative items-scretch">
-                                                    <img class="h-full w-full" src="https://images.unsplash.com/photo-1604014237800-1c9102c219da?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OXx8aG91c2UlMjBpbnRlcmlvcnxlbnwwfHwwfHx8MA%3D%3D&w=1000&q=80" alt="">
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div style="margin:8px 12px 12px;" class="flex flex-col">
-                                            <span class="font-bold leading-[22px] text-[22px] text-[#152242] block ">1500 c</span>
-                                            <span class="overflow-hidden text-[#152242] text-[16px] leading-[24px] text-ellipsis whitespace-nowrap">
-                                                1-комн. кв. 23м 4/5 этаж
-                                            </span>
-                                            <span class="overflow-hidden mt-1 text-[rgba(21,34,66,.6)] text-[17px]">Айни</span>
-                                        </div>
-                                    </a>
-                                </div>
-                    </div>
-                </div>
-                <div class="flex justify-center basis-[25%] ">
-                    <div class="mx-[10px] basis-1/4">
-                        <div class=" my-[10px] ">
-                                    <a href="#" class="block overflow-hidden border rounded-[12px]  h-[350px] no-underline">
-                                        <div class="h-[75%]">
-                                            <div class="flex relative w-full h-full">
-                                                <div class="w-full h-full m-0 p-0 relative items-scretch">
-                                                    <img class="h-full w-full" src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1WFFDg4MyR3YxQPpL2MegAxGGCh6cE1NDoSqPRI_qp-HNBR-I0Az-8ax-YymnKvckHg4&usqp=CAU" alt="">
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div style="margin:8px 12px 12px;" class="flex flex-col">
-                                            <span class="font-bold leading-[22px] text-[22px] text-[#152242] block ">1500 c</span>
-                                            <span class="overflow-hidden text-[#152242] text-[16px] leading-[24px] text-ellipsis whitespace-nowrap">
-                                                1-комн. кв. 23м 4/5 этаж
-                                            </span>
-                                            <span class="overflow-hidden mt-1 text-[rgba(21,34,66,.6)] text-[17px]">Бохтар</span>
-                                        </div>
-                                    </a>
-                                </div>
-                    </div>
-                    <div class="mx-[10px] basis-1/4">
-                        <div class="my-[10px]">
-                                    <a href="#" class="block overflow-hidden border rounded-[12px]  h-[350px] no-underline">
-                                        <div class="h-[75%]">
-                                            <div class="flex relative w-full h-full">
-                                                <div class="w-full h-full m-0 p-0 relative items-scretch">
-                                                    <img class="h-full w-full" src="https://media.gettyimages.com/id/157193888/photo/luxury-home-interior.jpg?s=612x612&w=gi&k=20&c=lkJ2V1HcTqcgVtFMayKPG1XDFwtUJsqt2ZstSShAU3E=" alt="">
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div style="margin:8px 12px 12px;" class="flex flex-col">
-                                            <span class="font-bold leading-[22px] text-[22px] text-[#152242] block ">1500 c</span>
-                                            <span class="overflow-hidden text-[#152242] text-[16px] leading-[24px] text-ellipsis whitespace-nowrap">
-                                                1-комн. кв. 23м 4/5 этаж
-                                            </span>
-                                            <span class="overflow-hidden mt-1 text-[rgba(21,34,66,.6)] text-[17px]">Вахдат</span>
-                                        </div>
-                                    </a>
-                                </div>
-                    </div>
-                    <div class="mx-[10px] basis-1/4">
-                        <div class="my-[10px] ">
-                                    <a href="#" class="block overflow-hidden border rounded-[12px] h-[350px] no-underline">
-                                        <div class="h-[75%]">
-                                            <div class="flex relative w-full h-full">
-                                                <div class="w-full h-full m-0 p-0 relative items-scretch">
-                                                    <img class="h-full w-full" src="https://www.mydomaine.com/thmb/Y8PWyIprwISsOVMXTYX05K3XJcw=/1080x0/filters:no_upscale():strip_icc()/TheBradburyProject-e8a49ddbbe43459e8dfe7359e0512082.jpg" alt="">
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div style="margin:8px 12px 12px;" class="flex flex-col">
-                                            <span class="font-bold leading-[22px] text-[22px] text-[#152242] block ">1500 c</span>
-                                            <span class="overflow-hidden text-[#152242] text-[16px] leading-[24px] text-ellipsis whitespace-nowrap">
-                                                1-комн. кв. 23м 4/5 этаж
-                                            </span>
-                                            <span class="overflow-hidden mt-1 text-[rgba(21,34,66,.6)] text-[17px]">Гисар</span>
-                                        </div>
-                                    </a>
-                                </div>
-                    </div>
-                    <div class="mx-[10px] basis-1/4">
-                            <div class="my-[10px] ">
-                                    <a href="#" class=" block overflow-hidden border rounded-[12px] h-[350px] no-underline">
-                                        <div class="h-[75%]">
-                                            <div class="flex relative w-full h-full">
-                                                <div class="w-full h-full m-0 p-0 relative items-scretch">
-                                                    <img class="h-full w-full" src="https://img.atlasobscura.com/tOzOP0kmp5WAau5Zb3JPPlFqRhahsP9k7LEMmDK_iJU/rt:fit/w:1280/q:81/sm:1/scp:1/ar:1/aHR0cHM6Ly9hdGxh/cy1kZXYuczMuYW1h/em9uYXdzLmNvbS91/cGxvYWRzL2Fzc2V0/cy81YmI4OWQ1NTJm/ZjNkMDM1ZjVfc2h1/dHRlcnN0b2NrXzE1/NjA3MTcxLmpwZw.jpg" alt="">
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div style="margin:8px 12px 12px;" class="flex flex-col">
-                                            <span class="font-bold leading-[22px] text-[22px] text-[#152242] block ">1500 c</span>
-                                            <span class="overflow-hidden text-[#152242] text-[16px] leading-[24px] text-ellipsis whitespace-nowrap">
-                                                1-комн. кв. 23м 4/5 этаж
-                                            </span>
-                                            <span class="overflow-hidden mt-1 text-[rgba(21,34,66,.6)] text-[17px]">Вандж</span>
-                                        </div>
-                                    </a>
-                            </div>
-                    </div>
-                </div>
-            </div>
-    </div>
-
- </section>
     </main>
     
 </template>
 <script setup>
-    const {typeObject,quantityRoom, direction,mobileOrDesktop } = getData()
-    const {active,showMadoal,isShow} = useSwitch()
-    // const {typeButton} = data()
-    
-    
-    const router = useRouter()
-    const route = useRoute()
-    const filter = {
-        'typeObject':route.query.typeObject || 'Квартира',
-        'dealType':route.query.dealType || 'Продажа',
-        // 'quantityRoom':route.query.quantityRoom || '',
-    }
-    
-    
-    // filter.dealType = 'Продажа'
-    // filter.typeObject = 'Квартира в новостройке'
-    // filter.quantityRoom = []
+const router = useRouter()
+const route = useRoute()
+const { direction } = getData()
+const { showMadoal } = useSwitch()
+const { user } = getUserByServer(getToken())
+const { settings: site } = useSiteSettings()
+const heroOverlay = computed(() => heroOverlayStyle(site.value.hero_overlay))
 
-const dealType = ref([
-    {name:'Купить', value:"Продажа"},
-    {name:'Снять', value:"Аренда"},
-    {name:'Посуточно',value:'Посуточно'},
-    {name:'Оценить',value:'Оценить'},
-    {name:'fРазместить объявление',value:'Разместить объявление'},
-])
+// Те же значения, что понимает страница списка (ListAnnouns) и сервер (App\Services\AnnounFilter)
+const DEALS = [
+    { label: 'Купить', value: 'Продажа' },
+    { label: 'Снять', value: 'Аренда' },
+    { label: 'Посуточно', value: 'Посуточно' },
+]
+const CATEGORIES = [{ label: 'Жилая', value: 'residential' }, { label: 'Коммерческая', value: 'commercial' }]
+const RESIDENTIAL = ['Квартира', 'Квартира в Новостройке', 'Комната', 'Дом/Дача', 'Коттедж', 'Часть дома', 'Участок']
+const COMMERCIAL = ['Офис', 'Здание', 'Торговая площадь', 'Склад', 'Коммерческая земля']
+const ROOMS = [{ label: '1', value: '1' }, { label: '2', value: '2' }, { label: '3', value: '3' }, { label: '4+', value: '4' }]
+// Комнатность бессмысленна для участков, комнат и коммерческих объектов
+const NO_ROOMS = ['Комната', 'Участок', ...COMMERCIAL]
 
+// Одно состояние формы на весь блок; заполняется из URL, чтобы «назад» со списка вернул прежний поиск
+const asArray = (v) => (v === undefined || v === null || v === '' ? [] : Array.isArray(v) ? v : [v])
+const form = reactive({
+    dealType: DEALS.some((d) => d.value === route.query.dealType) ? route.query.dealType : 'Продажа',
+    typeObject: route.query.typeObject ?? 'Квартира',
+    quantityRoom: asArray(route.query.quantityRoom).map(String),
+    priceFrom: String(route.query.priceFrom || route.query.min_price || ''),
+    priceTo: String(route.query.priceTo || route.query.max_price || ''),
+    q: route.query.q || '',
+})
+const category = ref(COMMERCIAL.includes(form.typeObject) ? 'commercial' : 'residential')
 
-// setTimeout(()=>{
+const typeOptions = computed(() => {
+    const list = category.value === 'commercial' ? COMMERCIAL
+        // новостройки только продаются
+        : RESIDENTIAL.filter((t) => t !== 'Квартира в Новостройке' || form.dealType === 'Продажа')
+    return ['', ...list]
+})
+const roomsApply = computed(() => !NO_ROOMS.includes(form.typeObject))
 
-// },100)
-const showP = ref(false)
-const showCat = ref(false)
-const showQuan = ref(false)
-function isActive(type){
-    const lists = document.querySelectorAll('.list-none > .items');
-    lists.forEach( (item) => {
-        if (item.textContent == type.name) {
-            item.classList.add('select')
-            showQuan.value = showCat.value = showP.value = false
-        } else {
-            item.classList.remove('select')
-        }
-        if (type.name == 'Разместить объявление') {
-                
-                document.body.style.overflow ='hidden';
-                direction.value = '/announ'
-                showMadoal.value = true 
-                localStorage.removeItem('announ')
-        }
-    })
-    filter.dealType = type.value
-    // sessionStorage.setItem('filter',JSON.stringify(filter))
-    router.push({
-        path:'/',
-        query:{...filter}
-    })
-    
-}
-// watchEffect((value) => {
-//   router.replace({
-//     path:'/',
-//     query:{...route.query}
-//   })
-//   loadDataFromQuery(route.query)
-
-// }, { immediate: true  })
-
-function showCategory() {
-    showP.value = false
-
-    showCat.value = !showCat.value;
-    showQuan.value = false;
-}
-function showQuantity(){
-    showCat.value = false;
-    showQuan.value = !showQuan.value;
-    showP.value = false
-}
-
-
-// const showC = ref(false)
-const showR = ref(true)
-function showRes(){    
-    filter.realEstate = event.target.textContent
-    filter.realEstate == 'Жилая'? showR.value = true:showR.value = false;
-    
-    
-}
-
-
-function showPrice(){
-    showP.value = !showP.value;
-    showCat.value = false;
-    showQuan.value = false;
- 
-}
-
-const city = ref('')
-
-function search(){
-    showCat.value = false;
-    showQuan.value = false;
-    showP.value = false
-}
-
-function getCity(){
-    filter.city = city.value
-    sessionStorage.setItem('filter', JSON.stringify(filter))
-}
-
-// const {isShow} = useSwitch() 
-async function next(){
-    isShow.value = false
-
-    await new Promise(resolve => setTimeout(resolve, 0));
-    console.log(route.query);
-    
-    await router.push({
-        path:`/list-announ`,
-        query:
-            route.query
-        
-    })
-    
-}
-onMounted(() => {
-  // Заполняем filter из URL query при первой загрузке
-  Object.assign(filter, route.query)
-  router.replace({
-        path:'/',
-        query:{...route.query}
-    })
-  // Если хочешь преобразовать строки в массивы, делай это тут
-  if (typeof filter.quantityRoom === 'string') {
-    filter.quantityRoom = [filter.quantityRoom]
-  }
-
-  loadDataFromQuery(route.query)
+const roomsLabel = computed(() => {
+    if (!roomsApply.value || !form.quantityRoom.length) return 'Любое количество'
+    return [...form.quantityRoom].sort().map((r) => (r === '4' ? '4+' : r)).join(', ') + ' комн.'
+})
+const priceLabel = computed(() => {
+    const { priceFrom: from, priceTo: to } = form
+    if (from && to) return `${formatNumber(from)} – ${formatNumber(to)}`
+    if (from) return `от ${formatNumber(from)}`
+    if (to) return `до ${formatNumber(to)}`
+    return 'Любая'
 })
 
+// --- выпадающие панели: открыта не больше одной, закрываются кликом мимо и Esc
+const panel = ref(null)
+const card = ref(null)
+function toggle(name) {
+    panel.value = panel.value === name ? null : name
+}
+function onDocumentDown(e) {
+    if (panel.value && card.value && !card.value.contains(e.target)) panel.value = null
+}
+function onKey(e) {
+    if (e.key === 'Escape') panel.value = null
+}
+onMounted(() => {
+    document.addEventListener('mousedown', onDocumentDown)
+    document.addEventListener('keydown', onKey)
+})
+onUnmounted(() => {
+    document.removeEventListener('mousedown', onDocumentDown)
+    document.removeEventListener('keydown', onKey)
+})
 
-function loadDataFromQuery(query) {
-  console.log('Загрузка данных с параметрами:', query)
+function setDeal(value) {
+    form.dealType = value
+    if (value !== 'Продажа' && form.typeObject === 'Квартира в Новостройке') form.typeObject = 'Квартира'
+}
+function setType(value) {
+    form.typeObject = value
+    panel.value = null
+}
+function toggleRoom(value) {
+    const i = form.quantityRoom.indexOf(value)
+    i === -1 ? form.quantityRoom.push(value) : form.quantityRoom.splice(i, 1)
+}
+function setPrice(key, e) {
+    form[key] = e.target.value.replace(/\D/g, '').slice(0, 12)
+    // поле показывает число с пробелами — возвращаем отформатированное значение, иначе курсор «прыгает» по старому тексту
+    e.target.value = formatNumber(form[key])
+}
+
+function buildQuery() {
+    let { priceFrom, priceTo } = form
+    // «от 500 000 до 100 000» — пользователь перепутал поля, просто меняем местами
+    if (priceFrom && priceTo && Number(priceFrom) > Number(priceTo)) [priceFrom, priceTo] = [priceTo, priceFrom]
+    const query = {
+        dealType: form.dealType,
+        typeObject: form.typeObject,
+        quantityRoom: roomsApply.value ? [...form.quantityRoom].sort() : [],
+        priceFrom,
+        priceTo,
+        q: form.q.trim(),
+    }
+    for (const key of Object.keys(query)) {
+        const v = query[key]
+        if (v === '' || (Array.isArray(v) && !v.length)) delete query[key]
+    }
+    return query
+}
+async function goTo(path) {
+    panel.value = null
+    const query = buildQuery()
+    // запоминаем поиск в адресе главной — «назад» из списка вернёт заполненную форму
+    await router.replace({ path: '/', query })
+    router.push({ path, query })
+}
+const submit = () => goTo('/list-announ')
+const openMap = () => goTo('/yandex-map')
+
+const STEPS = [
+    { icon: 'magnifying-glass', title: 'Найдите вариант', text: 'Фильтры, поиск по карте и Domly-помощник подберут жильё под ваш бюджет и район.' },
+    { icon: 'comments', title: 'Напишите владельцу', text: 'Задайте вопросы в чате прямо на сайте или позвоните — контакты в объявлении.' },
+    { icon: 'circle-check', title: 'Договоритесь о просмотре', text: 'Все объявления проходят проверку модератором, фото сверяет ИИ.' },
+]
+
+// Свежие объявления — тот же поиск, что у списка, без фильтров
+const latest = ref([])
+const latestLoading = ref(true)
+onMounted(async () => {
+    try {
+        const res = await fetch(`${apiBase()}/api/announs/search`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+            body: JSON.stringify({ perPage: 8 }),
+        })
+        latest.value = res.ok ? (await res.json()).data : []
+    } catch (e) {
+        latest.value = []
+    } finally {
+        latestLoading.value = false
+    }
+})
+
+function postAnnoun() {
+    localStorage.removeItem('announ')
+    if (user.value?.id) {
+        router.push('/announ')
+    } else {
+        direction.value = '/announ'
+        showMadoal.value = true
+    }
 }
 </script>
 
-
 <style scoped>
-    .list > li{
-        color: white;
-    }
-    .flex > li:hover{
-        background-color: #fff;
-        color: black;
-    }
-    .quantity-room{
-        flex: 0 0 156px;
-        max-width: 156px;
-    }
-    .text-btn{
-    cursor: pointer;
-    border: none;
-    background: none;
-    padding: 16px 38px 20px 24px;
-    width: 100%;
-    overflow: hidden;
-    color: #121212;
-    font-size: 14px;
-    line-height: 1.15;
-    text-align: left;
-    /* text-overflow: ellipsis; */
-    /* white-space: nowrap; */
-    }
-    .drop-down{
+.hero {
+    background: linear-gradient(135deg, #0b1f4d 0%, #0a3a9e 55%, #0468ff 100%);
+}
+.field {
     position: relative;
-    left: 0;
-    z-index: 10;
-    /* margin-top: 5px; */
-    box-shadow: 0 10px 20px 0 rgba(0,0,0,.1);
-    border-radius: 4px;
-    background-color: #fff;
-    padding: 16px;
-    min-width: 300px;
-    }
-    .list-drop{
-    margin: 0;
     display: flex;
-    justify-content: space-around;
-    margin: 0;
-    padding: 0 ;
-    }
-    .list-drop > li >label{
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-    .list-drop > li > input:checked + label{
-        background-color: #e9f3fb;
-    }
-    .drop-btn{
-    cursor: pointer;
-    border: 1px solid #f4f4f4;
-    border-radius: 4px;
-    background: none;
-    width: 35px;
-    height: 35px;
-    color: #121212;
-    font-size: 16px;
-    text-align: center;
-    }
-    .radio-group input:checked + label{
-        background-color: #f4f4f4;
-    }
-    .price-btn{
-    cursor: pointer;
-    border: none;
-    background: none;
-    padding: 20px 38px 20px 24px;
+    flex-direction: column;
+    justify-content: center;
     width: 100%;
-    overflow: hidden;
-    color: #121212;
-    font-size: 14px;
-    line-height: 1.43;
+    height: 60px;
+    padding: 0 40px 0 16px;
+    border: 0;
+    border-radius: 12px;
+    background: transparent;
     text-align: left;
-    text-overflow: ellipsis;
+    transition: background-color .15s;
+}
+.field:not(:disabled):hover,
+.field-open,
+.field:focus-within {
+    background: #f1f5f9;
+}
+.field-label {
     white-space: nowrap;
-    }
-    .addres{
-    cursor: text;
-    border: none;
-    background: none;
-    padding: 20px 24px;
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 2px;
+}
+.field-value {
+    font-size: 15px;
+    font-weight: 600;
+    color: #152242;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.field-chevron {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    margin-top: -6px;
+    font-size: 12px;
+    color: #94a3b8;
+    transition: transform .15s;
+}
+.panel {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    z-index: 30;
+    max-width: calc(100vw - 32px);
+    padding: 14px;
+    border-radius: 14px;
+    background: #fff;
+    border: 1px solid #e8edf3;
+    box-shadow: 0 16px 40px rgba(15, 23, 42, .18);
+}
+.option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
     width: 100%;
-    height: 100%;
-    border: none;
-    outline: none;
-    overflow: hidden;
-    color: #121212;
-    line-height: 1.43;
-    font-family: inherit;
+    padding: 9px 10px;
+    border: 0;
+    border-radius: 8px;
+    background: none;
+    font-size: 15px;
+    color: #152242;
     text-align: left;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    }
-
-    .select{
-        background-color:#f1f1f1;
-        color:#152242 !important;
-        font-weight: 900;
-    }
+}
+.option:hover {
+    background: #f1f5f9;
+}
+.option-active {
+    font-weight: 600;
+    color: #0468ff;
+}
+.radio {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    border: 2px solid #cbd5e1;
+}
+.radio-on {
+    border: 5px solid #0468ff;
+}
 </style>
-

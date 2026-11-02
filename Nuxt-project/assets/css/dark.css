@@ -1,0 +1,155 @@
+/*
+  Тёмная тема. Включается классом .dark на <html> (переключатель в шапке, composables/useTheme.js).
+  Компоненты написаны со светлой палитрой прямо в классах (bg-white, text-[#152242]…), поэтому здесь —
+  один слой, который перекрашивает эту палитру. Новые цвета в компонентах — добавлять сюда же.
+*/
+html.dark {
+  --d-page: #0b1220;
+  --d-surface: #131c2e;
+  --d-surface-2: #1b2539;
+  --d-surface-3: #243049;
+  --d-border: #26324a;
+  --d-text: #e6ebf3;
+  --d-text-2: #c3cbd9;
+  --d-muted: #9aa6ba;
+  --d-faint: #7a879c;
+  --d-accent-bg: rgba(59, 130, 246, .16);
+  color-scheme: dark;
+}
+
+html.dark body { background: var(--d-page); color: var(--d-text); }
+
+/* --- Фоны */
+html.dark .bg-white, html.dark .bg-\[white\], html.dark .bg-\[\#fff\] { background-color: var(--d-surface) !important; }
+/* полупрозрачная панель кнопок шагов подачи — только на телефоне (на компьютере она прозрачная, lg:bg-transparent) */
+@media (max-width: 1023px) { html.dark .bg-white\/95 { background-color: rgba(19, 28, 46, .95) !important; } }
+/* полупрозрачные белые кнопки и плашки поверх фото и карты (стрелки галереи, «повернуть фото»…) */
+html.dark .bg-white\/90, html.dark .bg-white\/70, html.dark .bg-white\/95:not([class*="lg:bg-transparent"]) { background-color: rgba(19, 28, 46, .9) !important; }
+html.dark .bg-\[\#f4f6fb\], html.dark .bg-\[\#f6f8fc\], html.dark .bg-\[\#f4f4f4\] { background-color: var(--d-page) !important; }
+html.dark .bg-\[\#f8fafc\], html.dark .bg-\[\#f1f5f9\], html.dark .bg-\[\#eef2f7\], html.dark .bg-\[\#e9eef5\] { background-color: var(--d-surface-2) !important; }
+html.dark .bg-\[\#e2e8f0\], html.dark .bg-\[\#cbd5e1\] { background-color: var(--d-surface-3) !important; }
+html.dark .bg-\[\#eef4ff\], html.dark .bg-\[\#eff6ff\], html.dark .bg-\[\#dbe8ff\], html.dark .bg-\[\#f5f9ff\] { background-color: var(--d-accent-bg) !important; }
+html.dark .bg-\[\#ecfdf5\], html.dark .bg-\[\#f0fdf4\], html.dark .bg-\[\#d1fae5\] { background-color: rgba(34, 197, 94, .14) !important; }
+html.dark .bg-\[\#fef2f2\], html.dark .bg-\[\#fef2f2\]\/60, html.dark .bg-\[\#fef2f2\]\/40 { background-color: rgba(239, 68, 68, .14) !important; }
+html.dark .bg-\[\#fffbeb\], html.dark .bg-\[\#fff7ed\] { background-color: rgba(245, 158, 11, .14) !important; }
+/* плашка вердикта внутри такой же цветной рамки (проверка фото в модерации) — чуть ярче фона, чтобы не сливалась */
+html.dark [data-test="photo-check"] .rounded-full { background-color: rgba(255, 255, 255, .08) !important; }
+html.dark .bg-\[\#eef2ff\], html.dark .bg-\[\#f5f3ff\], html.dark .bg-\[\#faf5ff\] { background-color: rgba(129, 140, 248, .16) !important; }
+html.dark .bg-\[\#ecfeff\] { background-color: rgba(34, 211, 238, .14) !important; }
+html.dark .bg-\[\#152242\] { background-color: #2b3a5c !important; }
+
+html.dark .hover\:bg-\[\#f8fafc\]:hover, html.dark .hover\:bg-\[\#f1f5f9\]:hover, html.dark .active\:bg-\[\#f1f5f9\]:active,
+html.dark .active\:bg-\[\#f8fafc\]:active, html.dark .hover\:bg-\[\#e2e8f0\]:hover { background-color: var(--d-surface-3) !important; }
+html.dark .hover\:bg-\[\#dbe8ff\]:hover { background-color: rgba(59, 130, 246, .26) !important; }
+html.dark .hover\:bg-\[\#fef2f2\]:hover { background-color: rgba(239, 68, 68, .2) !important; }
+html.dark .hover\:bg-\[\#d1fae5\]:hover { background-color: rgba(34, 197, 94, .22) !important; }
+html.dark .hover\:bg-\[\#f5f3ff\]:hover { background-color: rgba(139, 92, 246, .2) !important; }
+html.dark .hover\:bg-white:hover, html.dark .hover\:bg-white\/70:hover { background-color: var(--d-surface-3) !important; }
+
+/* мягкие градиенты-подложки (ИИ-панели) */
+html.dark .from-\[\#eef4ff\] { --tw-gradient-from: rgba(59, 130, 246, .14) var(--tw-gradient-from-position) !important; --tw-gradient-to: rgba(59, 130, 246, 0) var(--tw-gradient-to-position) !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }
+html.dark .to-\[\#f3e8ff\] { --tw-gradient-to: rgba(139, 92, 246, .16) var(--tw-gradient-to-position) !important; }
+html.dark .from-\[\#faf5ff\] { --tw-gradient-from: rgba(139, 92, 246, .12) var(--tw-gradient-from-position) !important; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to) !important; }
+html.dark .to-white { --tw-gradient-to: var(--d-surface) var(--tw-gradient-to-position) !important; }
+
+/* --- Текст */
+html.dark .text-\[\#152242\], html.dark .text-\[\#121212\], html.dark .text-\[\#0f172a\], html.dark .text-\[black\],
+html.dark .text-dark, html.dark .text-black { color: var(--d-text) !important; }
+html.dark .text-\[\#334155\], html.dark .text-\[\#475569\], html.dark .text-\[\#475258\] { color: var(--d-text-2) !important; }
+html.dark .text-\[\#64748b\], html.dark .text-\[\#7a7a7a\] { color: var(--d-muted) !important; }
+html.dark .text-\[\#94a3b8\] { color: var(--d-faint) !important; }
+html.dark .text-\[\#0468ff\], html.dark .text-\[\#2b87db\] { color: #6ea8ff !important; }
+html.dark .text-\[\#047857\], html.dark .text-\[\#059669\] { color: #4ade80 !important; }
+html.dark .text-\[\#dc2626\], html.dark .text-\[\#b91c1c\], html.dark .text-\[\#991b1b\] { color: #f87171 !important; }
+html.dark .text-\[\#b45309\], html.dark .text-\[\#92400e\], html.dark .text-\[\#d97706\], html.dark .text-\[\#ea580c\] { color: #fbbf24 !important; }
+html.dark .text-\[\#4338ca\], html.dark .text-\[\#3730a3\], html.dark .text-\[\#6d28d9\], html.dark .text-\[\#7c3aed\] { color: #a5b4fc !important; }
+html.dark .text-\[\#0e7490\] { color: #67e8f9 !important; }
+html.dark .hover\:text-\[\#152242\]:hover { color: #fff !important; }
+html.dark .hover\:text-\[\#0468ff\]:hover { color: #93c5fd !important; }
+
+/* --- Рамки */
+/* рамка без явного цвета (border, border-t… без border-[#…]) — иначе остаётся светлая по умолчанию */
+html.dark { --bs-border-color: var(--d-border); }
+html.dark :is(.border, .border-t, .border-b, .border-l, .border-r, .border-x, .border-y, .border-2, .border-1, .border-top, .border-bottom, .border-end, .border-start):not([class*="border-["]):not([class*="border-white"]) { border-color: var(--d-border) !important; }
+html.dark .border-\[\#e8edf3\], html.dark .border-\[\#e2e8f0\], html.dark .border-\[\#eef2f7\], html.dark .border-\[\#f1f5f9\],
+html.dark .border-\[\#eef0f4\], html.dark .border-\[\#e5e7eb\], html.dark .border-\[\#cbd5e1\], html.dark .border-\[\#e8e9ec\],
+html.dark .border-white { border-color: var(--d-border) !important; }
+html.dark .border-\[\#fecaca\], html.dark .border-\[\#fca5a5\] { border-color: rgba(248, 113, 113, .35) !important; }
+html.dark .border-\[\#bbf7d0\] { border-color: rgba(74, 222, 128, .3) !important; }
+html.dark .border-\[\#fde68a\] { border-color: rgba(251, 191, 36, .3) !important; }
+html.dark .border-\[\#c7d2fe\], html.dark .border-\[\#ddd6fe\], html.dark .border-\[\#e9d5ff\], html.dark .border-\[\#a5f3fc\], html.dark .border-\[\#bfdbfe\] { border-color: rgba(129, 140, 248, .35) !important; }
+html.dark .sm\:border-\[\#e5e7eb\], html.dark .md\:border-\[\#e8edf3\] { border-color: var(--d-border) !important; }
+html.dark .hover\:border-\[\#94a3b8\]:hover, html.dark .hover\:border-\[\#cbd5e1\]:hover { border-color: #3b4a66 !important; }
+
+/* --- Поля ввода (в том числе старые на Bootstrap) */
+html.dark input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]),
+html.dark textarea, html.dark select, html.dark .form-control, html.dark .form-select {
+  background-color: var(--d-surface) !important;
+  color: var(--d-text) !important;
+  border-color: var(--d-border) !important;
+}
+html.dark input.bg-transparent { background-color: transparent !important; }
+html.dark ::placeholder { color: #6b7890 !important; }
+html.dark .wz-input { background: var(--d-surface); border-color: var(--d-border); color: var(--d-text); }
+html.dark .wz-input--bad { border-color: rgba(248, 113, 113, .55) !important; }
+html.dark .wz-label, html.dark .wz-section-title { color: var(--d-text); border-color: var(--d-border); }
+
+/* --- Bootstrap */
+html.dark .dropdown-menu, html.dark .modal-content, html.dark .card, html.dark .list-group-item { background-color: var(--d-surface); color: var(--d-text); border-color: var(--d-border); }
+html.dark .dropdown-item { color: var(--d-text); }
+html.dark .dropdown-item:hover { background-color: var(--d-surface-3); color: #fff; }
+html.dark .btn-light, html.dark .bg-light { background-color: var(--d-surface-2) !important; color: var(--d-text) !important; border-color: var(--d-border) !important; }
+html.dark .shadow, html.dark .shadow-md, html.dark .shadow-lg { --tw-shadow-color: rgba(0, 0, 0, .5); }
+
+/* --- Шапка и боковое меню (стили в NavBar.client.vue заданы со светлым фоном) */
+html.dark #header-frontend .wrapper, html.dark #header-frontend .inner,
+html.dark #header-frontend .container-menu, html.dark #header-frontend .wrap { background: var(--d-surface) !important; border-color: var(--d-border) !important; }
+html.dark #header-frontend .name-page, html.dark #header-frontend .lists a, html.dark #header-frontend .buttons,
+html.dark #header-frontend .nav-bars, html.dark #header-frontend .btn { color: var(--d-text) !important; }
+html.dark #header-frontend .lists a:hover { color: #93c5fd !important; }
+html.dark .site-logo__word { color: var(--d-text) !important; }
+html.dark .site-logo__tld { color: #6ea8ff !important; }
+html.dark .navigations .service, html.dark .navigations .service a { color: var(--d-text) !important; }
+
+/* --- Поиск на главной (стили внутри Desktop/Page.client.vue) */
+html.dark .hero .field-value { color: var(--d-text); }
+html.dark .hero .field-label { color: var(--d-muted); }
+html.dark .hero .field:not(:disabled):hover, html.dark .hero .field-open, html.dark .hero .field:focus-within { background: var(--d-surface-2); }
+html.dark .hero .panel { background: var(--d-surface); border-color: var(--d-border); }
+html.dark .hero .option { color: var(--d-text); }
+html.dark .hero .option:hover { background: var(--d-surface-2); }
+html.dark .hero .option-active { color: #6ea8ff; }
+html.dark .hero .radio { border-color: #3b4a66; }
+
+/* --- Шаги подачи объявления и карта объявлений */
+html.dark .ym-price { background: var(--d-surface); color: var(--d-text); border-color: var(--d-surface); }
+html.dark .ym-price::after { border-top-color: var(--d-surface); }
+html.dark .ym-price--active { background: #0468ff; color: #fff; border-color: #0468ff; }
+html.dark .ym-price--active::after { border-top-color: #0468ff; }
+html.dark .ym-hint { background: var(--d-surface); }
+html.dark .ym-hint__price { color: var(--d-text); }
+html.dark .ym-hint__title { color: #6ea8ff; }
+
+/* платное продвижение (VIP/ТОП) — общие стили для обеих тем: золотая рамка и значок VIP */
+.promo-vip { box-shadow: 0 0 0 1px #f5c451, 0 10px 28px rgba(245, 180, 61, .18); }
+.promo-badge-vip { background: linear-gradient(135deg, #ffe08a 0%, #f5b83d 100%); }
+html.dark .promo-vip { box-shadow: 0 0 0 1px #d9a93a, 0 10px 28px rgba(217, 169, 58, .14); border-color: #d9a93a !important; }
+
+/* фон переписки с узором (светлый — ниже без html.dark: этот файл подключён всегда; рисунки — public/patterns) */
+.chat-doodles {
+  background: url('/patterns/doodles-light.svg') repeat, linear-gradient(160deg, #dbe7f8 0%, #e6e3f7 100%);
+  background-size: 270px 270px, auto;
+}
+html.dark .chat-doodles {
+  background: url('/patterns/doodles-dark.svg') repeat, linear-gradient(160deg, #0e1729 0%, #141d33 100%) !important;
+  background-size: 270px 270px, auto !important;
+}
+
+/* кнопка «Продолжить с Apple»: по правилам Apple на тёмном фоне — белая */
+html.dark .apple-btn { background: #fff !important; color: #000 !important; }
+html.dark .apple-btn:hover { background: #e5e7eb !important; }
+
+/* полосы прокрутки */
+html.dark ::-webkit-scrollbar { width: 10px; height: 10px; }
+html.dark ::-webkit-scrollbar-thumb { background: #2a3650; border-radius: 10px; }
+html.dark ::-webkit-scrollbar-track { background: transparent; }

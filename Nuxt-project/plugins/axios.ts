@@ -2,7 +2,7 @@ import axios from 'axios';
 
 export default defineNuxtPlugin(() => {
   const instance = axios.create({
-    baseURL: 'http://127.0.0.1:8000', // Замени на свой URL API
+    baseURL: useRuntimeConfig().public.apiBase as string,
     timeout: 155000,
     headers: { 
         'Content-Type': 'application/json',

@@ -1,4 +1,4 @@
-б<template>
+<template>
   <NuxtLayout>
     <NavBar v-if="showNavBar"/>
   </NuxtLayout>
@@ -7,6 +7,7 @@
       <Register v-if="showMadoal" />
       <MobilePage v-if="isShow && mobileOrDesktop" :pictures="pictures" />
       <DesktopPage v-if="isShow && mobileOrDesktop < 1" />
+      <AiAssistant />
     </ClientOnly>
 </template>
 
@@ -60,7 +61,7 @@ useHead({
 //     if (permission === 'granted') {
 //         new Notification('Привет! 👋', {
 //             body: 'Это тестовое уведомление в Nuxt 3',
-//             // icon: `http://127.0.0.1:8000/api/avatar/${owner.avatar}`
+//             // icon: `${apiBase()}/api/avatar/${owner.avatar}`
 //         });
 //     } else {
 //         alert('Разрешение не получено!');
@@ -73,10 +74,10 @@ useHead({
      },200)
 
      setInterval(async () => {
-      await fetch('http://127.0.0.1:8000/api/get_user', {
+      await fetch(`${apiBase()}/api/get_user`, {
       method: 'GET',
       headers: {
-        Authorization: 'Bearer ' + JSON.parse(localStorage.getItem('token')), 
+        Authorization: 'Bearer ' + getToken(), 
       }
     })
      },5000)
@@ -87,8 +88,8 @@ useHead({
     const announId = ref([])
     const {announ} = getData()
     
-    //   if (!JSON.parse(localStorage.getItem('token'))) {
-    //     fetch('http://127.0.0.1:8000/api/get_data')
+    //   if (!getToken()) {
+    //     fetch(`${apiBase()}/api/get_data`)
     // .then(res=>res.json())
     // .then(res=>{
     //   for (const item of res[0]) {
@@ -165,7 +166,7 @@ useHead({
       
      ]
   
-      await fetch('http://127.0.0.1:8000/api/create/infrastructure',{
+      await fetch(`${apiBase()}/api/create/infrastructure`,{
         method:'post',
         headers:{
           "Content-type":"application/json"
@@ -173,7 +174,7 @@ useHead({
         body: JSON.stringify(infrastructure)
       })
       
-      await fetch('http://127.0.0.1:8000/api/create/city', {
+      await fetch(`${apiBase()}/api/create/city`, {
         method:'post',
         headers:{
           "Content-type": "application/json"

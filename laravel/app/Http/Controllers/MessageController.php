@@ -21,39 +21,126 @@ class MessageController extends Controller
 {
     public function Message(Request $request){
         $data = $request->validate([
-            'text'=>'required',
-            'userId'=>'required|integer',
-            'friendId'=>'required|integer',
+            'text'=>'required|string|max:5000',
+            'friendId'=>'required|integer|exists:owners,id',
             'type'=>'required',
             'time'=>'required'
 
         ]);
+        // отправитель — владелец токена, а не присланный userId (раньше можно было писать от чужого имени)
+        $senderId = $request->user()->id;
 
         $message = Message::create([
             'message'=>$data['text'],
-            'user_id'=>$data['userId'],
+            'user_id'=>$senderId,
             'type'=>$data['type'],
             'time'=>$data['time']
         ]);
         messageUser::create([
             'message_id'=>$message['id'],
-            'owner_id'=>$data['userId'],
+            'owner_id'=>$senderId,
             'friend_id'=>$data['friendId']
         ]);
-        $owner = Owner::where('id',$data['userId'])->first();
-        $d = event(new MyEvent([
+        $this->broadcastSafely(fn () => event(new MyEvent([
             'type'=>'message',
             'id'=>$message['id'],
             'text'=>$message['message'],
-            'user_id'=>$message['user_id'],
+            'user_id'=>$senderId,
+            'friend_id'=>(int) $data['friendId'],
             'time'=>$message['time'],
             'avatar'=>auth()->user()->avatar
-        ]));
+        ])));
+        $this->notifyRecipient($request->user(), (int) $data['friendId'], 'message', $message['message'], $message['time']);
         return $message;
     }
 
+    /** websocket — только доставка в реальном времени: если сервер сокетов лежит, сообщение уже сохранено и 500 быть не должно */
+    private function broadcastSafely(callable $broadcast): void
+    {
+        try {
+            $broadcast();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('websocket недоступен', ['error' => $e->getMessage()]);
+        }
+    }
+
+    /** Уведомление получателю: счётчик на иконке сообщений и всплывашка */
+    private function notifyRecipient(Owner $sender, int $recipientId, string $type, string $text, ?string $time): void
+    {
+        $preview = match ($type) {
+            'picture' => '📷 Фото',
+            'video' => '🎬 Видео',
+            default => mb_strimwidth($text, 0, 120, '…'),
+        };
+        $this->broadcastSafely(fn () => event(new \App\Events\NewChatMessage($recipientId, [
+            'from' => [
+                'id' => $sender->id,
+                'role' => $sender->role,
+                'name' => $sender->name,
+                'last_name' => $sender->last_name,
+                'avatar' => $sender->avatar,
+                'uniq_id' => $sender->uniq_id,
+                'email' => $sender->email,
+                'phone_number' => $sender->phone_number,
+            ],
+            'type' => $type,
+            'preview' => $preview,
+            'time' => $time,
+            'unread_total' => messageUser::where('friend_id', $recipientId)->whereNull('read_at')->count(),
+        ])));
+    }
+
+    /** Непрочитанные сообщения: общее число и по собеседникам */
+    public function unread(Request $request)
+    {
+        $me = $request->user()->id;
+        $rows = messageUser::where('friend_id', $me)->whereNull('read_at')
+            ->selectRaw('owner_id, COUNT(*) as count, MAX(message_id) as last_message_id')
+            ->groupBy('owner_id')
+            ->get();
+
+        $senders = Owner::whereIn('id', $rows->pluck('owner_id'))->get(['id', 'name', 'last_name', 'avatar', 'uniq_id', 'email', 'phone_number'])->keyBy('id');
+        $lastMessages = Message::whereIn('id', $rows->pluck('last_message_id'))->get(['id', 'message', 'type', 'time', 'created_at'])->keyBy('id');
+
+        return response()->json([
+            'total' => (int) $rows->sum('count'),
+            'by_sender' => $rows->map(function ($row) use ($senders, $lastMessages) {
+                $last = $lastMessages[$row->last_message_id] ?? null;
+                return [
+                    'user' => $senders[$row->owner_id] ?? null,
+                    'count' => (int) $row->count,
+                    'last_message' => $last ? ($last->type === 'message' ? mb_strimwidth($last->message, 0, 120, '…') : ($last->type === 'picture' ? '📷 Фото' : '🎬 Видео')) : null,
+                    'last_at' => $last?->created_at,
+                ];
+            })->filter(fn ($r) => $r['user'])->sortByDesc('last_at')->values(),
+        ]);
+    }
+
+    /** Отметить прочитанными все сообщения от собеседника */
+    public function markRead(Request $request)
+    {
+        $data = $request->validate(['friend_id' => 'required|integer']);
+        messageUser::where('owner_id', $data['friend_id'])
+            ->where('friend_id', $request->user()->id)
+            ->whereNull('read_at')
+            ->update(['read_at' => now()]);
+        return response()->json(['total' => messageUser::where('friend_id', $request->user()->id)->whereNull('read_at')->count()]);
+    }
+
     public function SendFile(Request $request){
-        $user_id = (int) $request->input('userId');
+        try {
+            $request->validate([
+                'friendId' => 'required|integer|exists:owners,id',
+                'file' => 'required|file|image|max:20480', // 20 МБ
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Фото слишком большое или недопустимый формат. Максимальный размер: 20 МБ.',
+                'errors' => $e->errors(),
+            ], 422);
+        }
+
+        $user_id = $request->user()->id; // отправитель из токена, а не из запроса
         $friend_id = (int) $request->input('friendId');
         $file = $request->file('file');
         $type = $request->input('type');
@@ -75,15 +162,17 @@ class MessageController extends Controller
             'owner_id'=>$user_id,
             'friend_id'=>$friend_id
         ]);
-        event(new \App\Events\sendFile([
+        $this->broadcastSafely(fn () => event(new \App\Events\sendFile([
             'type'=>$type,
             'id'=>$dbfile['id'],
             'text'=>$dbfile['message'],
             'user_id'=>$user_id,
+            'friend_id'=>$friend_id,
             'time'=>$request->input('time'),
             'avatar'=>auth()->user()->avatar
-        ]));
-        return ['success'=>$file];
+        ])));
+        $this->notifyRecipient($request->user(), $friend_id, 'picture', $name, $request->input('time'));
+        return ['success'=>true];
     }
 // public function SendVideo(Request $request){
 
@@ -147,7 +236,19 @@ class MessageController extends Controller
 // } 
 
 public function SendVideo(Request $request){
-    $user_id = (int) $request->input('userId');
+    try {
+        $request->validate([
+            'friendId' => 'required|integer|exists:owners,id',
+            'video' => 'required|file|mimetypes:video/mp4,video/quicktime,video/x-msvideo,video/webm,video/3gpp,video/x-matroska|max:307200', // 300 МБ
+        ]);
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return response()->json([
+            'message' => 'Видео слишком большое или недопустимый формат. Максимальный размер: 300 МБ.',
+            'errors' => $e->errors(),
+        ], 422);
+    }
+
+    $user_id = $request->user()->id; // отправитель из токена, а не из запроса
     $friend_id = (int) $request->input('friendId');
     $file = $request->file('video');
     $type = $request->input('types');
@@ -169,14 +270,16 @@ public function SendVideo(Request $request){
         'friend_id' => $friend_id
     ]);
 
-    event(new \App\Events\sendFile([
+    $this->broadcastSafely(fn () => event(new \App\Events\sendFile([
         'type' => $type,
         'id' => $dbfile['id'],
         'text' => $dbfile['message'],
         'user_id' => $user_id,
+        'friend_id' => $friend_id,
         'time' => $time,
         'avatar' => auth()->user()->avatar ?? null,
-    ]));
+    ])));
+    $this->notifyRecipient($request->user(), $friend_id, 'video', $originalName, $time);
 
 
 
@@ -193,51 +296,64 @@ public function SendVideo(Request $request){
     
     public function getMessage(Request $request){
         $request->user()->update(['last_seen_at' => now()]);
-        $owner = Owner::where('uniq_id', $request->owner)->first();
-        $friend = Owner::where('uniq_id', $request->friend)->first();
-        $user = Owner::all();
-        $mess = Message::all();
-    
+        // role — чтобы в чате с командой сайта показать метку «Администрация»
+        $publicFields = ['id', 'name', 'last_name', 'avatar', 'phone_number', 'uniq_id', 'last_seen_at', 'role'];
+        $owner = Owner::where('uniq_id', $request->owner)->first($publicFields);
+        $friend = Owner::where('uniq_id', $request->friend)->first($publicFields);
+
+        if (!$owner || !$friend) {
+            return response()->json(['message' => 'Чат не найден'], 404);
+        }
+
+        // Читать переписку может только один из её участников
+        $me = $request->user()->id;
+        if ($me !== $owner->id && $me !== $friend->id) {
+            return response()->json(['message' => 'Нет доступа к этому чату'], 403);
+        }
+
+        // Открыл переписку — сообщения собеседника прочитаны
+        $other = $me === $owner->id ? $friend->id : $owner->id;
+        messageUser::where('owner_id', $other)->where('friend_id', $me)->whereNull('read_at')->update(['read_at' => now()]);
+
         // Получаем сообщения в обе стороны
-        $user_message = messageUser::where(function ($query) use ($owner,$friend) {
-                $query->where('owner_id', $owner['id'])
-                      ->where('friend_id', $friend['id']);
+        $messageIds = messageUser::where(function ($query) use ($owner,$friend) {
+                $query->where('owner_id', $owner->id)
+                      ->where('friend_id', $friend->id);
             })
             ->orWhere(function ($query) use ($owner,$friend) {
-                $query->where('owner_id', $friend['id'])
-                      ->where('friend_id', $owner['id']);
+                $query->where('owner_id', $friend->id)
+                      ->where('friend_id', $owner->id);
             })
-            ->get();
-    
-        $message = [];
-    
-        foreach ($user_message as $value) {
-            $message[] = Message::where('id', $value->message_id)->first();
-        }
-    
-        // Привязываем аватар к сообщениям
+            ->pluck('message_id');
+
+        $message = Message::whereIn('id', $messageIds)->orderBy('id')->get();
+
+        // Привязываем аватар к сообщениям (в переписке всего два автора)
+        $avatars = [
+            $owner->id => ['avatar' => $owner->avatar],
+            $friend->id => ['avatar' => $friend->avatar],
+        ];
         foreach ($message as $msg) {
-            $msg['avatar'] = Owner::where('id', $msg['user_id'])->first(['avatar']);
+            $msg['avatar'] = $avatars[$msg->user_id] ?? null;
         }
-    
+
         return response()->json([
             'message' => $message,
             'users' => ['owner' => $owner, 'friend' => $friend],
-            'user_mes' => $user_message,
-            'user'=>$user
         ]);
     }
     
 
     public function Typing(Request $request){
         $request->user()->update(['last_seen_at' => now()]);
-        event(new userTyping([
+        $this->broadcastSafely(fn () => event(new userTyping([
            'value'=>$request->value,
-           'userId'=> $request->userId,
+           'userId'=> $request->user()->id,
+           'friendId'=> $request->friendId,
            'userName'=>$request->userName,
            'lastName'=>$request->lastName,
            'typing'=>$request->typing
-        ]));
+        ])));
     }
 
     public function getAllUser(Request $request){

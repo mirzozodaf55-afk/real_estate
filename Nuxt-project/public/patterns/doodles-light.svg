@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="270" height="270" viewBox="0 0 270 270" fill="none" stroke="#bfd0ea" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+<!-- дом -->
+<g transform="translate(18 20)"><path d="M2 18 20 3l18 15"/><path d="M7 14v20h26V14"/><path d="M16 34V24h8v10"/></g>
+<!-- ключ -->
+<g transform="translate(150 14) rotate(-30 15 15)"><circle cx="8" cy="15" r="7"/><path d="M15 15h22M30 15v6M35 15v4"/></g>
+<!-- диван -->
+<g transform="translate(92 70)"><path d="M6 14v-4a5 5 0 0 1 5-5h28a5 5 0 0 1 5 5v4"/><path d="M2 16a4 4 0 0 1 8 0v4h30v-4a4 4 0 0 1 8 0v12H2Z"/><path d="M6 28v4M44 28v4"/></g>
+<!-- растение в горшке -->
+<g transform="translate(205 70)"><path d="M8 26h16l-2 12H10Z"/><path d="M16 26V12"/><path d="M16 16c-6 0-9-4-9-9 6 0 9 4 9 9ZM16 13c0-6 4-9 9-9 0 6-4 9-9 9Z"/></g>
+<!-- метка на карте -->
+<g transform="translate(30 110)"><path d="M14 36S2 24 2 14a12 12 0 1 1 24 0c0 10-12 22-12 22Z"/><circle cx="14" cy="14" r="4"/></g>
+<!-- окно -->
+<g transform="translate(150 125)"><rect x="2" y="2" width="30" height="34" rx="3"/><path d="M17 2v34M2 19h30"/></g>
+<!-- лампа -->
+<g transform="translate(95 150)"><path d="M6 16 12 2h12l6 14Z"/><path d="M18 16v20M10 38h16"/></g>
+<!-- многоэтажка -->
+<g transform="translate(205 160)"><rect x="2" y="6" width="24" height="34" rx="2"/><path d="M8 13h4M16 13h4M8 21h4M16 21h4M8 29h4M16 29h4M12 40v-5h4v5"/></g>
+<!-- монета -->
+<g transform="translate(30 195)"><circle cx="13" cy="13" r="11"/><path d="M13 7v12M9.5 10.5h5a2 2 0 0 1 0 4h-4a2 2 0 0 0 0 4h5"/></g>
+<!-- сердечко -->
+<g transform="translate(150 205)"><path d="M14 26S2 18 2 10a6 6 0 0 1 12-2 6 6 0 0 1 12 2c0 8-12 16-12 16Z"/></g>
+<!-- искорки -->
+<path d="M80 30v8M76 34h8M245 130v8M241 134h8M120 225v8M116 229h8M70 110l3 3M73 110l-3 3M190 100l3 3M193 100l-3 3"/>
+<circle cx="125" cy="30" r="2"/><circle cx="250" cy="35" r="2"/><circle cx="70" cy="165" r="2"/><circle cx="190" cy="245" r="2"/>
+</svg>

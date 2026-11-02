@@ -14,6 +14,18 @@ return [
     |
     */
 
+    // ИИ-помощник (поиск, тексты объявлений, проверка для модератора). Без ключа функции ИИ просто недоступны
+    'openai' => [
+        'key' => env('OPENAI_API_KEY'),
+        'model' => env('OPENAI_MODEL', 'gpt-4o-mini'),
+        'base_url' => env('OPENAI_BASE_URL', 'https://api.openai.com/v1'),
+        'reasoning_effort' => env('OPENAI_REASONING_EFFORT'),
+        // путь к cacert.pem, если PHP не видит системные сертификаты (Windows); пусто — стандартная проверка
+        'ca_bundle' => env('OPENAI_CA_BUNDLE'),
+        // модель, которая видит картинки (проверка фото объявлений); пусто — проверка фото выключена
+        'vision_model' => env('OPENAI_VISION_MODEL'),
+    ],
+
     'mailgun' => [
         'domain' => env('MAILGUN_DOMAIN'),
         'secret' => env('MAILGUN_SECRET'),
@@ -35,6 +47,12 @@ return [
     'client_id' => env('GOOGLE_CLIENT_ID'),
     'client_secret' => env('GOOGLE_CLIENT_SECRET'),
     'redirect' => env('GOOGLE_REDIRECT_URI'),
+    ],
+
+    // Sign in with Apple: client_id — это Services ID (например, tj.domly.web) из Apple Developer
+    'apple' => [
+        'client_id' => env('APPLE_CLIENT_ID'),
+        'redirect' => env('APPLE_REDIRECT_URI'),
     ],
 
 
