@@ -7,7 +7,7 @@
       class="w-full h-full"
       autoplay
       style="background-color: black"
-      :src="`http://127.0.0.1:8000/api/filemessage/original/${route.query.name}`"
+      :src="`${apiBase()}/api/filemessage/original/${route.query.name}`"
     ></video>
     <button
       class="absolute top-2 right-2 bg-white p-1 rounded"

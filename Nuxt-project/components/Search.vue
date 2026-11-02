@@ -1,46 +1,21 @@
 <template>
-    <li class="bottom">
-            <ul class="list-item">
-                <li class="item"><a href="#">Аренда</a></li>
-                <li class="item"><a href="#">Продажа</a></li>
-                <li class="item"><a href="#">Новостройки</a></li>
-                <li class="item"><a href="#">Посуточно</a></li>
-                <li class="item"><a href="#">Коммерческая</a></li>
-            </ul>
-        </li>
+    <li class="mt-[10px] pt-[10px] border-t border-[#e8edf3]">
+        <div class="px-[16px] py-[6px] text-[12px] uppercase tracking-[0.08em] text-[#94a3b8] font-bold">Разделы</div>
+        <ul class="list-none m-0 p-0">
+            <li v-for="c of CATEGORY_LINKS" :key="c.label">
+                <button type="button" @click="go(c)" class="w-full flex items-center gap-[14px] px-[16px] py-[11px] text-left text-[15.5px] text-[#334155] active:bg-[#f1f5f9]">
+                    <font-awesome-icon :icon="['fas', c.icon]" class="w-[20px] text-[#0468ff]" />
+                    {{ c.label }}
+                </button>
+            </li>
+        </ul>
+    </li>
 </template>
-<style scoped>
-.list-item > .item > a{
-    display: block;
-    cursor: pointer;
-    padding: 14px 0px;
-    color: #152242;
-    font-family: Lato,Arial,sans-serif;
-    font-size: 16px;
-    line-height: 18px;
-    font-weight: 400;
-    text-decoration: none;
+<script setup>
+const { active } = useSwitch()
+function go(c) {
+    active.value = false
+    document.body.style.overflow = 'auto'
+    navigateTo(categoryRoute(c))
 }
-.list-item{
-    min-height:60vh;
-    margin: 0;
-    margin-top: 15px;
-    padding: 0;
-    list-style: none;
-}
-.bottom{
-    margin-top: 18px;
-    margin-bottom: 10px;
-    padding: 14px 16px;
-    /* min-height: auto; */
-}
-.bottom::before{
-    display: block;
-    position: absolute;
-    left: 7px;
-    content: '';
-    width: 95%;
-    height: 1.3px;
-    background-color: #e8e9ec;
-    }
-</style>
+</script>

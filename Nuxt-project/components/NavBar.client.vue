@@ -2,6 +2,59 @@
 
 <template>
     <div  id="header-frontend" class="containers">
+        <div v-if="toast" @click="openToast" role="status"
+            class="fixed bottom-[88px] right-[20px] z-[300] w-[320px] max-w-[calc(100vw-40px)] bg-white rounded-[14px] shadow-[0_12px_40px_rgba(15,23,42,0.18)] border border-[#e8edf3] p-[12px] flex gap-[10px] items-center cursor-pointer">
+            <template v-if="toast.from">
+                <div class="w-[40px] h-[40px] rounded-full bg-[#e2e8f0] bg-cover bg-center shrink-0"
+                    :style="`background-image: url('${apiBase()}/api/avatar/${toast.from.avatar}')`"></div>
+                <div class="min-w-0">
+                    <div class="text-[13px] text-[#64748b]">{{ isStaff(toast.from) ? 'Сообщение от администрации' : 'Новое сообщение' }}</div>
+                    <div class="text-[14px] font-semibold text-[#152242] truncate">{{ [toast.from.name, toast.from.last_name].filter(Boolean).join(' ') || 'Пользователь' }}</div>
+                    <div class="text-[13px] text-[#334155] truncate">{{ toast.preview }}</div>
+                </div>
+            </template>
+            <template v-else-if="toast.kind === 'photo_alert'">
+                <div class="w-[40px] h-[40px] rounded-full grid place-items-center shrink-0 bg-[#fffbeb] text-[#d97706]">
+                    <font-awesome-icon :icon="['fas', 'wand-magic-sparkles']" />
+                </div>
+                <div class="min-w-0">
+                    <div class="text-[13px] text-[#64748b]">ИИ: проверьте фото · №{{ toast.announ.id }}</div>
+                    <div class="text-[13px] text-[#b45309] font-semibold line-clamp-2">{{ toast.message }}</div>
+                </div>
+            </template>
+            <template v-else-if="toast.kind === 'promoted' || toast.kind === 'promo_rejected'">
+                <div class="w-[40px] h-[40px] rounded-full grid place-items-center shrink-0"
+                    :class="toast.kind === 'promoted' ? 'promo-badge-vip text-[#5b3a00]' : 'bg-[#fef2f2] text-[#dc2626]'">
+                    <font-awesome-icon :icon="['fas', toast.kind === 'promoted' ? 'crown' : 'circle-exclamation']" />
+                </div>
+                <div class="min-w-0">
+                    <div class="text-[13px] text-[#64748b]">{{ toast.kind === 'promoted' ? 'Продвижение включено' : 'Заявка на продвижение отклонена' }}</div>
+                    <div class="text-[14px] font-semibold text-[#152242] truncate">{{ toast.announ.title || toast.announ.type_object }}</div>
+                    <div class="text-[13px] truncate" :class="toast.kind === 'promoted' ? 'text-[#b45309]' : 'text-[#dc2626]'">{{ toast.message }}</div>
+                </div>
+            </template>
+            <template v-else-if="toast.kind === 'approved' || toast.kind === 'rejected'">
+                <div class="w-[40px] h-[40px] rounded-full grid place-items-center shrink-0"
+                    :class="toast.kind === 'approved' ? 'bg-[#ecfdf5] text-[#047857]' : 'bg-[#fef2f2] text-[#dc2626]'">
+                    <font-awesome-icon :icon="['fas', toast.kind === 'approved' ? 'circle-check' : 'circle-exclamation']" />
+                </div>
+                <div class="min-w-0">
+                    <div class="text-[13px] text-[#64748b]">{{ toast.kind === 'approved' ? 'Объявление опубликовано' : 'Объявление отклонено' }}</div>
+                    <div class="text-[14px] font-semibold text-[#152242] truncate">{{ toast.announ.title || toast.announ.type_object }}</div>
+                    <div v-if="toast.kind === 'rejected'" class="text-[13px] text-[#dc2626] truncate">{{ toast.message }}</div>
+                </div>
+            </template>
+            <template v-else>
+            <div class="w-[40px] h-[40px] rounded-full bg-[#fff7ed] grid place-items-center text-[#ea580c] shrink-0">
+                <font-awesome-icon :icon="['fas', 'bell']" />
+            </div>
+            <div class="min-w-0">
+                <div class="text-[13px] text-[#64748b]">Новое объявление по вашей подписке</div>
+                <div class="text-[14px] font-semibold text-[#152242] truncate">{{ toast.announ.title || toast.announ.type_object }}</div>
+                <div class="text-[13px] font-bold text-[#0468ff]">{{ formatNumber(toast.announ.price) }} сомони{{ priceSuffix(toast.announ) }}</div>
+            </div>
+            </template>
+        </div>
         <div class="wrapper">
             <div class="inner">
                 <div class="containers" v-if="!desktopSize">
@@ -11,24 +64,13 @@
                     
                 </div>
 
-                    <h4 @click="Home" class="name-page cursor-pointer" style="text-transform:uppercase;">Logo</h4>
+                    <h4 @click="Home" class="name-page cursor-pointer m-0"><SiteLogo :size="desktopSize ? 34 : 30" /></h4>
                  
                 <div class="container-filters" v-if="desktopSize">
                     <ul class="lists">
-                        <li>
-                            <a href="#">Аренда</a>
-                        </li>
-                        <li>
-                            <a href="#">Продажа</a>
-                        </li>
-                        <li>
-                            <a href="#">Новостройки</a>
-                        </li>
-                        <li>
-                            <a href="#">Посуточно</a>
-                        </li>
-                        <li>
-                            <a href="#">Коммерческая</a>
+                        <!-- те же разделы, что в боковом меню и на мобильной главной (composables/siteLinks.js) -->
+                        <li v-for="c of CATEGORY_LINKS.filter((x) => x.label !== 'Дома и дачи')" :key="c.label">
+                            <NuxtLink :to="categoryRoute(c)">{{ c.label === 'Купить' ? 'Продажа' : c.label === 'Снять' ? 'Аренда' : c.label }}</NuxtLink>
                         </li>
                     </ul>
                     <!-- <div class="special-promos">
@@ -40,17 +82,36 @@
 
                 <div class="containers-icons">
                     <div class="utilities" >
+                        <button type="button" @click="toggleTheme" class="buttons" data-test="theme-toggle"
+                            :title="theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'" :aria-label="theme === 'dark' ? 'Включить светлую тему' : 'Включить тёмную тему'">
+                            <font-awesome-icon style="font-size:18px; pointer-events: none;" :icon="theme === 'dark' ? ['fas', 'sun'] : ['far', 'moon']" />
+                        </button>
                         <div class="containers ">
-                            <button @click="goToLink" class="buttons" data-value="Пользователи" data-name="listfriend">
+                            <button @click="goToLink" class="buttons relative" data-value="Пользователи" data-name="listfriend">
                                 <font-awesome-icon style="font-size:18px; pointer-events: none;" :icon="['far', 'comment']" />
+                                <span v-if="messagesUnread" style="pointer-events: none;" data-test="messages-badge"
+                                    class="absolute -top-[4px] -right-[6px] min-w-[18px] h-[18px] px-[5px] rounded-full bg-[#ef4444] text-white text-[11px] leading-[18px] font-bold text-center">
+                                    {{ messagesUnread > 99 ? '99+' : messagesUnread }}
+                                </span>
                             </button>
                         </div>
                         <button @click="goToLink" class="buttons" data-name="personal_area/favorite" data-value="Избранное">
                             <font-awesome-icon style="font-size:18px; pointer-events: none;" :icon="['far', 'heart']" />
                         </button> 
+                        <NuxtLink v-if="isStaff(user)" to="/admin" class="buttons relative grid place-items-center text-inherit" title="Админка" data-test="admin-link">
+                            <font-awesome-icon style="font-size:17px; pointer-events: none;" :icon="['fas', 'shield-halved']" />
+                            <span v-if="pendingCount" style="pointer-events: none;"
+                                class="absolute -top-[4px] -right-[6px] min-w-[18px] h-[18px] px-[5px] rounded-full bg-[#f59e0b] text-white text-[11px] leading-[18px] font-bold text-center">
+                                {{ pendingCount > 99 ? '99+' : pendingCount }}
+                            </span>
+                        </NuxtLink>
                         <div class="bell" v-if="desktopSize">
-                            <button @click="goToLink" class="buttons" data-name="personal_area/notification" data-value="Уведомления">
+                            <button @click="goToLink" class="buttons relative" data-name="personal_area/notification" data-value="Уведомления">
                             <font-awesome-icon style="font-size:18px; pointer-events: none;" :icon="['far', 'bell']" />
+                            <span v-if="unread" style="pointer-events: none;"
+                                class="absolute -top-[4px] -right-[6px] min-w-[18px] h-[18px] px-[5px] rounded-full bg-[#ef4444] text-white text-[11px] leading-[18px] font-bold text-center">
+                                {{ unread > 99 ? '99+' : unread }}
+                            </span>
                             </button>
                         </div>
                     </div>
@@ -71,7 +132,7 @@
                                 Войти
                             </span>
                         </a>
-                    <div v-if="data" class="user" @click="logOut" :style="`background-image: url('http://127.0.0.1:8000/api/avatar/${data.avatar}');`">
+                    <div v-if="data" class="user" @click="logOut" :style="`background-image: url('${apiBase()}/api/avatar/${data.avatar}');`">
                     </div>
             </div>
             <!-- mobileSize &&  -->
@@ -93,7 +154,7 @@
 <script setup>
     const route = useRoute()
     const router = useRouter()
-    const {user,loading} = getUserByServer(JSON.parse(localStorage.getItem('token')))
+    const {user,loading} = getUserByServer(getToken())
 
    
     
@@ -104,16 +165,58 @@
     const data = ref()
 
     
+    // immediate: пользователь — общий ref на всё приложение и мог загрузиться ещё до монтирования
+    // NavBar (например, NavBar пересоздаётся после выхода из чата) — тогда обычный watch не сработает
     watch(user,(val)=>{
         data.value = user.value
-        localStorage.setItem('owner', JSON.stringify(user.value))
-    })
+        if (user.value) localStorage.setItem('owner', JSON.stringify(user.value))
+    }, { immediate: true })
+
+    // Уведомления «Уведомить меня»: счётчик на колокольчике + всплывашка при новом
+    // Сообщения чата: счётчик на иконке сообщений + всплывашка «Новое сообщение»
+    const { unread, load: loadNotifications, listen, onNew, messagesUnread, loadMessages, onNewMessage } = useNotifications()
+    const toast = ref(null)
+    let toastTimer = null
+    // Модераторам — сколько объявлений ждут проверки
+    const pendingCount = usePendingCount()
+
+    const { theme, toggle: toggleTheme } = useTheme()
+
+    watch(() => user.value?.id, (id) => {
+        if (!id) return
+        loadNotifications()
+        loadMessages()
+        listen(id)
+        if (isStaff(user.value)) adminApi('/stats').then((s) => { pendingCount.value = s.pending }).catch(() => {})
+    }, { immediate: true })
+    function showToast(item) {
+        toast.value = item
+        clearTimeout(toastTimer)
+        toastTimer = setTimeout(() => { toast.value = null }, 7000)
+    }
+    const stopOnNew = onNew(showToast)
+    const stopOnNewMessage = onNewMessage(showToast)
+    onUnmounted(() => { stopOnNew(); stopOnNewMessage(); clearTimeout(toastTimer) })
+    function openToast() {
+        const item = toast.value
+        toast.value = null
+        const me = user.value
+        if (item?.from && me) {
+            navigateTo(`/chat-${me.id}-${me.uniq_id}-${item.from.id}-${item.from.uniq_id}`)
+        } else if (['approved', 'rejected', 'promoted', 'promo_rejected'].includes(item?.kind)) {
+            navigateTo('/personal_area/my_announ')
+        } else if (item?.kind === 'photo_alert') {
+            navigateTo(`/admin/announs?status=${item.announ.moderation_status || 'pending'}&id=${item.announ.id}`)
+        } else {
+            navigateTo('/personal_area/notification')
+        }
+    }
 
     
     function showAndHide(){
         // console.log(data.value.phone_number);
         
-        if (data.value.phone_number) {
+        if (data.value && data.value.id) {
          isShow.value = false
          router.push('/announ')
          localStorage.removeItem('announ')
@@ -181,7 +284,7 @@ function logOut(){
 
 function goToLink(event){
     data.value = user.value
-    if (data.value.phone_number) {
+    if (data.value && data.value.id) {
         useHead({title:event.target.dataset.value})
         navigateTo(`/${event.target.dataset.name}`)
         document.body.style.overflow = 'auto'
@@ -193,7 +296,7 @@ function goToLink(event){
 }
 
 // function message(){
-//     if (data.value.phone_number) {
+//     if (data.value && data.value.id) {
 //         navigateTo(('/listfriend'))
 //         document.body.style.overflow = 'auto'
 //         isShow.value = false
@@ -203,7 +306,7 @@ function goToLink(event){
 //     }
 // }
 // function favorite(){
-//     if (data.value.phone_number) {
+//     if (data.value && data.value.id) {
 //         navigateTo('/personal_area/favorite')
 //         document.body.style.overflow = 'auto'
 //         isShow.value = false
@@ -214,7 +317,7 @@ function goToLink(event){
 // }
 
 // function notification(){
-//     if (data.value.phone_number) {
+//     if (data.value && data.value.id) {
 //         navigateTo('/personal_area/notification') 
 //         document.body.style.overflow = 'auto'
 //         isShow.value = false

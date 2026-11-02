@@ -15,23 +15,14 @@ class getAnnounController extends Controller
     // }
 
     public function getData(Request $request){
-        $pictures = Pictures::where('position','<',1)->get();
-        
-        $announ = Announ::join('pictures','announs.id', 'pictures.announ_id')
-        ->withTrashed()
-        ->where('pictures.position', 0)
-        ->select('announs.*')
-        ->get();
-        $allData = [];
-        for ($i=0; $i < count($pictures); $i++) { 
-            $announ[$i]['image'] = $pictures[$i]['pictures'] ??'deafault.jpg';
-            // if ($picture[$i] == null) {
-            //     $picture[$i] = [
-            //         'pictures'=>'deafault.jpg'
-            //     ];
-            // }
-            $allData[] =  $announ[$i];
-        }
+        // Обложку берём из того же join, а не отдельным списком фото по порядковому номеру:
+        // раньше i-е фото доставалось i-му объявлению (чужие обложки), а при разной длине списков был 500.
+        // Снятые с публикации (withTrashed) тоже больше не отдаём.
+        $allData = Announ::join('pictures', 'announs.id', 'pictures.announ_id')
+            ->where('pictures.position', 0)
+            ->whereNull('pictures.deleted_at')
+            ->select('announs.*', 'pictures.pictures as image')
+            ->get();
         $visitor_user = VisitorUser::where('ip-adress',$request->ip())->first();
         return [$allData,$visitor_user];
     }

@@ -31,9 +31,11 @@ class userTyping implements ShouldBroadcast
      */
     public function broadcastOn(): array
     {
-        return [
-            'typing',
-        ];
+        // «печатает…» видит только собеседник, а не все открытые чаты
+        if (!empty($this->data['friendId'])) {
+            return [new \Illuminate\Broadcasting\Channel(\App\Support\ChatChannel::name((int) $this->data['userId'], (int) $this->data['friendId']))];
+        }
+        return ['typing'];
     }
     
     public function broadcastAs()

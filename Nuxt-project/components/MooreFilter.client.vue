@@ -1,345 +1,138 @@
 <template>
-    <div class="w-full h-[100vh] z-[200] bg-[black]/40 fixed flex justify-center top-[0] modals">
-        <div class="w-[900px] flex flex-col overflow-hidden rounded-[4px] h-[500px] my-[auto] relative bg-[white]" >
-            <div class="w-full h-[75px] border-bottom justify-between flex items-center">
-                <h3 class="text-[23px] font-bold ml-[50px]">Еще фильтры</h3>
-                <button @click="isHideModal" class="text-[25px] font-normal absolute right-[10px] text-[gray] cursor-pointer top-[0px] ">
-                    <font-awesome-icon :icon="['fas', 'xmark']" />
-                </button>
+  <div class="fixed inset-0 z-[300] bg-black/50 flex items-end sm:items-center justify-center" @click.self="close" data-test="more-filters">
+    <div class="w-full sm:w-[640px] sm:max-w-[94vw] max-h-[88vh] sm:max-h-[85vh] flex flex-col bg-white rounded-t-[20px] sm:rounded-[18px] shadow-[0_-10px_40px_rgba(15,23,42,0.25)] overflow-hidden">
+      <header class="flex items-center justify-between gap-[12px] px-[20px] h-[60px] border-b border-[#eef2f7] shrink-0">
+        <h3 class="m-0 text-[19px] font-bold text-[#152242]">Ещё фильтры</h3>
+        <button type="button" @click="close" aria-label="Закрыть" class="w-[36px] h-[36px] rounded-full grid place-items-center text-[#64748b] hover:bg-[#f1f5f9]">
+          <font-awesome-icon :icon="['fas', 'xmark']" class="text-[18px]" />
+        </button>
+      </header>
+
+      <div class="flex-1 overflow-y-auto px-[20px] py-[18px] flex flex-col gap-[22px]">
+        <!-- Диапазоны «от — до» -->
+        <div v-if="ranges.length" class="grid grid-cols-1 sm:grid-cols-2 gap-x-[16px] gap-y-[16px]">
+          <div v-for="r of ranges" :key="r.key">
+            <div class="text-[14px] font-semibold text-[#152242] mb-[6px]">{{ r.label }}<span v-if="r.unit" class="font-normal text-[#94a3b8]">, {{ r.unit }}</span></div>
+            <div class="flex items-center gap-[8px]">
+              <input :value="f[r.key + 'From']" @input="setNumber(r.key + 'From', $event)" inputmode="numeric" placeholder="от"
+                class="flex-1 min-w-0 h-[42px] px-[12px] rounded-[10px] border border-[#e2e8f0] bg-white text-[15px] text-[#152242] outline-none focus:border-[#0468ff]" />
+              <span class="text-[#94a3b8]">—</span>
+              <input :value="f[r.key + 'To']" @input="setNumber(r.key + 'To', $event)" inputmode="numeric" placeholder="до"
+                class="flex-1 min-w-0 h-[42px] px-[12px] rounded-[10px] border border-[#e2e8f0] bg-white text-[15px] text-[#152242] outline-none focus:border-[#0468ff]" />
             </div>
-            <div class="w-full overflow-auto top-[75px] h-[350px]" >
-                <div class="h-[auto] flex flex-col px-[20px] py-[20px]">
-                    <div class="flex w-full" v-if="filter.typeObject=='Квартира в новостройке'||filter.typeObject=='Квартира'||filter.typeObject=='Комната'" >
-                        <div class="w-[100px] flex items-center justify-end">
-                            <span class="text-[14px]">Площадь м<sup class="text-[10px]">2</sup></span>
-                        </div>
-
-                        <div class="flex ml-[30px] items-center">
-                            <span class="text-[13px] mr-[5px]">Общая</span>
-                            <DesktopInput 
-                            tag="span" 
-                            title="totalArea" 
-                            :updateTotalArea="updateTotalArea" />
-                        </div>
-                        <div class="flex ml-[15px] items-center">
-                            <span class="text-[13px] mr-[5px]">Кухня</span>
-                            <DesktopInput 
-                            tag="span" 
-                            title="kitchenArea" 
-                            :updateKitchenArea="updateKitchenArea"/>
-                        </div>
-                        <div class="flex ml-[15px] items-center">
-                            <span class="text-[13px] mr-[5px]">Жилая</span>
-                            <DesktopInput 
-                            tag="span" 
-                            title="liveArea" 
-                            :updateArea="updateArea"/>
-                        </div>
-                    </div>
-                    <div class="flex w-full mt-[15px]">
-                        <div class="w-[100px] flex items-center justify-end">
-                            <span class="text-[14px]">Этаж</span>
-                        </div>
-
-                        <div class="flex ml-[30px] items-center">
-                            <DesktopInput tag="span" title="floor" :updateFloor="updateFloor"/>
-                        </div>
-                    </div>
-                    <div class="flex w-full mt-[15px]" v-if="filter.typeObject=='Квартира в Новостройке'||filter.typeObject=='Квартира'||filter.typeObject=='Комната'">
-                        <div class="w-[100px] flex items-center justify-end">
-                            <span class="text-[14px] truncate">Этажей в доме</span>
-                        </div>
-
-                        <div class="flex ml-[30px] items-center">
-                            <DesktopInput tag="span" title="floorHouse" :updateFloorHouse="updateFloorHouse"/>
-                        </div>
-                    </div>
-
-                    <div class="flex w-full mt-[15px]" v-if="filter.typeObject=='Дом/Дача'||filter.typeObject=='Коттедж'||filter.typeObject=='Участок'" >
-                        <div class="w-[100px] flex items-center justify-end">
-                            <span class="text-[14px]">Площадь</span>
-                        </div>
-
-                        <div class="flex ml-[30px] items-center">
-                            <span class="text-[13px] mr-[5px]">Дом</span>
-                            <DesktopInput tag="span" title="area" :updateArea="updateArea"/>
-                            <span class="text-[13px] ml-[5px]">м<sup>2</sup></span>
-                        </div>
-                        <div class="flex ml-[15px] items-center">
-                            <span class="text-[13px] mr-[5px]">Участок</span>
-                            <DesktopInput tag="span" title="landArea" :updateLandArea="updateLandArea"/>
-                            <span class="text-[13px] ml-[5px]">сот.</span>
-                        </div>
-                    </div>
-
-                    <div class="flex w-full mt-[15px]">
-                        <div class="w-[100px] flex items-center justify-end">
-                            <span class="text-[14px]">Ремонт</span>
-                        </div>
-
-                        <div class="flex ml-[30px] items-center">
-                            <div v-for="repair of repairs" :key="repair.value" class="repair">
-                                <input name="repair" @change="chooseRepair(repair)" type="checkbox" class="d-none" :id='repair.value'>
-                                <label class="border-1 text-[14px] py-[5px] px-[3px] mx-[3px] cursor-pointer rounded-[3px] label" :for="repair.value">{{repair.name}}</label>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex w-full mt-[15px]">
-                        <div class="w-[100px] flex items-center justify-end">
-                            <span class="text-[14px]">Тип дома</span>
-                        </div>
-
-                        <div class="flex ml-[30px] items-center">
-                            <div v-for="home of typeHome" :key="home.name" class="typeHome">
-                                <input name="typeHome" @change="chooseRepair(home)" type="checkbox" class="d-none" :id='home.name'>
-                                <label class="border-1 text-[14px] py-[5px] px-[3px] 
-                                mx-[3px] cursor-pointer rounded-[3px] label" 
-                                :for="home.name">{{home.name}}</label>
-                            </div>
-                        </div>
-
-                    </div>
-                    <div class="flex w-full mt-[15px]">
-                        <div class="w-[100px] flex items-center justify-end">
-                            <span class="text-[14px]">Парковка</span>
-                        </div>
-
-                        <div class="flex ml-[30px] items-center">
-                            <div v-for="p of parking" :key="p.name" class="parking">
-                                <input name="parking" @change="chooseRepair(p)" type="checkbox" class="d-none" :id='p.name'>
-                                <label class="border-1 text-[14px] py-[5px] px-[3px] 
-                                mx-[3px] cursor-pointer rounded-[3px] label" 
-                                :for="p.name">{{p.name}}</label>
-                            </div>
-                        </div>
-
-                    </div>
-                    
-                    <div v-if="filter.dealType=='Аренда'" class="flex w-full mt-[15px]">
-                        <div class="ml-[40px] flex items-center justify-end">
-                            <span class="text-[14px]">Удобства</span>
-                        </div>
-
-                        <div class="flex items-center">
-                            <div class="flex ml-[30px] flex-wrap w-[80%] justify-start">
-                                <div v-for="c of condition" :key="c.name" class="mt-[3px] condition">
-                                    <input name="condition" @change="chooseRepair(c)" type="checkbox" class="d-none" :id='c.id'>
-                                    <label class="border-1 text-[14px] py-[5px] px-[3px] 
-                                    mx-[3px] cursor-pointer rounded-[3px] label" 
-                                    :for="c.id">{{c.name}}</label>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                    <div class="flex w-full mt-[15px]">
-                        <div class="w-[100px] flex items-center justify-end">
-                            <span class="text-[14px]">Год постройки</span>
-                        </div>
-
-                        <div class="flex ml-[30px] items-center">
-                            <DesktopInput tag="span" title="year" :updateYear="updateYear"/>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="flex items-center justify-content-end w-full h-[75px] border-top">
-                <div class="w-[350px] z-[100] px-[10px] flex items-center">
-                    <button @click="clearAll"  class="text-[14px] font-bold p-[5px] px-[15px] border-[black] mr-[5px] text-primary rounded-[6px]" style="background-color: #e8e9ec;">Сбросить фильтры</button>
-                    <button @click="showObjects" id="showObject" class="text-[14px] font-bold p-[5px] px-[15px] border-[black] ml-[5px] text-[white] bg-primary  rounded-[6px]">Показать объекты</button>
-                </div>
-            </div>
+          </div>
         </div>
+
+        <!-- Варианты чипами -->
+        <div v-for="g of groups" :key="g.key">
+          <div class="text-[14px] font-semibold text-[#152242] mb-[8px]">{{ g.label }}</div>
+          <div class="flex flex-wrap gap-[8px]">
+            <button v-for="o of g.options" :key="o.value" type="button" @click="toggle(g, o.value)"
+              class="h-[38px] px-[14px] rounded-full border text-[14px] transition-colors"
+              :class="isOn(g, o.value) ? 'border-[#0468ff] bg-[#eef4ff] text-[#0468ff] font-semibold' : 'border-[#e2e8f0] bg-white text-[#334155] hover:border-[#94a3b8]'">
+              <font-awesome-icon v-if="isOn(g, o.value)" :icon="['fas', 'check']" class="text-[11px] mr-[4px]" />{{ o.label }}
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <footer class="flex items-center gap-[10px] px-[20px] py-[12px] border-t border-[#eef2f7] shrink-0">
+        <button type="button" @click="clearAll" class="h-[46px] px-[16px] rounded-[12px] text-[15px] font-semibold text-[#334155] hover:bg-[#f1f5f9]">
+          Сбросить<span v-if="selectedCount"> ({{ selectedCount }})</span>
+        </button>
+        <button type="button" @click="apply" data-test="more-filters-apply"
+          class="flex-1 h-[46px] rounded-[12px] bg-[#0468ff] hover:bg-[#0353cc] text-white text-[15px] font-bold">Показать объявления</button>
+      </footer>
     </div>
+  </div>
 </template>
 
 <script setup>
-const filter = JSON.parse(sessionStorage.getItem('filter'))||{}
-const props = defineProps({
-    getAnnouns:{
-        type:Function,
-        required:true,
-        error: Object
+// Дополнительные фильтры списка. Стартовые значения и тип объекта — из sessionStorage.filter (кладёт ListAnnouns),
+// результат отдаём в getAnnouns — ListAnnouns переносит его в адрес страницы.
+const props = defineProps({ getAnnouns: { type: Function, required: true } })
+const { showFIlterModal } = useSwitch()
 
-    }
+const start = JSON.parse(sessionStorage.getItem('filter') || '{}') || {}
+const RANGE_KEYS = ['totalArea', 'kitchenArea', 'area', 'houseArea', 'landArea', 'floor', 'floorHouse', 'year']
+const LIST_KEYS = ['repair', 'typeHome', 'parking', 'condition']
+const asArray = (v) => (v === undefined || v === null || v === '' ? [] : Array.isArray(v) ? v : [v])
+
+const f = reactive({})
+for (const k of RANGE_KEYS) {
+  f[k + 'From'] = start[k + 'From'] ?? ''
+  f[k + 'To'] = start[k + 'To'] ?? ''
+}
+for (const k of LIST_KEYS) f[k] = asArray(start[k]).map(String)
+f.balcon = start.balcon || ''
+
+const FLATS = ['Квартира', 'Квартира в Новостройке', 'Комната']
+const HOUSES = ['Дом/Дача', 'Коттедж', 'Часть дома', 'Участок']
+const COMMERCIAL = ['Офис', 'Здание', 'Торговая площадь', 'Склад', 'Коммерческая земля']
+const kind = FLATS.includes(start.typeObject) ? 'flat'
+  : HOUSES.includes(start.typeObject) ? 'house'
+  : COMMERCIAL.includes(start.typeObject) || start.typeRealEstate === 'Коммерческая' ? 'commercial'
+  : 'any'
+const isRent = ['Аренда', 'Посуточно'].includes(start.dealType)
+
+const ranges = computed(() => ({
+  flat: [
+    { key: 'totalArea', label: 'Общая площадь', unit: 'м²' }, { key: 'kitchenArea', label: 'Кухня', unit: 'м²' },
+    { key: 'area', label: 'Жилая площадь', unit: 'м²' }, { key: 'floor', label: 'Этаж' },
+    { key: 'floorHouse', label: 'Этажей в доме' }, { key: 'year', label: 'Год постройки' },
+  ],
+  house: start.typeObject === 'Участок'
+    ? [{ key: 'landArea', label: 'Участок', unit: 'сот.' }]
+    : [{ key: 'houseArea', label: 'Площадь дома', unit: 'м²' }, { key: 'landArea', label: 'Участок', unit: 'сот.' }, { key: 'year', label: 'Год постройки' }],
+  commercial: [{ key: 'totalArea', label: 'Площадь', unit: 'м²' }, { key: 'floor', label: 'Этаж' }, { key: 'year', label: 'Год постройки' }],
+  any: [{ key: 'floor', label: 'Этаж' }, { key: 'year', label: 'Год постройки' }],
+}[kind]))
+
+const opts = (list) => list.map((o) => (typeof o === 'string' ? { value: o, label: o } : o))
+const conditions = ref([])
+const groups = computed(() => {
+  const list = []
+  if (kind !== 'commercial' && start.typeObject !== 'Участок') {
+    list.push({ key: 'repair', label: 'Ремонт', options: REPAIR_OPTIONS })
+    list.push({ key: 'typeHome', label: kind === 'house' ? 'Материал стен' : 'Тип дома',
+      options: opts(['Кирпичный', 'Монолитный', 'Монолитно-кирпичный', 'Панельный', 'Блочный', 'Деревянный', 'Сталинский']) })
+  }
+  if (kind === 'flat') list.push({ key: 'balcon', label: 'Балкон или лоджия', single: true, options: [{ value: 'есть', label: 'Есть' }, { value: 'нет', label: 'Нет' }] })
+  if (start.typeObject !== 'Участок') list.push({ key: 'parking', label: 'Парковка', options: opts(['Наземная', 'Подземная', 'Многоуровневая', 'На крыше']) })
+  if (isRent && conditions.value.length) list.push({ key: 'condition', label: 'Удобства', options: conditions.value })
+  return list
 })
-function updateTotalArea(value1,value2){
-    filter.totalAreaFrom = value1
-    filter.totalAreaTo = value2
-    sessionStorage.setItem('filter',JSON.stringify(filter))
+
+onMounted(async () => {
+  if (!isRent) return
+  try {
+    const res = await fetch(`${apiBase()}/api/conditions`, { headers: { Accept: 'application/json' } })
+    const list = res.ok ? await res.json() : []
+    // «можно с детьми/животными» — это условия владельца, а не удобства квартиры
+    conditions.value = list.filter((c) => !['Можно с детьми', 'Можно с животными'].includes(c.name)).map((c) => ({ value: String(c.id), label: c.name }))
+  } catch (e) { /* без списка удобств остальные фильтры работают */ }
+})
+
+const isOn = (g, v) => (g.single ? f[g.key] === v : f[g.key].includes(v))
+function toggle(g, v) {
+  if (g.single) f[g.key] = f[g.key] === v ? '' : v
+  else f[g.key] = isOn(g, v) ? f[g.key].filter((x) => x !== v) : [...f[g.key], v]
+}
+function setNumber(key, e) {
+  f[key] = e.target.value.replace(/\D/g, '').slice(0, 6)
+  e.target.value = f[key]
 }
 
-function updateArea(value1,value2){
-    filter.areaFrom = value1
-    filter.areaTo = value2
-    sessionStorage.setItem('filter',JSON.stringify(filter))
+const selectedCount = computed(() => Object.values(f).filter((v) => (Array.isArray(v) ? v.length : v !== '')).length)
+
+function clearAll() {
+  for (const k of Object.keys(f)) f[k] = Array.isArray(f[k]) ? [] : ''
 }
-
-function updateKitchenArea(value1,value2){
-    filter.kitchenAreaFrom = value1
-    filter.kitchenAreaTo = value2
-    sessionStorage.setItem('filter',JSON.stringify(filter))
+function apply() {
+  showFIlterModal.value = false
+  props.getAnnouns({ ...f })
 }
-
-function updateFloor(value1,value2){
-    filter.floorFrom = value1
-    filter.floorTo = value2
-    sessionStorage.setItem('filter',JSON.stringify(filter))
+function close() {
+  showFIlterModal.value = false
 }
-function updateFloorHouse(value1,value2){
-    filter.floorHouseFrom = value1
-    filter.floorHouseTo = value2
-    sessionStorage.setItem('filter',JSON.stringify(filter))
-}
-function updateYear(value1,value2){
-    filter.yearFrom = value1
-    filter.yearTo = value2
-    sessionStorage.setItem('filter',JSON.stringify(filter))
-}
-
-
-function updateLandArea(value1,value2){
-    filter.landAreaFrom = value1
-    filter.landAreaTo = value2
-    sessionStorage.setItem('filter',JSON.stringify(filter))
-}
-const repairs = ref([
-    {name:'Без ремонта',value:'Без ремонта'},
-    {name:'Косметический',value:'Косметический'},
-    {name:'Дизайнерский',value:'Дизайнерский'},
-    {name:'Евроремонт',value:'Евро'},
-    {name:'Обичный',value:'Обичный'},
-
-])
-
-const typeHome= ref([
-    {name:'Кирпичный'},
-    {name:'Деревянный'},
-    {name:'Панельный'},
-    {name:'Блочный'},
-    {name:'Монолитный'},
-    {name:'Монолитно-кирпичный'},
-    {name:'Сталинский'},
-
-])
-
-const parking = ref([
-    {name:'Наземная'},
-    {name:'Многоуровневая'},
-    {name:'Подземная'},
-    {name:'На крыше'},
-])
-
-const c = fetch('http://127.0.0.1:8000/api/conditions')
-const cond = await c
-const condition = ref(await cond.json()) 
-condition.value = condition.value.filter(item=>item.name !=='Можно с детьми'&&item.name !=='Можно с животными')
-console.log();
-const {showFIlterModal,showObject} = useSwitch()
-function showObjects(event){
-    showFIlterModal.value = false
-    props.getAnnouns(filter)
-}
-
-function isHideModal(){
-showFIlterModal.value = false
-}
-
-function clearAll(){
-    const inputs = document.querySelectorAll('#place')
-    inputs.forEach(input=>{
-        input.value = ''
-    })
-}
-
-
-let repairHome = []
-let parkingHome = []
-let typehouse = []
-let conditions = []
-function chooseRepair(item){
-    if (event.target.checked) {
-    if (event.target.name == 'repair') {
-        repairHome.push(item.value)
-        filter.repair = repairHome
-    }
-    if (event.target.name == 'parking') {
-        parkingHome.push(item.name)
-        filter.parking = parkingHome 
-    }
-    if (event.target.name == 'condition') {
-        conditions.push(item.id)
-        filter.condition = conditions
-    }
-
-    if (event.target.name == 'typeHome') {
-        typehouse.push(item.name)
-        filter.typeHome = typehouse
-    }
-    }
-
-
-    if (!event.target.checked) {
-        if (event.target.name == 'repair') {
-            repairHome.splice(repairHome.indexOf(item.value),1)
-            filter.repair = repairHome
-        }
-
-        if (event.target.name == 'parking') {
-            parkingHome.splice(parkingHome.indexOf(item.name),1)
-            filter.parking = parkingHome
-        }
-        if (event.target.name == 'typeHome') {
-            typehouse.splice(typehouse.indexOf(item.name),1)
-            filter.typeHome = typehouse
-        }
-        if (event.target.name == 'condition') {
-            conditions.splice(conditions.indexOf(item.id),1)
-            filter.condition = conditions
-        }
-        
-    }
-    sessionStorage.setItem('filter',JSON.stringify(filter))
-}
-
-function checkStyle(selector, repair){
-    setTimeout(()=>{
-        const rep = document.querySelectorAll(selector)
-        repair.forEach(el=>{
-                rep.forEach(r=>{
-                    if (r.id === el) {
-                        r.checked = true
-                    }
-                })
-        })
-    })
-}
-
-    repairHome = filter.repair || []
-    parkingHome = filter.parking || []
-    typehouse = filter.typeHome || []
-    conditions = filter.condition || []
-
-    checkStyle('.repair > input', repairHome)
-    checkStyle('.typeHome > input', typehouse)
-    checkStyle('.parking > input', parkingHome)
-    // checkStyle('.condition > input', conditions)
-
-    setTimeout(()=>{
-        const condsEl = document.querySelectorAll('.condition > input')
-        conditions.forEach(el=>{
-                condsEl.forEach(r=>{
-                    if (r.id == el) {
-                        r.checked = true
-                    }
-                })
-        })
-    },100)
 </script>
-
-<style scoped>
-input:checked+.label{
-    border: 1px solid black;
-    background: #00000018;
-}
-</style>

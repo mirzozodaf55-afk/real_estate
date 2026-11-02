@@ -1,404 +1,113 @@
-
-<!-- :style="announData[0].objects == 'Квартира' || announData[0].objects !== 'Комната'? 'margin-top: 80px;' : ''" -->
 <template>
-  <form
-    @change.prevent="saveImages"
-    id="forms"
-    enctype="multipart/form-data"
-    class="picture-room-container"
-  >
-    <!-- <span>Фото и планировка - от 5 и больше</span> -->
-    <div class="picture-room">
-      <div>
-        <font-awesome-icon style="color: darkgray" :icon="['fas', 'camera']" />
-      </div>
-      <p>Не добавляйте чужие фото, картинки с водяными знаками и рекламу.</p>
-    </div>
-    <div class="choose-picture" v-if="pictures.length < 12">
-      <button
-        @click.prevent="change"
-        style="background-color: rgba(15, 72, 157, 0.1); color: #0468ff"
-        class="btn w-100 fw-bold font-monospace"
-      >
-        Выберите файлы
-      </button>
-      <input type="file" max="12" multiple style="display: none" accept=".jpg, .jpeg, .png, .webp" id="input" />
-    </div>
-    <p v-for="(item,index) of size" :key="index" class="text-center text-[red] my-[1px] mx-[auto] text-[14px] mb-[0]">
-        Не получилось загрузить {{item.name}}: Минимальный размер изображения - 800x400px.
-      </p>
-    <div
-      v-if="pictures.length"
-      class="flex overflow-hidden mt-[10px] w-[100%] min-h-[70px] rounded-[13px] border"
-    >
-      <div
-        id="areaBorder"
-        class="w-full picture relative  sm:mx-[auto] mx-[auto] flex flex-wrap"
-        style="flex-basis: 100%"
-        data-id="0"
-      >
-      
-        <div
-        v-for="(img, index) of pictures"
-        :key="index"
-          @dragend="handleDrop(img, pictures)"
-          @dragleave.stop="handleDragLeave(pictures)"
-          @dragenter.prevent="handleDragEnter(pictures)"
-          @dragstart.stop="handleDragStart"
-          @dragover.prevent
-          @touchstart.stop="handleTouchStart"
-          @touchend.stop ="handleTouchEnd(img, pictures)"
-          draggable="true"
-          id="images"
-          
-          class="bg-[black] my-[3px] mx-[10px] relative flex responsive
-          mx-[auto] w-[48%] h-[150px]
-          sm:h-[170px] sm:w-[250px] sm:h-[170px] md:w-[200px]
-          md:h-[120px] lg:min-w-[180px] lg:h-[120px]
-          overflow-hidden rounded"
-        >
-        <div class="cursor-grab" >
+  <div>
+    <label class="flex flex-col items-center justify-center gap-[6px] min-h-[130px] px-[16px] rounded-[14px] border-2 border-dashed cursor-pointer transition-colors text-center"
+      :class="dragOver ? 'border-[#0468ff] bg-[#eef4ff]' : invalid && !pictures.length ? 'border-[#fca5a5] bg-[#fef2f2]/40' : 'border-[#cbd5e1] hover:border-[#0468ff] hover:bg-[#f8fafc]'"
+      @dragover.prevent="dragOver = true" @dragleave="dragOver = false" @drop.prevent="onDrop">
+      <font-awesome-icon :icon="['fas', 'camera']" class="text-[26px] text-[#0468ff]" />
+      <span class="text-[15px] font-semibold text-[#152242]">{{ pictures.length ? 'Добавить ещё фото' : 'Выберите или перетащите фото' }}</span>
+      <span class="text-[12.5px] text-[#94a3b8]">JPG, PNG, WEBP · от 800×400 px · до {{ MAX }} фото · свои снимки без водяных знаков</span>
+      <input type="file" multiple accept=".jpg,.jpeg,.png,.webp" class="hidden" @change="addFiles($event.target.files); $event.target.value = ''" data-test="photos-input" />
+    </label>
 
-          <div class="hover transition duration-150 cursor-default z-[2] absolute picture top-[-30px] w-full bg-[black]/50 h-[28px]">
-                <div
-                :data-id="index"
-                    @click.stop="removeImg(img, pictures)"
-                    class="cursor-pointer absolute overflow-hidden right-[10px] top-[4px] picture cursor-pointer text-[white] text-shadow text-[14px]"
-                      >
-                      <font-awesome-icon :icon="['fas', 'trash']" />
-                </div>
-            <div @click.stop="rotate(img)" :data-id="index" class="absolute picture left-[8px] cursor-pointer top-[2px] text-[white]">
-              <font-awesome-icon :icon="['fas', 'rotate-right']" />
-            </div>
-          </div>
-            <img
-              :style="`transform: rotate(${img.rotation}deg); object-fit:cover;` "
-              :data-id="index"
-              class="picture left-[0] absolute text-[white] z-[1] top-[0] w-full h-full"
-              :src="img.url?img.url:`http://127.0.0.1:8000/api/image/large/${img.pictures}`"
-              :alt="img.url"
-            />
-        </div>
+    <p v-for="(e, i) of rejected" :key="i" class="wz-err">{{ e }}</p>
+    <p v-if="invalid && !pictures.length" class="wz-err">Добавьте хотя бы одно фото — без фото объявление не опубликовать</p>
+
+    <div v-if="pictures.length" class="mt-[12px] grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-[10px]" data-test="photos-grid">
+      <div v-for="(img, i) of pictures" :key="img.url" draggable="true"
+        @dragstart="dragIndex = i" @dragover.prevent @drop.prevent.stop="dropOn(i)" @dragend="dragIndex = null"
+        class="group relative aspect-[4/3] rounded-[12px] overflow-hidden bg-[#0f172a] cursor-grab"
+        :class="dragIndex === i ? 'opacity-40' : ''">
+        <img :src="img.url" :style="`transform: rotate(${img.rotation}deg)`" class="w-full h-full object-cover transition-transform" alt="" />
+        <span v-if="i === 0" class="absolute left-[8px] top-[8px] px-[8px] py-[2px] rounded-full bg-[#0468ff] text-white text-[11.5px] font-bold">Обложка</span>
+        <div class="absolute inset-x-0 bottom-0 p-[6px] flex justify-end gap-[6px] bg-gradient-to-t from-black/60 to-transparent">
+          <button v-if="i > 0" type="button" @click="makeCover(i)" title="Сделать обложкой" class="w-[30px] h-[30px] rounded-full bg-white/90 hover:bg-white text-[#152242] grid place-items-center text-[12px]">
+            <font-awesome-icon :icon="['fas', 'star']" />
+          </button>
+          <button type="button" @click="rotate(img)" title="Повернуть" class="w-[30px] h-[30px] rounded-full bg-white/90 hover:bg-white text-[#152242] grid place-items-center text-[12px]">
+            <font-awesome-icon :icon="['fas', 'rotate-right']" />
+          </button>
+          <button type="button" @click="remove(i)" title="Удалить" class="w-[30px] h-[30px] rounded-full bg-white/90 hover:bg-white text-[#dc2626] grid place-items-center text-[12px]">
+            <font-awesome-icon :icon="['fas', 'trash']" />
+          </button>
         </div>
       </div>
     </div>
-  </form>
+    <p v-if="pictures.length > 1" class="wz-hint">Перетащите фото, чтобы поменять порядок. Первое — обложка, его видят в поиске.</p>
+  </div>
 </template>
+
 <script setup>
-const props = defineProps({
-  image:{
-    type:Array,
-    required:true,
-    error: Object
+// Фото объявления. Список общий (getData().images): его отправляют шаг «Фото и цена» и форма коммерческой недвижимости.
+// Элемент: { url (превью), file, position, rotation }
+defineProps({ invalid: Boolean })
 
-  }
-})
+const MAX = 20
+const MIN_W = 800
+const MIN_H = 400
+const { images } = getData()
+// вернулись на шаг — показываем уже выбранные фото, а не пустой список
+const pictures = ref(Array.isArray(images.value) ? images.value : [])
+const rejected = ref([])
+const dragOver = ref(false)
+const dragIndex = ref(null)
 
-function change(event) {
-  const file = document.querySelector(".choose-picture > input");
-  file.click();
-}
-const pictures = ref([]);
-const {images, isUpload} = getData()
-const formD = ref(new FormData());
-const size = ref([])
-function saveImages(e) {
-  const files = e.target.files;
-  for (let i = 0; i < files.length; i++) {
-    const reader = new FileReader();
-      reader.onload = (e) => {
-        let img = new Image()
-        img.src = e.target.result;
-        img.onload = function (event) {
-          if (this.width > 800 && this.height > 400) {
-            formD.value.append("images[]", files[i]);
-            pictures.value.push({
-            url: e.target.result,
-            position: pictures.value.length,
-            rotation:0,
-            file: files[i],
-          });
-          }else{
-            size.value.push({
-            name:files[i].name,
-            width:this.width,
-            height:this.height
-          })
-          }
-        } 
-      
-        images.value = pictures.value;
-        
-      } 
-          reader.readAsDataURL(files[i]);
-    };
-
-        setTimeout(() => {
-          update_formdate();
-        }, 50);
-
-        
-  }
-
-
-  setTimeout(()=>{
-  if (props.image&&props.image.length) {
-    pictures.value = props.image
-    images.value = props.image
-  }
-},1000)
-const update_formdate = () => {
-  formD.value = new FormData()
-  for (let i = 0; i < pictures.value.length; i++) {
-      formD.value.append("images[]", pictures.value[i].file);
-  }
-
-};
-
-
-
-function removeImg(img, picture) {
-  picture.splice(picture.indexOf(img), 1);
-  size.value = []
+function sync() {
+  pictures.value.forEach((p, i) => { p.position = i })
+  images.value = pictures.value
 }
 
-let currentIndex = null;
-let enterIndex = null;
-function handleDragStart(e) {
-  currentIndex = parseInt(e.target.dataset.id);
-  e.target.offsetParent.classList.add('dragging')
-}
-
-function handleDragEnter(picture) {
-  enterIndex = parseInt(event.target.dataset.id);
-  
-}
-// function handleDragLeave(picture) {
-  
-// }
-let startIndex = null
-function handleTouchStart(e) {
-  document.body.style.overflow='hidden'
-  const touch = e.touches[0];
-  currentIndex = parseInt(touch.target.dataset.id);
-  const element = document.elementFromPoint(touch.clientX, touch.clientY);
-  const targetPhotoId1 = element.closest(".picture").dataset.id;
-  startIndex = targetPhotoId1 
-}
-
-function handleDrop(img,picture) {
-  const draggImage = picture[enterIndex];
-  if (currentIndex !== null) {
-    picture[enterIndex] =  picture[currentIndex]
-    picture[currentIndex] = draggImage
-    picture.forEach((item,i)=>{
-      item.position = i
-    })
-    event.target.offsetParent.classList.remove('dragging')
-    currentIndex = null;
-    enterIndex = null;
-  }
-}
-function handleDragLeave(){
-  return
-}
-
-function handleTouchEnd(img, picture) {
-  document.body.style.overflow = '';
-  const touches = event.changedTouches[0];
-  const element = document.elementFromPoint(touches.clientX, touches.clientY);
-  let targetPhotoId = null;
-
-  // Проверка, что найденный элемент или его родители имеют класс "picture"
-  let currentElement = element;
-  while (currentElement) {
-    if (currentElement.classList.contains("picture")) {
-      targetPhotoId = currentElement.dataset.id;
-      break;
+function addFiles(fileList) {
+  rejected.value = []
+  const files = [...fileList].filter((f) => /^image\/(jpeg|png|webp)$/.test(f.type))
+  if (files.length < fileList.length) rejected.value.push('Часть файлов пропущена: подходят только JPG, PNG и WEBP')
+  for (const file of files) {
+    if (pictures.value.length >= MAX) {
+      rejected.value.push(`Можно загрузить не больше ${MAX} фото`)
+      break
     }
-    currentElement = currentElement.parentElement;
-  }
-
-  if (targetPhotoId !== null) {
-    const saveElems = picture[startIndex];
-    picture[startIndex] = picture[targetPhotoId];
-    picture[targetPhotoId] = saveElems;
-    startIndex = null;
-    picture.forEach((item, index) => {
-      item.position = index;
-    });
-  }
-}
-
-
-function rotate(img){
-  if (img) {
-    img.rotation += 90
-  const images = document.querySelectorAll('img')
-  images.forEach(image=>{
-    if(image.src === img.url){
-      
+    const url = URL.createObjectURL(file)
+    const probe = new Image()
+    probe.onload = () => {
+      if (probe.naturalWidth >= MIN_W && probe.naturalHeight >= MIN_H) {
+        pictures.value.push({ url, file, position: pictures.value.length, rotation: 0 })
+        sync()
+      } else {
+        URL.revokeObjectURL(url)
+        rejected.value.push(`«${file.name}» слишком маленькое (${probe.naturalWidth}×${probe.naturalHeight}) — нужно от ${MIN_W}×${MIN_H} px`)
+      }
     }
-    
-  })
-  if (img.rotation >= 360) {
-    img.rotation = 0
-  }
+    probe.src = url
   }
 }
 
-  // if (isUpload.value) {
-  //   pictures.value = images.value
-  // }else{
-  //   images.value = pictures.value
-  // }
+function onDrop(e) {
+  dragOver.value = false
+  if (e.dataTransfer?.files?.length) addFiles(e.dataTransfer.files)
+}
 
+function dropOn(target) {
+  const from = dragIndex.value
+  dragIndex.value = null
+  if (from === null || from === target) return
+  const [moved] = pictures.value.splice(from, 1)
+  pictures.value.splice(target, 0, moved)
+  sync()
+}
+
+function makeCover(i) {
+  const [moved] = pictures.value.splice(i, 1)
+  pictures.value.unshift(moved)
+  sync()
+}
+
+function rotate(img) {
+  img.rotation = (img.rotation + 90) % 360
+}
+
+function remove(i) {
+  const [removed] = pictures.value.splice(i, 1)
+  if (removed?.url?.startsWith('blob:')) URL.revokeObjectURL(removed.url)
+  rejected.value = []
+  sync()
+}
 </script>
-
-<style scoped>
-.hover {
-  transition: all .3s;
-}
-.dragging{
-  opacity: 0;
-  border-radius: 6px;
-}
-#images:hover .hover{
-  top: 0;
-}
-.lds-spinner {
-  color: official;
-  display: inline-block;
-  position: relative;
-  width: 80px;
-  height: 80px;
-}
-.lds-spinner div {
-  transform-origin: 40px 40px;
-  animation: lds-spinner 1.2s linear infinite;
-}
-.lds-spinner div:after {
-  content: " ";
-  display: block;
-  position: absolute;
-  top: 3px;
-  left: 37px;
-  width: 6px;
-  height: 18px;
-  border-radius: 20%;
-  background: #006cfd;
-}
-.lds-spinner div:nth-child(1) {
-  transform: rotate(0deg);
-  animation-delay: -1.1s;
-}
-.lds-spinner div:nth-child(2) {
-  transform: rotate(30deg);
-  animation-delay: -1s;
-}
-.lds-spinner div:nth-child(3) {
-  transform: rotate(60deg);
-  animation-delay: -0.9s;
-}
-.lds-spinner div:nth-child(4) {
-  transform: rotate(90deg);
-  animation-delay: -0.8s;
-}
-.lds-spinner div:nth-child(5) {
-  transform: rotate(120deg);
-  animation-delay: -0.7s;
-}
-.lds-spinner div:nth-child(6) {
-  transform: rotate(150deg);
-  animation-delay: -0.6s;
-}
-.lds-spinner div:nth-child(7) {
-  transform: rotate(180deg);
-  animation-delay: -0.5s;
-}
-.lds-spinner div:nth-child(8) {
-  transform: rotate(210deg);
-  animation-delay: -0.4s;
-}
-.lds-spinner div:nth-child(9) {
-  transform: rotate(240deg);
-  animation-delay: -0.3s;
-}
-.lds-spinner div:nth-child(10) {
-  transform: rotate(270deg);
-  animation-delay: -0.2s;
-}
-.lds-spinner div:nth-child(11) {
-  transform: rotate(300deg);
-  animation-delay: -0.1s;
-}
-.lds-spinner div:nth-child(12) {
-  transform: rotate(330deg);
-  animation-delay: 0s;
-}
-@keyframes lds-spinner {
-  0% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
-}
-@media screen and (max-width: 420px) {
-  .responsive {
-    width: 100%;
-    height: 200px;
-  }
-}
-@media screen and (min-width: 320px) {
-  .picture-room-container {
-    display: flex;
-    width: 100%;
-    flex-direction: column;
-  }
-  .picture-room-container > span {
-    font-size: 16px;
-    font-family: lato, sans-serif;
-    letter-spacing: -0.2;
-    font-weight: 700;
-    line-height: 24px;
-  }
-  .picture-room {
-    display: flex;
-    align-items: center;
-  }
-  .picture-room > p {
-    margin-top: 10px;
-    width: 35%;
-    margin-left: 15px;
-    font-size: 12px;
-    height: max-content;
-  }
-}
-
-@media screen and (min-width: 640px) {
-  .picture-room-container {
-    display: flex;
-    width: 100%;
-    flex-direction: column;
-  }
-  .picture-room-container > span {
-    font-size: 16px;
-    font-family: lato, sans-serif;
-    letter-spacing: -0.2;
-    font-weight: 700;
-    line-height: 24px;
-  }
-  .picture-room {
-    display: flex;
-    align-items: center;
-  }
-  .picture-room > p {
-    margin-top: 10px;
-    width: 35%;
-    margin-left: 15px;
-    font-size: 12px;
-    height: max-content;
-  }
-}
-</style>

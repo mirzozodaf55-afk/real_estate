@@ -31,42 +31,46 @@
           Подтверждение входа
         </h3>
         <span v-if="sendDataUSer" class="text-[14px] mt-[5px]">
-          <div>Подтвердите номер телефона</div> 
-        <div>{{tel.phone}} введите код из смс</div>
-        <div @click="change"><a style="text-decoration:none;" class="text-primary">Изменить номер</a></div>
+          <div>Мы отправили код на почту</div>
+        <div><b>{{ email }}</b></div>
+        <div class="text-[13px] text-[#94a3b8]">Не пришло? Проверьте папку «Спам»</div>
+        <div @click="change"><a style="text-decoration:none;" class="text-primary cursor-pointer">Изменить почту</a></div>
         </span>
       </div>
-      <form class="w-[80%] h-[max-content] flex flex-col mx-auto">
+      <form class="w-[80%] h-[max-content] flex flex-col mx-auto" @submit.prevent="sendDataUSer ? getCode() : createUser()">
         <input
           v-if="!sendDataUSer"
-          v-maska
-          data-maska="+(992) ##-###-##-##"
-          v-model="tel.phone"
+          v-model.trim="email"
           class="form-control"
-          type="text"
+          type="email"
+          autocomplete="email"
           style="box-shadow:none;"
-          placeholder="phone"
+          placeholder="Электронная почта"
         />
         <input
         v-if="sendDataUSer"
           v-maska
           v-model="verified"
           @input="getCode"
-          data-maska="******"
-          class="form-control text-[20px]"
+          data-maska="######"
+          inputmode="numeric"
+          autocomplete="one-time-code"
+          class="form-control text-[20px] text-center tracking-[6px]"
           type="text"
           style="box-shadow:none;"
           placeholder="Код"
         />
+        <p v-if="error" class="text-[red] text-[13px] text-center mt-[6px] mb-0">{{ error }}</p>
         <span style="text-decoration:none;" v-if="time" class="text-center decoration-0 text-[silver] mt-[6px] text-[13px]">Отправить код повторно через <b>{{time}}</b> сек.</span>
         <a style="text-decoration:none;" v-if="!time && sendDataUSer" @click.prevent="createUser" class="text-center text-primary mt-[6px] text-[13px]">Отправить код повторно</a>
         <button
         v-if="sendDataUSer"
-          @click.prevent
+          @click.prevent="getCode"
+          :disabled="verified.length !== 6 || loader"
           style="font-family: Lato, Arial, sans-serif"
           class="mt-[25px] bg-primary text-white py-[5px] rounded-1 flex justify-center h-[40px] text-[rgba(13,110,253,1)] py-[6px] items-center"
           id="continue"
-          :style="verified.length === 6 ?'opacity:0.5;':'opacity:1;'"
+          :style="verified.length === 6 ?'opacity:1;':'opacity:0.5;'"
           >
         <span v-if="!loader">Продолжить</span> 
           
@@ -78,7 +82,8 @@
         <button
         v-if="!sendDataUSer"
           @click.prevent="createUser"
-          :class="tel.phone.length >= 19 ? 'bg-primary text-white py-[5px]' : 'bg-light'"
+          :disabled="!emailValid || loader"
+          :class="emailValid ? 'bg-primary text-white py-[5px]' : 'bg-light'"
           style="font-family: Lato, Arial, sans-serif"
           class="mt-[10px] rounded-1 flex justify-center h-[40px] text-[rgba(13,110,253,1)] py-[6px] items-center"
         >
@@ -88,30 +93,31 @@
             <span class="sr-only">Loading...</span>
           </div>
         </button>
-        <p class="ml-[80px] mt-[20px]">Войти через</p>
-        <div class="flex  w-full justify-evenly items-center h-full">
-
-          <button
-          v-if="!sendDataUSer"
-            style="font-family: Lato, Arial, sans-serif"
-            class=" mt-[10px]"
-            @click.prevent
-          >
-          <font-awesome-icon :icon="['fas', 'g']" style="color: orangered; font-size: 45px;"/>
-          <p>google</p>
+        <!-- Вход через Google / Apple: кнопки только для настроенных на сервере провайдеров (/api/auth/providers) -->
+        <template v-if="!sendDataUSer && (providers.google || providers.apple)">
+          <div class="flex items-center gap-[10px] mt-[18px] mb-[12px] text-[13px] text-[#94a3b8]">
+            <span class="flex-1 h-px bg-[#e2e8f0]"></span>или<span class="flex-1 h-px bg-[#e2e8f0]"></span>
+          </div>
+          <button v-if="providers.google" type="button" @click="loginGoogle" :disabled="!!socialBusy" data-test="login-google"
+            class="h-[44px] rounded-[10px] border border-[#e2e8f0] bg-white hover:bg-[#f8fafc] flex items-center justify-center gap-[10px] text-[15px] font-semibold text-[#152242] disabled:opacity-60">
+            <font-awesome-icon v-if="socialBusy === 'google'" :icon="['fas', 'spinner']" spin-pulse />
+            <svg v-else width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+              <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/>
+              <path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+              <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
+              <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/>
+            </svg>
+            Продолжить с Google
           </button>
-          <button
-          v-if="!sendDataUSer"
-            style="font-family: Lato, Arial, sans-serif;"
-            class="text-black mt-[10px]"
-            @click.prevent
-          >
-          <font-awesome-icon :icon="['fab', 'apple']" style="color: darkslategray; font-size: 50px;"/>
-          <p>apple</p>
+          <button v-if="providers.apple" type="button" @click="loginApple" :disabled="!!socialBusy" data-test="login-apple"
+            class="apple-btn mt-[10px] h-[44px] rounded-[10px] bg-black hover:bg-[#1f1f1f] flex items-center justify-center gap-[10px] text-[15px] font-semibold text-white disabled:opacity-60">
+            <font-awesome-icon v-if="socialBusy === 'apple'" :icon="['fas', 'spinner']" spin-pulse />
+            <svg v-else width="18" height="18" viewBox="0 0 384 512" fill="currentColor" aria-hidden="true">
+              <path d="M318.7 268.7c-.2-36.7 16.4-64.4 50-84.8-18.8-26.9-47.2-41.7-84.7-44.6-35.5-2.8-74.3 20.7-88.5 20.7-15 0-49.4-19.7-76.4-19.7C63.3 141.2 4 184.8 4 273.5q0 39.3 14.4 81.2c12.8 36.7 59 126.7 107.2 125.2 25.2-.6 43-17.9 75.8-17.9 31.8 0 48.3 17.9 76.4 17.9 48.6-.7 90.4-82.5 102.6-119.3-65.2-30.7-61.7-90-61.7-91.9zm-56.6-164.2c27.3-32.4 24.8-61.9 24-72.5-24.1 1.4-52 16.4-67.9 34.9-17.5 19.8-27.8 44.3-25.6 71.9 26.1 2 49.9-11.4 69.5-34.3z"/>
+            </svg>
+            Продолжить с Apple
           </button>
-        </div>
-        
-
+        </template>
       </form>
 
       <div class="help w-[80%] flex justify-center mx-auto mt-[70px] mb-[20px]">
@@ -141,98 +147,199 @@ const { responce,direction } = getData();
 const { showMadoal,active } = useSwitch();
 const verified = ref('')
 function hideModal() {
-  const { showMadoal, active } = useSwitch();
   document.body.style.overflow = "scroll";
-  tel.value = "";
+  email.value = "";
   showMadoal.value = false;
 }
 const sendDataUSer = ref(false)
 
-const tel = ref({
-  phone: "(992)",
-});
+const email = ref("")
+const error = ref("")
+const emailValid = computed(() => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value))
 let time = ref(0)
+let timer = null
 const token = useCookie('token')
-async function createUser() {
-  loader.value = true;
-  verified.value =''
-  if (tel.value.phone.length >= 19) {
-    await fetch("http://127.0.0.1:8000/api/create_user", {
-      method: "post",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify({
-        phone: tel.value.phone.replace(/[^0-9]/g, "").slice(3, 12),
-      }),
-    })
-      .then((res) => {
-        if (res.ok) {
-          time.value = 59
-          // window.location.replace(direction.value)
-          // active.value = false
-          sendDataUSer.value = true
-          let timer = setInterval(()=>{
-          time.value--;
-          if (time.value < 1) {
-            // sendDataUSer.value = false;
-            clearInterval(timer); // Остановка таймера, когда time.value достигает 0
-            timer = null; // Сброс таймера
-          }
-          },1000)
-        } else{
-          sendDataUSer.value = false
-        }
-        return res.json();
-      })
-      .then((res) => {
-        // console.log(res);
-        setTimeout(()=>{
-          verified.value = res[0]
-          responce.value = res[1];
-        localStorage.setItem("token", JSON.stringify(responce.value));
-        token.value = res[1]
 
-        console.log(res);
-        
-        },3000)
-      });
+async function readMessage(res, fallback) {
+  try {
+    const data = await res.json()
+    return data.message || fallback
+  } catch (e) {
+    return fallback
   }
-  // else{
-  //   showMadoal.value = false
-  // }
-  // tel.value.phone = "";
-  loader.value = false;
 }
-async function getCode(){
-  if (verified.value.length === 6) {
-  loader.value = true;
-    await fetch("http://127.0.0.1:8000/api/verify-user", {
+
+// Шаг 1: просим сервер отправить код на почту. В ответ сервер больше ничего секретного не отдаёт.
+async function createUser() {
+  if (!emailValid.value || loader.value) return
+  error.value = ''
+  verified.value = ''
+  loader.value = true
+  try {
+    const res = await fetch(`${apiBase()}/api/create_user`, {
       method: "post",
-      headers: {
-        "Content-type": "application/json",
-      },
-      body: JSON.stringify({
-        code: parseInt(verified.value),
-        phone:tel.value.phone.replace(/[^0-9]/g, "").slice(3, 12),
-      }),
+      headers: { "Content-type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ email: email.value }),
     })
-      .then((res) =>res.json())
-      .then((res) => {
-        
-        // showMadoal.value = false;
-        responce.value = res;
-        window.location.replace(direction.value)
-        // localStorage.setItem("owner", JSON.stringify(responce.value));
-        
-      });
-  loader.value = false;
+    if (!res.ok) {
+      error.value = res.status === 429
+        ? 'Слишком много запросов, подождите минуту'
+        : await readMessage(res, 'Не удалось отправить код')
+      return
+    }
+    sendDataUSer.value = true
+    time.value = 59
+    clearInterval(timer)
+    timer = setInterval(() => {
+      time.value--
+      if (time.value < 1) {
+        clearInterval(timer)
+        timer = null
+      }
+    }, 1000)
+  } catch (e) {
+    error.value = 'Нет связи с сервером'
+  } finally {
+    loader.value = false
   }
 }
+
+// Шаг 2: проверяем код — только теперь сервер выдаёт токен.
+async function getCode(){
+  if (verified.value.length !== 6 || loader.value) return
+  error.value = ''
+  loader.value = true
+  try {
+    const res = await fetch(`${apiBase()}/api/verify-user`, {
+      method: "post",
+      headers: { "Content-type": "application/json", Accept: "application/json" },
+      body: JSON.stringify({ email: email.value, code: verified.value }),
+    })
+    if (!res.ok) {
+      error.value = await readMessage(res, 'Неверный код')
+      verified.value = ''
+      return
+    }
+    const data = await res.json()
+    localStorage.setItem("token", JSON.stringify(data.token))
+    token.value = data.token
+    responce.value = data.user
+    window.location.replace(direction.value || '/')
+  } catch (e) {
+    error.value = 'Нет связи с сервером'
+  } finally {
+    loader.value = false
+  }
+}
+// --- Вход через Google / Apple
+const providers = ref({ google: null, apple: null })
+const socialBusy = ref('')
+onMounted(async () => {
+  try {
+    const res = await fetch(`${apiBase()}/api/auth/providers`, { headers: { Accept: 'application/json' } })
+    if (res.ok) providers.value = await res.json()
+  } catch (e) { /* без провайдеров остаётся вход по коду */ }
+})
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) return resolve()
+    const el = document.createElement('script')
+    el.src = src
+    el.onload = resolve
+    el.onerror = () => reject(new Error('script'))
+    document.head.appendChild(el)
+  })
+}
+
+// после провайдера — то же, что после кода из письма
+async function finishSocial(path, body) {
+  const res = await fetch(`${apiBase()}/api${path}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify(body),
+  })
+  if (!res.ok) {
+    error.value = await readMessage(res, 'Не удалось войти, попробуйте ещё раз')
+    return
+  }
+  const data = await res.json()
+  localStorage.setItem('token', JSON.stringify(data.token))
+  token.value = data.token
+  responce.value = data.user
+  window.location.replace(direction.value || '/')
+}
+
+async function loginGoogle() {
+  error.value = ''
+  // Google пускает только https или localhost — по IP в локальной сети он покажет «origin_mismatch»
+  if (location.protocol !== 'https:' && location.hostname !== 'localhost') {
+    error.value = `Вход через Google работает только по адресу http://localhost:${location.port || 80} или на сайте с https. Сейчас открыт ${location.host} — войдите по коду из письма.`
+    return
+  }
+  socialBusy.value = 'google'
+  try {
+    await loadScript('https://accounts.google.com/gsi/client')
+    // окно Google со своей кнопкой: получаем access_token, сервер сам спросит у Google, кто это
+    const client = window.google.accounts.oauth2.initTokenClient({
+      client_id: providers.value.google,
+      scope: 'openid email profile',
+      callback: async (resp) => {
+        try {
+          if (resp.error || !resp.access_token) {
+            error.value = 'Вход через Google отменён'
+            return
+          }
+          await finishSocial('/auth/google', { access_token: resp.access_token })
+        } catch (e) {
+          error.value = 'Нет связи с сервером'
+        } finally {
+          socialBusy.value = ''
+        }
+      },
+      error_callback: (e) => {
+        // закрыли окно или браузер заблокировал всплывающее окно
+        error.value = e?.type === 'popup_failed_to_open' ? 'Браузер заблокировал окно Google — разрешите всплывающие окна' : 'Вход через Google отменён'
+        socialBusy.value = ''
+      },
+    })
+    client.requestAccessToken()
+  } catch (e) {
+    error.value = 'Google сейчас недоступен'
+    socialBusy.value = ''
+  }
+}
+
+async function loginApple() {
+  error.value = ''
+  socialBusy.value = 'apple'
+  try {
+    await loadScript('https://appleid.cdn-apple.com/appleauth/static/jsapi/appleid/1/ru_RU/appleid.auth.js')
+    window.AppleID.auth.init({
+      clientId: providers.value.apple.client_id,
+      redirectURI: providers.value.apple.redirect,
+      scope: 'name email',
+      usePopup: true,
+    })
+    const resp = await window.AppleID.auth.signIn()
+    await finishSocial('/auth/apple', {
+      id_token: resp.authorization.id_token,
+      first_name: resp.user?.name?.firstName,
+      last_name: resp.user?.name?.lastName,
+    })
+  } catch (e) {
+    // popup_closed_by_user — просто закрыли окно
+    if (e?.error !== 'popup_closed_by_user') error.value = 'Не удалось войти через Apple'
+  } finally {
+    socialBusy.value = ''
+  }
+}
+
   function change(){
     sendDataUSer.value = false
-    time.value = 1
-    tel.value.phone = '+(992)'
+    error.value = ''
+    verified.value = ''
+    time.value = 0
   }
 // }
 </script>

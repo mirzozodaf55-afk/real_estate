@@ -2,7 +2,7 @@ import Pusher from "pusher-js";
 
 export default defineNuxtPlugin((nuxtApp) => {
   const pusher = new Pusher("local", {
-    wsHost: "127.0.0.1:",
+    wsHost: wsHost(),
     wsPort: 6001,
     forceTLS: false,
     disableStats: true,

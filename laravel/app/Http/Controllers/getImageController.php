@@ -65,7 +65,8 @@ class getImageController extends Controller
         $name = uniqid() . '.'. $file->getClientOriginalExtension();
         $image->fit(700, 400)->save(public_path('avatar/' . $name));
         
-        $owner = Owner::where('phone_number', $request->phone)->first();
+        // Аватар меняем только себе — пользователь из токена, а не из присланного phone
+        $owner = $request->user();
         $owner->update(['avatar'=>$name]);
 
         return $owner;

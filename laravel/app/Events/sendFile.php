@@ -23,8 +23,9 @@ class sendFile implements ShouldBroadcast
 
     public function broadcastOn()
     {
+        // только участникам этой переписки, а не всем открытым чатам
         return [
-            'file',
+            new Channel(\App\Support\ChatChannel::name((int) $this->data['user_id'], (int) $this->data['friend_id'])),
         ];
     }
 

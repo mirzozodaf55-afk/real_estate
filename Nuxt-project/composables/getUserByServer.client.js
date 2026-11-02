@@ -8,27 +8,37 @@ export function getUserByServer(adToken = null) {
   const token = ref(adToken)
 
   onMounted(async () => {
-    if (!loaded.value) {
+    // !loading: компоненты монтируются почти одновременно, и без этой проверки каждый слал свой
+    // запрос — какой ответ приходил последним, тот и затирал пользователя.
+    if (!loaded.value && !loading.value) {
+      // Раньше здесь брался сырой localStorage.getItem('token') — токен лежит там как JSON-строка
+      // с кавычками, и запрос уходил с "Bearer \"5|...\"" → 401.
       if (process.client && !token.value) {
-        token.value = localStorage.getItem('token')
+        token.value = getToken()
       }
 
       if (!token.value) {
-        console.warn('Токен не найден')
         return
       }
 
       loading.value = true
 
       try {
-        const res = await fetch('http://127.0.0.1:8000/api/get_user', {
+        const res = await fetch(`${apiBase()}/api/get_user`, {
           headers: {
-            Authorization: 'Bearer ' + token.value
+            Authorization: 'Bearer ' + token.value,
+            Accept: 'application/json',
           },
-          // credentials: 'include',
         })
 
-        user.value = await res.json()
+        // Ответ об ошибке ({"message":"Unauthenticated."}) не должен становиться "пользователем"
+        if (res.ok) {
+          user.value = await res.json()
+        } else if (res.status === 401) {
+          // токен просрочен (30 дней) или отозван — убираем, чтобы не слать его с каждым запросом
+          localStorage.removeItem('token')
+          useCookie('token').value = null
+        }
       } catch (err) {
         // console.error('Ошибка при получении user:', err)
       } finally {
@@ -38,5 +48,5 @@ export function getUserByServer(adToken = null) {
     }
   })
 
-  return { user, loading }
+  return { user, loading, loaded }
 }

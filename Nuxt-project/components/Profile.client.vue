@@ -20,7 +20,7 @@
                                             <p v-if="loadImage" class="text-[white]" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%,-50%);">
                                                 <font-awesome-icon :icon="['fas', 'rotate']" spin />
                                             </p>
-                                                    <img :src="`http://127.0.0.1:8000/api/avatar/${avatar?avatar:owner.avatar}`" class="w-full h-full rounded-[50%]">
+                                                    <img :src="`${apiBase()}/api/avatar/${avatar?avatar:owner.avatar}`" class="w-full h-full rounded-[50%]">
                                                 </span>
                                             </a>
                                             <div class="flex flex-col justify-center" style="flex: 1 1;">
@@ -134,14 +134,15 @@ const message = ref('')
 const password = ref('')
 const confirm_password = ref('')
 const {user} = getUserByServer()
-const owner = user.value
+// Было `const owner = user.value` — при F5 пользователь ещё не загружен (null), и следующая же
+// строка `owner.value = ...` падала, а error.vue показывал "404". Теперь это настоящий ref.
+const owner = ref(user.value || {})
 const d = new Date()
 const age = ref(0)
 const {avatar} = getData()
 watch(user,(value)=>{
-    owner.value=value
-})
-console.log(user.value);
+    owner.value = value || {}
+}, { immediate: true })
 
 function changeType(){
     isPassword.value = !isPassword.value
@@ -167,50 +168,47 @@ function data(){
 }
 // const loadImage = ref(false)
 async function addNewPicture(event){
-    owner.value = user.value
-    
+    const file = event.target.files[0]
+    if (!file) return
+
     const formData = new FormData()
-    formData.append('avatar',event.target.files[0])
-    formData.append('phone', owner.value.phone_number)
+    formData.append('avatar', file)
     loadImage.value=true
-    await fetch('http://127.0.0.1:8000/api/avatar',{
-        method:'post',
-        headers:{
-            Authorization:'Bearer '+JSON.parse(localStorage.getItem('token')) 
-        },
-        body:formData
-    })
-    .then(res=>res.json())
-    .then(res=>{
-        avatar.value = res.avatar || {}
-        // responce.value[1] = res
-        owner.value = user.value = res
-        
-        // localStorage.setItem('owner',JSON.stringify(res))
-        
-        
-    })
-    loadImage.value =false
+    try {
+        const res = await fetch(`${apiBase()}/api/avatar`,{
+            method:'post',
+            headers:{
+                Authorization:'Bearer '+getToken(),
+                Accept: 'application/json',
+            },
+            body:formData
+        })
+        // Обновляем пользователя только при успехе — иначе ответ-ошибка затирал его данные
+        if (res.ok) {
+            const updated = await res.json()
+            avatar.value = updated.avatar
+            owner.value = user.value = updated
+        }
+    } finally {
+        loadImage.value =false
+    }
 }
 
 async function sendData(){
-    owner.value = user.value
-    
-    await fetch('http://127.0.0.1:8000/api/update_user',{
+    await fetch(`${apiBase()}/api/update_user`,{
         method:'post',
         headers:{
             "Content-Type":'application/json',
-            Authorization:'Bearer '+JSON.parse(localStorage.getItem('token')) 
+            Authorization:'Bearer '+getToken() 
         },
         body:JSON.stringify({
             name:name.value,
             lastName:lastName.value,
             date:date.value,
-            phone: owner.value.phone_number
         })
-        
+
     })
-    .then(res=>res.json())
+    .then(res=>res.ok ? res.json() : Promise.reject(res))
     .then(res=>{
         user.value = owner.value = res
         name.value= lastName.value= date.value = ''
@@ -226,21 +224,24 @@ async function sendData(){
 }
 
 async function sendMessage(){
-    owner.value = user.value
-    await fetch('http://127.0.0.1:8000/api/send_message',{
+    await fetch(`${apiBase()}/api/send_message`,{
         method:'post',
         headers:{
             "Content-Type":'application/json',
-            Authorization:'Bearer '+JSON.parse(localStorage.getItem('token')) 
+            Authorization:'Bearer '+getToken()
         },
         body:JSON.stringify({
-            'phone':owner.phone_number,
             'email':message.value
         })
     })
-    .then(res=>res.json())
+    .then(res=>res.ok ? res.json() : Promise.reject(res))
     .then(res=>{
        message.value = res.email
+       user.value = owner.value = res
+    })
+    .catch(async (res) => {
+       // например, почта уже занята другим аккаунтом
+       try { alert((await res.json()).message) } catch (e) {}
     })
     
 }
@@ -250,11 +251,11 @@ function confirm(){
 }
 
 async function getUser(){
-    await fetch('http://127.0.0.1:8000/api/get_user',{
+    await fetch(`${apiBase()}/api/get_user`,{
        method:'GET',
        headers:{
            "Content-Type":'application/json',
-           Authorization:'Bearer '+ JSON.parse(localStorage.getItem('token')) 
+           Authorization:'Bearer '+ getToken() 
        }
    })
    .then(res=>res.json())
@@ -268,7 +269,7 @@ async function getUser(){
        const birthYear = new Date(date.value)
        const year = birthYear.getFullYear()  
        
-       if (owner.birth_date || res.date) {
+       if (owner.value.birth_date || res.date) {
            
            age.value = d.getFullYear() - year
        }      
@@ -276,6 +277,6 @@ async function getUser(){
 }
 
 onMounted(()=>{
-owner.value = user.value
+if (user.value) owner.value = user.value
 })
 </script>

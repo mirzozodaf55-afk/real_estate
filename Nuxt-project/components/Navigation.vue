@@ -1,18 +1,18 @@
 <template>
     <div class="navigations">
             <ul class="list" @click="show">
-                <li v-if="user.phone_number" class="service" @click="logOut()">
+                <li v-if="!user.id" class="service" @click="logOut()">
                     <div>
-                        <font-awesome-icon style="font-size:1.15em;" :icon="['fas', 'right-to-bracket']" />   
+                        <font-awesome-icon style="font-size:1.15em;" :icon="['fas', 'right-to-bracket']" />
                     </div>
                     <a>Войти</a>
                 </li>
-                <li v-if="!user.phone_number" class="flex w-[200px] ml-[5px] items-center" @click="logOut">
-                    <div v-if="!user.phone_number" class="user"  :style="`background-image: url('http://127.0.0.1:8000/api/avatar/${user.avatar}');`">
-                        
+                <li v-if="user.id" class="flex w-[200px] ml-[5px] items-center" @click="logOut">
+                    <div class="user"  :style="`background-image: url('${apiBase()}/api/avatar/${user.avatar}');`">
+
                     </div>
-                    <span v-if="!user.phone_number" class="ml-[10px] font-bold" >
-                        <span style="font-family: Lato,Arial,sans-serif;">{{user.name + user.last_name ? user.last_name +' '+ user.name: `+992 ${user.phone_number}`}}</span> 
+                    <span class="ml-[10px] font-bold" >
+                        <span style="font-family: Lato,Arial,sans-serif;">{{ user.name || user.last_name ? `${user.last_name || ''} ${user.name || ''}`.trim() : (user.phone_number ? `+992 ${user.phone_number}` : user.email) }}</span>
                     </span>
                 </li>
                     <li class="bottom"></li>
@@ -36,9 +36,7 @@ watch(user,(value)=>{
 
     const phone = ref()
     function logOut(){
-        console.log(data.value.phone_number);
-        
-        if (data.value.phone_number) {
+        if (data.value && data.value.id) {
         active.value = false
         document.body.style.overflow ='auto';    
         navigateTo('/personal_area/profile')

@@ -28,6 +28,18 @@ class RouteServiceProvider extends ServiceProvider
             return Limit::perMinute(60)->by($request->user()?->id ?: $request->ip());
         });
 
+        // Лимиты отдельных маршрутов (в минуту). Безымянный throttle:N,1 считает ВСЕ запросы пользователя общим
+        // счётчиком — после десятка обычных запросов (профиль, чат, «печатает…») /ai/describe уже отвечал 429.
+        // У именованного лимитера счётчик свой.
+        $limits = [
+            'ai-write' => 10, 'ai-chat' => 15, 'ai-review' => 30, 'photo-check' => 20,
+            'my-announ' => 30, 'notify-me' => 30, 'search' => 120, 'show-announ' => 240,
+            'create-user' => 5, 'verify-user' => 20,
+        ];
+        foreach ($limits as $name => $perMinute) {
+            RateLimiter::for($name, fn (Request $request) => Limit::perMinute($perMinute)->by($request->user()?->id ?: $request->ip()));
+        }
+
         $this->routes(function () {
             Route::middleware('api')
                 ->prefix('api')

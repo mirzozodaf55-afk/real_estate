@@ -1,117 +1,45 @@
 <template>
-    <ul class="lists">
-        <li class="service">
-
-            <div>
-                <font-awesome-icon class="fas" :icon="['fas', 'search']" />
-            </div>
-            <a href="#">Новый поиск</a>
+    <ul class="list-none m-0 p-0">
+        <li v-for="item of MENU" :key="item.label">
+            <button type="button" @click="go(item)" class="w-full flex items-center gap-[14px] px-[16px] py-[12px] text-left text-[16px] font-semibold text-[#152242] active:bg-[#f1f5f9]">
+                <font-awesome-icon :icon="item.icon" class="w-[20px] text-[18px] text-[#475569]" />
+                {{ item.label }}
+            </button>
         </li>
-        <li class="service" @click="Announ">
-            <div >
-                <!-- <font-awesome-icon class="fas" :icon="['fas', 'circle-plus']" /> -->
-                <Icon class="font-awe" name="uil:plus-circle" color="#152242"/>
-                <!-- <img class="fas" src="C:\Users\pc1\Downloads\Laravel 10\plus.png" alt=""> -->
-                
-                
-            </div>
-            <a >Разместить oбъявление</a>
+        <li>
+            <button type="button" @click="toggleTheme" class="w-full flex items-center gap-[14px] px-[16px] py-[12px] text-left text-[16px] font-semibold text-[#152242] active:bg-[#f1f5f9]">
+                <font-awesome-icon :icon="theme === 'dark' ? ['fas', 'sun'] : ['far', 'moon']" class="w-[20px] text-[18px] text-[#475569]" />
+                {{ theme === 'dark' ? 'Светлая тема' : 'Тёмная тема' }}
+            </button>
         </li>
-
-        <li class="service">
-            <div>
-                <font-awesome-icon class="fas" :icon="['far', 'heart']" />
-            </div>
-            <a href="#">Избранное</a>
-        </li>
-        <li class="service">
-            <div>
-                <font-awesome-icon class="fas" :icon="['far', 'comment']" />
-            </div>
-            <a href="#">Сообщение</a>
-        </li>
-        <li class="service">
-            <div>
-                <font-awesome-icon class="fas" :icon="['far', 'building']" />
-            </div>
-            <a href="#">&nbsp;Куплю / Сниму</a>
-        </li>
-        
-        <Search/>
+        <Search />
     </ul>
 </template>
 <script setup>
-const route = useRoute()
-const {isShow,showMadoal, toggleShow, active} = useSwitch()
-const {responce,direction} = getData()
-responce.value = JSON.parse(localStorage.getItem('owner')) || []
-const data = responce.value || {}
-function Announ(){
-    
-    if (navigator.maxTouchPoints) {
-        active.value = false
-        localStorage.removeItem('announ')
-        document.body.style.overflow = 'auto'
-        isShow.value = true
-        if (data.phone_number) {
-            // window.location.replace('/announ')
-            navigateTo('/announ')   
-            showMadoal.value = false
-            isShow.value = false
-        }else{
-            showMadoal.value = true
-            direction.value = '/announ'            
-        }
-        
+// Боковое меню (телефон): раньше все пункты были ссылками-заглушками href="#"
+const { showMadoal, active } = useSwitch()
+const { direction } = getData()
+const { user } = getUserByServer(getToken())
+const { theme, toggle: toggleTheme } = useTheme()
 
+const MENU = [
+    { label: 'Новый поиск', icon: ['fas', 'magnifying-glass'], to: '/list-announ' },
+    { label: 'Разместить объявление', icon: ['fas', 'circle-plus'], to: '/announ', auth: true },
+    { label: 'Мои объявления', icon: ['far', 'newspaper'], to: '/personal_area/my_announ', auth: true },
+    { label: 'Избранное', icon: ['far', 'heart'], to: '/personal_area/favorite', auth: true },
+    { label: 'Сообщения', icon: ['far', 'comment'], to: '/listfriend', auth: true },
+    { label: 'Объявления на карте', icon: ['fas', 'map-location-dot'], to: '/yandex-map' },
+]
+
+function go(item) {
+    // закрываем меню так же, как это делает пункт профиля (Navigation.vue)
+    active.value = false
+    document.body.style.overflow = 'auto'
+    if (item.auth && !user.value?.id) {
+        direction.value = item.to
+        showMadoal.value = true
+        return
     }
-            
-            
+    navigateTo(item.to)
 }
-
-
 </script>
-
-<style scoped>
-.fas{
-    color: #152242;
-    height: 23px;
-}
-.lists{
-    margin: 0;
-    padding: 0;
-    list-style-type: none;
-}
-.lists li a{
-    color: #152242;
-    margin-left: 20px;
-    text-decoration: none;
-    font-family: Lato,Arial,sans-serif;
-    letter-spacing: -1px;
-    
-}
-.font-awe{
-    margin-right: -2px;
-}
-.service{
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    padding: 10px 16px;
-    font-size: 25px;
-    line-height: 22px;
-}
-
-.service > a{
-    font-size: 17px;
-    font-weight: 550;
-    font-family: Lato,Arial,sans-serif;
-
-}
-
-@media screen and (min-width:640px){
-    .lists > .service:nth-child(2){
-        display: none;
-    }
-}
-</style>

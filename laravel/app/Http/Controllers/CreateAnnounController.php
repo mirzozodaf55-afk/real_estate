@@ -14,25 +14,47 @@ use App\Models\Message;
 use App\Models\messageUser;
 use App\Models\NotifyMe;
 use App\Models\Owner;
+use App\Models\DeletedAccount;
+use Illuminate\Support\Facades\DB;
 use Intervention\Image\Facades\Image;
 use App\Models\Pictures;
 use Illuminate\Http\Request;
 class CreateAnnounController extends Controller
 {
 public function createResidentAnnoun(Request $request){
+        try {
+            $request->validate([
+                'announs' => 'required|json',
+                'dataImage' => 'required|json',
+                'images' => 'required|array|min:1',
+                'images.*' => 'file|image|max:20480', // 20 МБ на фото
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'message' => 'Проверьте данные объявления: нужна хотя бы одна фотография (до 20 МБ каждая).',
+                'errors' => $e->errors(),
+            ], 422);
+        }
+
         $announs = json_decode($request->input('announs'),true);
         $dataImage = json_decode($request->input('dataImage'),true);
+        if (!is_array($announs) || !is_array($dataImage)) {
+            return response()->json(['message' => 'Некорректный формат данных объявления.'], 422);
+        }
         // return $announs;
-        $announ = Announ::firstOrCreate([
+        // anyStatus: повторная отправка той же формы должна найти уже созданное (ещё не проверенное) объявление
+        $announ = Announ::anyStatus()->firstOrCreate([
             'deal_type' => $announs['rent'] ?? null,
             'type_real_estate' => $announs['Estate'] ?? null,
             'type_object' => $announs['objects'] ?? null,
             'rental_type' => $announs['typeRent'] ?? null,
             'coord_x' => $announs['coord_x'] ?? null,
             'coord_y' => $announs['coord_y'] ?? null,
+            'address' => isset($announs['address']) ? mb_substr(trim((string) $announs['address']), 0, 255) : null,
             'floor' => $announs['floor'] ?? null,
             'floor_in_house' => $announs['floorHouse'] ?? null,
             'year_of_construction' => $announs['year'] ?? null,
+            'link_video' => $announs['linkVideo'] ?? null,
             'house_type' => $announs['selectType'] ?? null,
             'total_area' => $announs['generalArea'] ?? null,
             'kitchen_area' => $announs['kitchenArea'] ?? null,
@@ -86,11 +108,12 @@ public function createResidentAnnoun(Request $request){
                 $img->fit(350, 200)->save(public_path('xsmall/' . $name));  
             }
 
-            for ($i = 0; $i < count($dataImage); $i++) { 
+            // dataImage и images приходят раздельно — не выходим за пределы меньшего из массивов
+            for ($i = 0; $i < min(count($dataImage), count($names)); $i++) {
                 Pictures::create([
                 'pictures'=>$names[$i],
-                'position'=>$dataImage[$i]['position'],
-                'rotation'=>$dataImage[$i]['rotation'],
+                'position'=>$dataImage[$i]['position'] ?? $i,
+                'rotation'=>$dataImage[$i]['rotation'] ?? 0,
                 'announ_id'=>$announ->id]);
             }
             
@@ -105,43 +128,12 @@ public function createResidentAnnoun(Request $request){
                 }
             }
 
-            $allfilters = NotifyMe::all();
+            // Объявление уходит на проверку; подписчиков «Уведомить меня» оповестим после одобрения
+            // (Admin\ModerationController::approve)
+            // ИИ проверит фото после ответа пользователю — модератор увидит результат в очереди
+            \App\Services\ListingChecks::dispatch($announ->id); // pHash фото, ИИ-проверка фото и текста/цены → риск в очереди
 
-            function matchesFilters($ad, $filters){
-                // if (isset($filters['min_price']) && $ad['price'] < $filters['min_price']) {
-                //     return false;
-                // }
-                // if (isset($filters['max_price']) && $ad['price'] > $filters['max_price']) {
-                //     return false;
-                // }
-            
-                // // Проверяем тип сделки
-                if (isset($filters['dealType']) && $ad['deal_type'] !== $filters['dealType']) {
-                    return false;
-                }
-            
-                // Проверяем тип объекта
-                if (isset($filters['typeObject']) && $ad['type_object'] !== $filters['typeObject']) {
-                    return false;
-                }
-            
-                // Проверяем локацию (пример — простое сравнение)
-                // if (isset($filters['location']) && $ad['location'] !== $filters['location']) {
-                //     return false;
-                // }
-            
-                // Если все проверки пройдены — объявление совпадает с фильтром
-                return true;
-            }
-
-            foreach ($allfilters as $notify) {
-                $filters = json_decode($notify->filters, true);
-                if(matchesFilters($announ, $filters)){
-                    event(new EventsNotifyMe($announ->owner_id,$announ));
-                }
-            }
-
-            return ['you have successfully placed ads', $allfilters];
+            return ['you have successfully placed ads', $announ->id];
         }
 
 
@@ -275,7 +267,7 @@ public function createResidentAnnoun(Request $request){
            $data[$i]['likes-count'] = count($count[$i]); 
            $data[$i]['like'] = $count;
            $data[$i]['isLike'] = false;
-           $data[$i]['watch_user'] = $request->user('sanctum')->id;
+           $data[$i]['watch_user'] = $request->user('sanctum')?->id;
             for ($j=0; $j < count($count[$i]); $j++) { 
                 $likes[] = $count[$i][$j];
             }
@@ -309,7 +301,7 @@ public function createResidentAnnoun(Request $request){
 
 
     public function getAnnounByUser(Request $request){
-        $announ = Announ::where('owner_id', $request->user()->id)->withTrashed()
+        $announ = Announ::anyStatus()->where('owner_id', $request->user()->id)->withTrashed()
         ->get();
         $data = $announ;
         $picture = [];
@@ -338,20 +330,39 @@ public function createResidentAnnoun(Request $request){
     }
 
     public function deleteAcount(Request $request){
-            $announ = Announ::where('owner_id',$request['owner_id'])->get();
-            // if ($announ) {
+            // Удалить можно только собственный аккаунт — пользователь берётся из токена, а не из тела запроса
+            $owner = $request->user();
+            $ownerId = $owner->id;
+
+            // Последний администратор не может удалить себя — иначе управлять сайтом станет некому
+            if ($owner->hasRole('admin') && Owner::where('role', 'admin')->count() <= 1) {
+                return response()->json([
+                    'message' => 'Вы единственный администратор. Сначала назначьте другого администратора в разделе «Пользователи», потом удалите аккаунт.',
+                ], 403);
+            }
+
+            DB::transaction(function () use ($owner, $ownerId) {
+                $announ = Announ::anyStatus()->where('owner_id', $ownerId)->get();
                 foreach ($announ as $value) {
-                    ConditionAnnoun::where('announ_id',$value['owner_id'])->delete();
-                    InfrastructureAnnoun::where('announ_id',$value['owner_id'])->delete();
-                    Pictures::where('announ_id',$value['owner_id'])->delete();
+                    ConditionAnnoun::where('announ_id', $value->id)->delete();
+                    InfrastructureAnnoun::where('announ_id', $value->id)->delete();
+                    Pictures::where('announ_id', $value->id)->delete();
                     $value->delete();
                 }
-            // }
-            Message::where('user_id',$request['owner_id'])->delete();
-            messageUser::where('owner_id',$request['owner_id'])->delete();
-            messageUser::where('friend_id',$request['owner_id'])->delete();
-            Owner::where('id',$request['owner_id'])->delete();
-        return ['delete'=>'account successfully deleted!'];
+                // отметки «в избранном»: свои (иначе у чужих объявлений навсегда завышен счётчик) и на свои объявления
+                Likes::where('user_id', $ownerId)->orWhereIn('announ_id', $announ->pluck('id'))->delete();
+                Message::where('user_id', $ownerId)->delete();
+                messageUser::where('owner_id', $ownerId)->delete();
+                messageUser::where('friend_id', $ownerId)->delete();
+                // месяц на эту почту нельзя завести новый аккаунт (хранится только хеш почты)
+                if ($owner->email) {
+                    DeletedAccount::remember($owner->email);
+                }
+                $owner->tokens()->delete();
+                Owner::where('id', $ownerId)->delete();
+            });
+
+        return ['delete' => 'account successfully deleted!', 'blocked_days' => DeletedAccount::COOLDOWN_DAYS];
     }
 }
     
