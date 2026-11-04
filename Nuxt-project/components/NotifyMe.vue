@@ -10,9 +10,9 @@
       ]">
       <font-awesome-icon v-if="state === 'saving'" :icon="['fas', 'spinner']" spin-pulse />
       <font-awesome-icon v-else :icon="['fas', state === 'done' ? 'check' : 'bell']" />
-      <span>{{ label }}</span>
+      <span>{{ t(label) }}</span>
     </button>
-    <p v-if="message" class="text-[13px] mt-[6px] mb-0" :class="state === 'error' ? 'text-[#ef4444]' : 'text-[#64748b]'">{{ message }}</p>
+    <p v-if="message" class="text-[13px] mt-[6px] mb-0" :class="state === 'error' ? 'text-[#ef4444]' : 'text-[#64748b]'">{{ t(message) }}</p>
   </div>
 </template>
 

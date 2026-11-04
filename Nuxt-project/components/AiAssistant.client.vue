@@ -1,35 +1,35 @@
 <template>
   <div v-if="visible">
-    <button v-if="!open" @click="open = true" aria-label="Открыть Domly-помощника" data-test="ai-open"
+    <button v-if="!open" @click="open = true" :aria-label="t('Открыть Domly-помощника')" data-test="ai-open"
       class="fixed bottom-[20px] right-[20px] z-[250] h-[54px] pl-[16px] pr-[18px] rounded-full bg-gradient-to-r from-[#0468ff] to-[#7c3aed] text-white shadow-[0_10px_30px_rgba(4,104,255,0.35)] flex items-center gap-[8px] font-semibold text-[15px] hover:brightness-110 transition">
       <SiteLogo light :size="30" compact class="sm:hidden" />
-      <SiteLogo light :size="30" suffix="помощник" :word-size="18" class="hidden sm:inline-flex" />
+      <SiteLogo light :size="30" :suffix="t('помощник')" :word-size="18" class="hidden sm:inline-flex" />
     </button>
 
-    <section v-else role="dialog" aria-label="Domly-помощник" data-test="ai-panel"
+    <section v-else role="dialog" :aria-label="t('Domly-помощник')" data-test="ai-panel"
       class="fixed z-[400] bg-white flex flex-col shadow-[0_20px_60px_rgba(15,23,42,0.25)]
              inset-0 sm:inset-auto sm:bottom-[20px] sm:right-[20px] sm:w-[400px] sm:h-[min(640px,calc(100vh-110px))] sm:rounded-[20px] overflow-hidden">
       <header class="flex items-center gap-[10px] px-[16px] py-[12px] bg-gradient-to-r from-[#0468ff] to-[#7c3aed] text-white">
         <div class="flex-1 min-w-0">
-          <SiteLogo light :size="34" suffix="помощник" :word-size="19" />
-          <div class="text-[12px] text-white/80 mt-[1px] pl-[43px] truncate">Найду жильё, помогу подать объявление</div>
+          <SiteLogo light :size="34" :suffix="t('помощник')" :word-size="19" />
+          <div class="text-[12px] text-white/80 mt-[1px] pl-[43px] truncate">{{ t('Найду жильё, помогу подать объявление') }}</div>
         </div>
-        <button v-if="messages.length" @click="reset" title="Начать заново" class="w-[34px] h-[34px] rounded-full hover:bg-white/15 grid place-items-center">
+        <button v-if="messages.length" @click="reset" :title="t('Начать заново')" class="w-[34px] h-[34px] rounded-full hover:bg-white/15 grid place-items-center">
           <font-awesome-icon :icon="['fas', 'rotate-right']" />
         </button>
-        <button @click="open = false" aria-label="Закрыть" class="w-[34px] h-[34px] rounded-full hover:bg-white/15 grid place-items-center">
+        <button @click="open = false" :aria-label="t('Закрыть')" class="w-[34px] h-[34px] rounded-full hover:bg-white/15 grid place-items-center">
           <font-awesome-icon :icon="['fas', 'xmark']" class="text-[18px]" />
         </button>
       </header>
 
       <div ref="scroller" class="flex-1 overflow-y-auto chat-doodles px-[12px] py-[14px] flex flex-col gap-[10px]">
         <div v-if="!messages.length" class="text-center px-[8px] pt-[10px]">
-          <div class="text-[15px] font-semibold text-[#152242]">Здравствуйте! Что ищете?</div>
-          <p class="text-[13px] text-[#64748b] mt-[4px] mb-[14px]">Опишите своими словами, что ищете, — я найду объявления. Ещё могу помочь подать ваше объявление и ответить на вопросы о сайте.</p>
+          <div class="text-[15px] font-semibold text-[#152242]">{{ t('Здравствуйте! Что ищете?') }}</div>
+          <p class="text-[13px] text-[#64748b] mt-[4px] mb-[14px]">{{ t('Опишите своими словами, что ищете, — я найду объявления. Ещё могу помочь подать ваше объявление и ответить на вопросы о сайте.') }}</p>
           <div class="flex flex-col gap-[8px]">
-            <button v-for="s of SUGGESTIONS" :key="s" @click="send(s)"
+            <button v-for="s of SUGGESTIONS" :key="s" @click="send(t(s))"
               class="text-left px-[12px] py-[9px] rounded-[12px] bg-white border border-[#e2e8f0] text-[13.5px] text-[#334155] hover:border-[#0468ff] hover:text-[#0468ff] transition-colors">
-              {{ s }}
+              {{ t(s) }}
             </button>
           </div>
         </div>
@@ -46,10 +46,10 @@
             <!-- Черновик объявления: ИИ заполнил, человек проверяет, добавляет фото и публикует -->
             <div v-if="m.draft" class="bg-white rounded-[14px] border-2 overflow-hidden" :class="m.published ? 'border-[#bbf7d0]' : 'border-[#c7d2fe]'" data-test="ai-draft">
               <div class="px-[12px] py-[8px] text-[12px] font-bold uppercase tracking-[0.05em]" :class="m.published ? 'bg-[#f0fdf4] text-[#047857]' : 'bg-[#eef2ff] text-[#4338ca]'">
-                {{ m.published ? `Отправлено на проверку · №${m.published}` : 'Черновик объявления' }}
+                {{ m.published ? t('Отправлено на проверку · №{n}', { n: m.published }) : t('Черновик объявления') }}
               </div>
               <div class="p-[12px]">
-                <div class="text-[17px] font-bold text-[#152242]">{{ formatNumber(m.draft.price) }} сомони<span class="text-[12px] font-normal text-[#64748b]">{{ { 'Аренда': ' / мес', 'Посуточно': ' / сутки' }[m.draft.deal] || '' }}</span></div>
+                <div class="text-[17px] font-bold text-[#152242]">{{ formatNumber(m.draft.price) }} {{ t('сомони') }}<span class="text-[12px] font-normal text-[#64748b]">{{ { 'Аренда': t(' / мес'), 'Посуточно': t(' / сутки') }[m.draft.deal] || '' }}</span></div>
                 <div class="text-[14px] font-semibold text-[#0468ff] mt-[2px] leading-[1.3]">{{ m.draft.title }}</div>
                 <div class="flex flex-wrap gap-[4px] mt-[6px]">
                   <span v-for="f of draftFacts(m.draft)" :key="f" class="px-[7px] py-[1px] rounded-[6px] bg-[#f1f5f9] text-[11.5px] text-[#334155]">{{ f }}</span>
@@ -60,26 +60,31 @@
                   <div class="mt-[10px] flex flex-wrap gap-[6px]">
                     <div v-for="(p, pi) of photosFor(i)" :key="p.url" class="relative w-[58px] h-[58px] rounded-[8px] overflow-hidden bg-[#e2e8f0]">
                       <img :src="p.url" class="w-full h-full object-cover" alt="" />
-                      <button @click="removePhoto(i, pi)" aria-label="Убрать фото" class="absolute top-[2px] right-[2px] w-[18px] h-[18px] rounded-full bg-black/60 text-white text-[10px] grid place-items-center">
+                      <button @click="removePhoto(i, pi)" :aria-label="t('Убрать фото')" class="absolute top-[2px] right-[2px] w-[18px] h-[18px] rounded-full bg-black/60 text-white text-[10px] grid place-items-center">
                         <font-awesome-icon :icon="['fas', 'xmark']" />
                       </button>
                     </div>
-                    <label class="w-[58px] h-[58px] rounded-[8px] border-2 border-dashed border-[#cbd5e1] text-[#64748b] hover:border-[#0468ff] hover:text-[#0468ff] grid place-items-center cursor-pointer" title="Добавить фото">
+                    <label class="w-[58px] h-[58px] rounded-[8px] border-2 border-dashed border-[#cbd5e1] text-[#64748b] hover:border-[#0468ff] hover:text-[#0468ff] grid place-items-center cursor-pointer" :title="t('Добавить фото')">
                       <font-awesome-icon :icon="['fas', 'camera']" />
                       <input type="file" accept="image/*" multiple class="hidden" @change="addPhotos(i, $event)" data-test="ai-draft-photos" />
                     </label>
                   </div>
-                  <p v-if="m.publishError" class="text-[12px] text-[#b91c1c] mt-[6px] mb-0">{{ m.publishError }}</p>
+                  <!-- в демо у заказчика под рукой нет фото квартиры — даём готовые (public/demo-photos) -->
+                  <button v-if="isDemo() && !photosFor(i).length" @click="addSamplePhotos(i)" :disabled="loadingSamples === i" data-test="ai-sample-photos"
+                    class="mt-[8px] text-[12.5px] font-semibold text-[#0468ff] hover:underline disabled:opacity-60">
+                    {{ loadingSamples === i ? '…' : t('Взять примеры фото') }}
+                  </button>
+                  <p v-if="m.publishError" class="text-[12px] text-[#b91c1c] mt-[6px] mb-0">{{ t(m.publishError) }}</p>
                   <button @click="publishDraft(m, i)" :disabled="!photosFor(i).length || publishing === i" data-test="ai-publish"
                     class="mt-[10px] w-full h-[40px] rounded-[10px] text-white text-[14px] font-semibold transition-colors"
                     :class="photosFor(i).length ? 'bg-[#16a34a] hover:bg-[#15803d]' : 'bg-[#cbd5e1]'">
                     <font-awesome-icon v-if="publishing === i" :icon="['fas', 'spinner']" spin-pulse />
-                    {{ photosFor(i).length ? 'Опубликовать' : 'Добавьте хотя бы одно фото' }}
+                    {{ photosFor(i).length ? t('Опубликовать') : t('Добавьте хотя бы одно фото') }}
                   </button>
-                  <p class="text-[11px] text-[#94a3b8] mt-[6px] mb-0 text-center">Что-то не так — напишите в чат, помощник поправит</p>
+                  <p class="text-[11px] text-[#94a3b8] mt-[6px] mb-0 text-center">{{ t('Что-то не так — напишите в чат, помощник поправит') }}</p>
                 </template>
                 <button v-else @click="goMyAnnouns" class="mt-[10px] w-full h-[36px] rounded-[10px] bg-[#eef4ff] text-[#0468ff] text-[13.5px] font-semibold hover:bg-[#dbe8ff]">
-                  Открыть «Мои объявления»
+                  {{ t('Открыть «Мои объявления»') }}
                 </button>
               </div>
             </div>
@@ -90,31 +95,31 @@
                   <img v-if="a.pictures?.[0]" :src="`${apiBase()}/api/image/small/${a.pictures[0].pictures}`" class="w-full h-full object-cover" alt="" loading="lazy" />
                 </div>
                 <div class="p-[8px]">
-                  <div class="text-[14px] font-bold text-[#152242]">{{ formatNumber(a.price) }} с.<span class="text-[11.5px] font-normal text-[#64748b]">{{ priceSuffix(a) }}</span></div>
-                  <div class="text-[12.5px] text-[#334155] line-clamp-2 leading-[1.3] mt-[2px]">{{ a.title || a.type_object }}</div>
-                  <div class="text-[11.5px] text-[#94a3b8] mt-[2px] truncate">{{ [a.quantity_room && `${a.quantity_room}-комн.`, (a.total_area || a.house_area) && `${a.total_area || a.house_area} м²`].filter(Boolean).join(' · ') }}</div>
+                  <div class="text-[14px] font-bold text-[#152242]">{{ formatNumber(a.price) }} {{ t('с.') }}<span class="text-[11.5px] font-normal text-[#64748b]">{{ priceSuffix(a) }}</span></div>
+                  <div class="text-[12.5px] text-[#334155] line-clamp-2 leading-[1.3] mt-[2px]">{{ a.title || t(a.type_object) }}</div>
+                  <div class="text-[11.5px] text-[#94a3b8] mt-[2px] truncate">{{ announFacts(a) }}</div>
                 </div>
               </button>
             </div>
           </div>
         </template>
 
-        <div v-if="loading" class="self-start px-[14px] py-[10px] rounded-[16px] rounded-bl-[4px] bg-white border border-[#eef2f7] flex gap-[4px]" aria-label="Помощник печатает">
+        <div v-if="loading" class="self-start px-[14px] py-[10px] rounded-[16px] rounded-bl-[4px] bg-white border border-[#eef2f7] flex gap-[4px]" :aria-label="t('Помощник печатает')">
           <span v-for="n in 3" :key="n" class="w-[7px] h-[7px] rounded-full bg-[#94a3b8] animate-bounce" :style="`animation-delay:${n * 120}ms`"></span>
         </div>
       </div>
 
       <form @submit.prevent="send()" class="flex items-end gap-[8px] p-[10px] border-t border-[#eef2f7] bg-white">
         <textarea ref="input" v-model="draft" @keydown.enter.exact.prevent="send()" rows="1" maxlength="1000" data-test="ai-input"
-          placeholder="Например: двушка до 4000 сомони, можно с детьми"
+          :placeholder="t('Например: двушка до 4000 сомони, можно с детьми')"
           class="flex-1 resize-none max-h-[110px] min-h-[42px] px-[14px] py-[10px] rounded-[14px] bg-[#f1f5f9] outline-none text-[14px] text-[#152242] leading-[1.4]"></textarea>
-        <button type="submit" :disabled="!draft.trim() || loading" aria-label="Отправить" data-test="ai-send"
+        <button type="submit" :disabled="!draft.trim() || loading" :aria-label="t('Отправить')" data-test="ai-send"
           class="w-[42px] h-[42px] shrink-0 rounded-full grid place-items-center text-white transition-colors"
           :class="draft.trim() && !loading ? 'bg-[#0468ff] hover:bg-[#0353cc]' : 'bg-[#cbd5e1]'">
           <font-awesome-icon :icon="['fas', 'paper-plane']" class="text-[14px]" />
         </button>
       </form>
-      <p class="text-[11px] text-[#94a3b8] text-center pb-[8px] m-0 bg-white">ИИ может ошибаться — проверяйте детали в объявлении</p>
+      <p class="text-[11px] text-[#94a3b8] text-center pb-[8px] m-0 bg-white">{{ t('ИИ может ошибаться — проверяйте детали в объявлении') }}</p>
     </section>
   </div>
 </template>
@@ -198,6 +203,22 @@ function addPhotos(i, event) {
   photos[i] = [...photosFor(i), ...files.map((file) => ({ file, url: URL.createObjectURL(file) }))].slice(0, 20)
   event.target.value = ''
 }
+
+// Публичное демо: готовые фото с этого же сайта, отправляются как обычные загруженные файлы
+const SAMPLE_PHOTOS = ['sample-living-room.jpg', 'sample-room.jpg', 'sample-house.jpg']
+const loadingSamples = ref(null)
+async function addSamplePhotos(i) {
+  loadingSamples.value = i
+  try {
+    const files = await Promise.all(SAMPLE_PHOTOS.map(async (name) => {
+      const blob = await (await fetch(`/demo-photos/${name}`)).blob()
+      return new File([blob], name, { type: 'image/jpeg' })
+    }))
+    photos[i] = files.map((file) => ({ file, url: URL.createObjectURL(file) }))
+  } finally {
+    loadingSamples.value = null
+  }
+}
 function removePhoto(i, pi) {
   URL.revokeObjectURL(photos[i][pi].url)
   photos[i].splice(pi, 1)
@@ -223,7 +244,7 @@ async function publishDraft(m, i) {
     if (!res.ok) throw new Error(json.message || 'Не удалось опубликовать, попробуйте ещё раз')
     m.published = json.id
     removeAllPhotos(i)
-    messages.value.push({ role: 'assistant', content: `Готово! Объявление №${json.id} отправлено на проверку модератору. Когда его одобрят, придёт уведомление и письмо, а объявление появится в поиске.` })
+    messages.value.push({ role: 'assistant', content: t('Готово! Объявление №{id} отправлено на проверку модератору. Когда его одобрят, придёт уведомление и письмо, а объявление появится в поиске.', { id: json.id }) })
     scrollDown()
   } catch (e) {
     m.publishError = e.message
@@ -239,13 +260,13 @@ function goMyAnnouns() {
 
 function draftFacts(d) {
   return [
-    d.deal === 'Продажа' ? 'Продажа' : d.deal === 'Посуточно' ? 'Посуточно' : 'Аренда',
-    d.type_object,
-    d.rooms != null && `${d.rooms}-комн.`,
-    d.total_area && `${d.total_area} м²`,
-    d.land_area && `${d.land_area} сот.`,
-    d.floor && (d.floors_in_house ? `${d.floor}/${d.floors_in_house} эт.` : `${d.floor} эт.`),
-    d.repair,
+    t(d.deal === 'Продажа' ? 'Продажа' : d.deal === 'Посуточно' ? 'Посуточно' : 'Аренда'),
+    t(d.type_object),
+    d.rooms != null && t('{n}-комн.', { n: d.rooms }),
+    d.total_area && `${d.total_area} ${t('м²')}`,
+    d.land_area && t('{n} сот.', { n: d.land_area }),
+    d.floor && (d.floors_in_house ? t('{a}/{b} эт.', { a: d.floor, b: d.floors_in_house }) : t('{n} эт.', { n: d.floor })),
+    d.repair && t(d.repair),
   ].filter(Boolean)
 }
 

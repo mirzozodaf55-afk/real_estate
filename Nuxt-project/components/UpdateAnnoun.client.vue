@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-[#f4f6fb] pb-[110px]">
     <div class="max-w-[860px] mx-auto px-[16px] pt-[16px]">
       <NuxtLink to="/personal_area/my_announ" class="inline-flex items-center gap-[8px] text-[14px] font-semibold text-[#475569] hover:text-[#0468ff] mb-[12px] no-underline">
-        <font-awesome-icon :icon="['fas', 'chevron-left']" class="text-[12px]" /> Мои объявления
+        <font-awesome-icon :icon="['fas', 'chevron-left']" class="text-[12px]" /> {{ t('Мои объявления') }}
       </NuxtLink>
 
       <div v-if="loading" class="flex flex-col gap-[14px]">
@@ -10,88 +10,88 @@
       </div>
 
       <div v-else-if="loadError" class="bg-white rounded-[16px] border border-[#e8edf3] p-[28px] text-center">
-        <p class="text-[#152242] font-semibold m-0">{{ loadError }}</p>
-        <NuxtLink to="/personal_area/my_announ" class="inline-flex mt-[12px] h-[38px] px-[18px] rounded-[10px] bg-[#0468ff] text-white text-[14px] font-semibold items-center no-underline">К моим объявлениям</NuxtLink>
+        <p class="text-[#152242] font-semibold m-0">{{ t(loadError) }}</p>
+        <NuxtLink to="/personal_area/my_announ" class="inline-flex mt-[12px] h-[38px] px-[18px] rounded-[10px] bg-[#0468ff] text-white text-[14px] font-semibold items-center no-underline">{{ t('К моим объявлениям') }}</NuxtLink>
       </div>
 
       <form v-else @submit.prevent="save" class="flex flex-col gap-[14px]" novalidate>
         <div>
-          <h1 class="text-[24px] font-bold text-[#152242] m-0">Редактирование объявления</h1>
+          <h1 class="text-[24px] font-bold text-[#152242] m-0">{{ t('Редактирование объявления') }}</h1>
           <div class="flex flex-wrap gap-[8px] mt-[8px]">
-            <span v-for="b of badges" :key="b" class="px-[10px] py-[3px] rounded-[8px] bg-white border border-[#e2e8f0] text-[#475569] text-[12px] font-semibold">{{ b }}</span>
-            <span v-if="announ.deleted_at" class="px-[10px] py-[3px] rounded-[8px] bg-[#f1f5f9] text-[#475569] text-[12px] font-semibold">Снято с публикации</span>
+            <span v-for="b of badges" :key="b" class="px-[10px] py-[3px] rounded-[8px] bg-white border border-[#e2e8f0] text-[#475569] text-[12px] font-semibold">{{ t(b) }}</span>
+            <span v-if="announ.deleted_at" class="px-[10px] py-[3px] rounded-[8px] bg-[#f1f5f9] text-[#475569] text-[12px] font-semibold">{{ t('Снято с публикации') }}</span>
           </div>
-          <p class="text-[13px] text-[#94a3b8] mt-[6px] mb-0">Тип сделки, тип объекта и адрес изменить нельзя — для этого разместите новое объявление.</p>
+          <p class="text-[13px] text-[#94a3b8] mt-[6px] mb-0">{{ t('Тип сделки, тип объекта и адрес изменить нельзя — для этого разместите новое объявление.') }}</p>
         </div>
 
         <!-- Фото -->
         <section class="bg-white rounded-[16px] border p-[16px] md:p-[20px]" :class="errors.photos ? 'border-[#fca5a5]' : 'border-[#e8edf3]'">
           <div class="flex items-center justify-between gap-[10px] mb-[12px]">
-            <h2 class="text-[17px] font-bold text-[#152242] m-0">Фотографии <span class="text-[#94a3b8] font-normal text-[14px]">{{ photos.length }} / {{ MAX_PHOTOS }}</span></h2>
-            <span class="text-[12px] text-[#94a3b8]">Первое фото — обложка</span>
+            <h2 class="text-[17px] font-bold text-[#152242] m-0">{{ t('Фотографии') }} <span class="text-[#94a3b8] font-normal text-[14px]">{{ photos.length }} / {{ MAX_PHOTOS }}</span></h2>
+            <span class="text-[12px] text-[#94a3b8]">{{ t('Первое фото — обложка') }}</span>
           </div>
           <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-[10px]">
             <div v-for="(p, idx) of photos" :key="p.key" class="relative aspect-[4/3] rounded-[12px] overflow-hidden bg-[#e2e8f0] group">
               <img :src="p.src" :style="`transform: rotate(${p.rotation}deg)`" class="w-full h-full object-cover transition-transform" alt="" />
-              <span v-if="idx === 0" class="absolute top-[6px] left-[6px] px-[7px] py-[1px] rounded-[6px] bg-[#0468ff] text-white text-[11px] font-semibold">Обложка</span>
-              <span v-if="p.isNew" class="absolute top-[6px] right-[6px] px-[7px] py-[1px] rounded-[6px] bg-[#059669] text-white text-[11px] font-semibold">Новое</span>
+              <span v-if="idx === 0" class="absolute top-[6px] left-[6px] px-[7px] py-[1px] rounded-[6px] bg-[#0468ff] text-white text-[11px] font-semibold">{{ t('Обложка') }}</span>
+              <span v-if="p.isNew" class="absolute top-[6px] right-[6px] px-[7px] py-[1px] rounded-[6px] bg-[#059669] text-white text-[11px] font-semibold">{{ t('Новое') }}</span>
               <div class="absolute inset-x-0 bottom-0 p-[6px] flex justify-between bg-gradient-to-t from-black/60 to-transparent">
                 <div class="flex gap-[4px]">
-                  <button type="button" @click="move(idx, -1)" :disabled="idx === 0" class="photo-btn" aria-label="Левее"><font-awesome-icon :icon="['fas', 'chevron-left']" /></button>
-                  <button type="button" @click="move(idx, 1)" :disabled="idx === photos.length - 1" class="photo-btn" aria-label="Правее"><font-awesome-icon :icon="['fas', 'chevron-right']" /></button>
+                  <button type="button" @click="move(idx, -1)" :disabled="idx === 0" class="photo-btn" :aria-label="t('Левее')"><font-awesome-icon :icon="['fas', 'chevron-left']" /></button>
+                  <button type="button" @click="move(idx, 1)" :disabled="idx === photos.length - 1" class="photo-btn" :aria-label="t('Правее')"><font-awesome-icon :icon="['fas', 'chevron-right']" /></button>
                 </div>
                 <div class="flex gap-[4px]">
-                  <button v-if="idx !== 0" type="button" @click="makeCover(idx)" class="photo-btn" aria-label="Сделать обложкой" title="Сделать обложкой"><font-awesome-icon :icon="['fas', 'star']" /></button>
-                  <button type="button" @click="rotate(p)" class="photo-btn" aria-label="Повернуть" title="Повернуть"><font-awesome-icon :icon="['fas', 'rotate-right']" /></button>
-                  <button type="button" @click="removePhoto(idx)" class="photo-btn hover:!bg-[#dc2626]" aria-label="Удалить фото" title="Удалить"><font-awesome-icon :icon="['far', 'trash-can']" /></button>
+                  <button v-if="idx !== 0" type="button" @click="makeCover(idx)" class="photo-btn" :aria-label="t('Сделать обложкой')" :title="t('Сделать обложкой')"><font-awesome-icon :icon="['fas', 'star']" /></button>
+                  <button type="button" @click="rotate(p)" class="photo-btn" :aria-label="t('Повернуть')" :title="t('Повернуть')"><font-awesome-icon :icon="['fas', 'rotate-right']" /></button>
+                  <button type="button" @click="removePhoto(idx)" class="photo-btn hover:!bg-[#dc2626]" :aria-label="t('Удалить фото')" :title="t('Удалить')"><font-awesome-icon :icon="['far', 'trash-can']" /></button>
                 </div>
               </div>
             </div>
             <label v-if="photos.length < MAX_PHOTOS"
               class="aspect-[4/3] rounded-[12px] border-2 border-dashed border-[#cbd5e1] hover:border-[#0468ff] hover:bg-[#f8fbff] flex flex-col items-center justify-center gap-[6px] text-[#64748b] cursor-pointer transition-colors">
               <font-awesome-icon :icon="['fas', 'camera']" class="text-[22px] text-[#0468ff]" />
-              <span class="text-[13px] font-semibold">Добавить фото</span>
+              <span class="text-[13px] font-semibold">{{ t('Добавить фото') }}</span>
               <input type="file" accept="image/*" multiple class="hidden" @change="addPhotos" />
             </label>
           </div>
-          <p v-if="errors.photos" class="text-[13px] text-[#dc2626] mt-[8px] mb-0">{{ errors.photos }}</p>
+          <p v-if="errors.photos" class="text-[13px] text-[#dc2626] mt-[8px] mb-0">{{ t(errors.photos) }}</p>
         </section>
 
         <!-- Основное -->
         <section class="card">
-          <h2 class="card-title">Основное</h2>
+          <h2 class="card-title">{{ t('Основное') }}</h2>
           <div class="flex flex-col gap-[14px]">
             <div v-if="aiEnabled" class="flex flex-wrap items-center gap-[8px] px-[12px] py-[10px] rounded-[12px] bg-gradient-to-r from-[#eef4ff] to-[#f3e8ff]">
               <button type="button" @click="writeWithAi" :disabled="aiBusy" data-test="ai-describe"
                 class="h-[36px] px-[14px] rounded-[10px] bg-gradient-to-r from-[#0468ff] to-[#7c3aed] text-white text-[14px] font-semibold disabled:opacity-60 flex items-center gap-[8px]">
                 <font-awesome-icon :icon="['fas', aiBusy ? 'spinner' : 'wand-magic-sparkles']" :spin-pulse="aiBusy" />
-                {{ aiBusy ? 'Пишу…' : (form.description ? 'Улучшить текст с ИИ' : 'Написать текст с ИИ') }}
+                {{ aiBusy ? t('Пишу…') : (form.description ? t('Улучшить текст с ИИ') : t('Написать текст с ИИ')) }}
               </button>
               <button v-if="aiUndo" type="button" @click="undoAi" class="h-[36px] px-[10px] rounded-[10px] text-[13.5px] font-semibold text-[#475569] hover:bg-white/70">
-                <font-awesome-icon :icon="['fas', 'rotate-left']" /> Вернуть мой текст
+                <font-awesome-icon :icon="['fas', 'rotate-left']" /> {{ t('Вернуть мой текст') }}
               </button>
-              <span class="text-[12.5px] text-[#64748b] basis-full sm:basis-auto">{{ aiError || 'ИИ напишет заголовок и описание по характеристикам — проверьте и поправьте перед сохранением' }}</span>
+              <span class="text-[12.5px] text-[#64748b] basis-full sm:basis-auto">{{ aiError || t('ИИ напишет заголовок и описание по характеристикам — проверьте и поправьте перед сохранением') }}</span>
             </div>
             <label class="block">
-              <span class="field-label">Заголовок</span>
-              <input v-model="form.title" maxlength="150" class="field" :class="errors.title && 'field-error'" placeholder="Например: Светлая 2-комнатная квартира у парка" />
+              <span class="field-label">{{ t('Заголовок') }}</span>
+              <input v-model="form.title" maxlength="150" class="field" :class="errors.title && 'field-error'" :placeholder="t('Например: Светлая 2-комнатная квартира у парка')" />
               <span class="field-hint">{{ (form.title || '').length }} / 150</span>
             </label>
             <label class="block">
-              <span class="field-label">Описание</span>
-              <textarea v-model="form.description" maxlength="5000" rows="6" class="field !h-auto py-[10px] resize-y" placeholder="Расскажите о преимуществах, состоянии, инфраструктуре рядом…"></textarea>
+              <span class="field-label">{{ t('Описание') }}</span>
+              <textarea v-model="form.description" maxlength="5000" rows="6" class="field !h-auto py-[10px] resize-y" :placeholder="t('Расскажите о преимуществах, состоянии, инфраструктуре рядом…')"></textarea>
               <span class="field-hint">{{ (form.description || '').length }} / 5000</span>
             </label>
             <div class="grid sm:grid-cols-2 gap-[14px]">
               <label class="block">
-                <span class="field-label">Цена, сомони{{ isRent ? (announ.rental_type === 'Посуточно' ? ' за сутки' : ' в месяц') : '' }} *</span>
+                <span class="field-label">{{ t('Цена, сомони') }}{{ isRent ? (announ.rental_type === 'Посуточно' ? t(' за сутки') : t(' в месяц')) : '' }} *</span>
                 <input v-model.number="form.price" type="number" min="1" inputmode="numeric" class="field" :class="errors.price && 'field-error'" />
-                <span v-if="errors.price" class="field-error-text">{{ errors.price }}</span>
+                <span v-if="errors.price" class="field-error-text">{{ t(errors.price) }}</span>
               </label>
               <label class="block">
-                <span class="field-label">Ссылка на видео (YouTube)</span>
+                <span class="field-label">{{ t('Ссылка на видео (YouTube)') }}</span>
                 <input v-model.trim="form.linkVideo" type="url" class="field" :class="errors.linkVideo && 'field-error'" placeholder="https://youtube.com/…" />
-                <span v-if="errors.linkVideo" class="field-error-text">{{ errors.linkVideo }}</span>
+                <span v-if="errors.linkVideo" class="field-error-text">{{ t(errors.linkVideo) }}</span>
               </label>
             </div>
           </div>
@@ -99,69 +99,69 @@
 
         <!-- Параметры по типу объекта -->
         <section v-for="section of sections" :key="section.title" class="card">
-          <h2 class="card-title">{{ section.title }}</h2>
+          <h2 class="card-title">{{ t(section.title) }}</h2>
           <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-[14px]">
             <label v-for="f of section.fields" :key="f.key" class="block">
-              <span class="field-label">{{ f.label }}</span>
+              <span class="field-label">{{ t(f.label) }}</span>
               <div v-if="f.type === 'number'" class="relative">
                 <input v-model="form[f.key]" type="number" :min="f.min ?? 0" inputmode="numeric" class="field" :class="[f.suffix && 'pr-[44px]', errors[f.key] && 'field-error']" />
-                <span v-if="f.suffix" class="absolute right-[12px] top-1/2 -translate-y-1/2 text-[13px] text-[#94a3b8]">{{ f.suffix }}</span>
+                <span v-if="f.suffix" class="absolute right-[12px] top-1/2 -translate-y-1/2 text-[13px] text-[#94a3b8]">{{ t(f.suffix) }}</span>
               </div>
               <select v-else v-model="form[f.key]" class="field bg-white">
-                <option value="">Не указано</option>
-                <option v-for="o of optionsFor(f)" :key="o.value" :value="o.value">{{ o.label }}</option>
+                <option value="">{{ t('Не указано') }}</option>
+                <option v-for="o of optionsFor(f)" :key="o.value" :value="o.value">{{ t(o.label) }}</option>
               </select>
-              <span v-if="errors[f.key]" class="field-error-text">{{ errors[f.key] }}</span>
+              <span v-if="errors[f.key]" class="field-error-text">{{ t(errors[f.key]) }}</span>
             </label>
           </div>
         </section>
 
         <!-- Условия аренды -->
         <section v-if="isRent" class="card">
-          <h2 class="card-title">Условия аренды</h2>
+          <h2 class="card-title">{{ t('Условия аренды') }}</h2>
           <div class="grid sm:grid-cols-3 gap-[14px]">
             <label class="block">
-              <span class="field-label">Срок аренды</span>
+              <span class="field-label">{{ t('Срок аренды') }}</span>
               <select v-model="form.rentalPeriod" class="field bg-white">
-                <option value="">Не указано</option>
-                <option v-for="o of withCurrent(['От года', 'Несколько месяцев'], form.rentalPeriod)" :key="o.value" :value="o.value">{{ o.label }}</option>
+                <option value="">{{ t('Не указано') }}</option>
+                <option v-for="o of withCurrent(['От года', 'Несколько месяцев'], form.rentalPeriod)" :key="o.value" :value="o.value">{{ t(o.label) }}</option>
               </select>
             </label>
             <label class="toggle">
               <input type="checkbox" class="hidden" :checked="form.allowKids === 'Можно с детьми'" @change="form.allowKids = $event.target.checked ? 'Можно с детьми' : 'нет'" />
-              <span><font-awesome-icon :icon="['fas', 'child']" /> Можно с детьми</span>
+              <span><font-awesome-icon :icon="['fas', 'child']" /> {{ t('Можно с детьми') }}</span>
             </label>
             <label class="toggle">
               <input type="checkbox" class="hidden" :checked="form.allowAnimal === 'Можно с животными'" @change="form.allowAnimal = $event.target.checked ? 'Можно с животными' : 'нет'" />
-              <span><font-awesome-icon :icon="['fas', 'paw']" /> Можно с животными</span>
+              <span><font-awesome-icon :icon="['fas', 'paw']" /> {{ t('Можно с животными') }}</span>
             </label>
           </div>
           <div v-if="amenities.length" class="mt-[16px]">
-            <span class="field-label">Удобства</span>
+            <span class="field-label">{{ t('Удобства') }}</span>
             <div class="flex flex-wrap gap-[8px]">
               <label v-for="c of amenities" :key="c.id" class="toggle !h-[36px]">
                 <input type="checkbox" class="hidden" :value="c.id" v-model="form.conditions" />
-                <span>{{ c.name === 'В комнатах' ? 'Мебель в комнатах' : c.name === 'На кухне' ? 'Мебель на кухне' : c.name }}</span>
+                <span>{{ c.name === 'В комнатах' ? t('Мебель в комнатах') : c.name === 'На кухне' ? t('Мебель на кухне') : t(c.name) }}</span>
               </label>
             </div>
           </div>
         </section>
 
-        <p v-if="saveError" class="bg-[#fef2f2] border border-[#fecaca] text-[#b91c1c] rounded-[12px] px-[14px] py-[10px] text-[14px] m-0">{{ saveError }}</p>
+        <p v-if="saveError" class="bg-[#fef2f2] border border-[#fecaca] text-[#b91c1c] rounded-[12px] px-[14px] py-[10px] text-[14px] m-0">{{ t(saveError) }}</p>
       </form>
     </div>
 
     <!-- Нижняя панель -->
     <div v-if="!loading && !loadError" class="fixed bottom-0 left-0 right-0 z-[50] bg-white border-t border-[#e8edf3]">
       <div class="max-w-[860px] mx-auto px-[16px] py-[12px] flex items-center justify-between gap-[10px]">
-        <span class="text-[13px] text-[#64748b] hidden sm:block">{{ dirty ? 'Есть несохранённые изменения' : 'Изменений нет' }}</span>
+        <span class="text-[13px] text-[#64748b] hidden sm:block">{{ dirty ? t('Есть несохранённые изменения') : t('Изменений нет') }}</span>
         <div class="flex gap-[8px] ml-auto">
-          <NuxtLink to="/personal_area/my_announ" class="h-[42px] px-[18px] rounded-[10px] border border-[#e2e8f0] text-[14px] font-semibold text-[#152242] flex items-center no-underline">Отмена</NuxtLink>
+          <NuxtLink to="/personal_area/my_announ" class="h-[42px] px-[18px] rounded-[10px] border border-[#e2e8f0] text-[14px] font-semibold text-[#152242] flex items-center no-underline">{{ t('Отмена') }}</NuxtLink>
           <button @click="save" :disabled="saving || !dirty"
             class="h-[42px] px-[20px] rounded-[10px] text-white text-[14px] font-semibold flex items-center gap-[8px] transition-colors"
             :class="saving || !dirty ? 'bg-[#93b8f5] cursor-not-allowed' : 'bg-[#0468ff] hover:bg-[#0353cc]'">
             <font-awesome-icon v-if="saving" :icon="['fas', 'spinner']" spin-pulse />
-            Сохранить изменения
+            {{ t('Сохранить изменения') }}
           </button>
         </div>
       </div>
@@ -170,7 +170,7 @@
 </template>
 
 <script setup>
-useHead({ title: 'Редактирование объявления' })
+useHead({ title: () => t('Редактирование объявления') })
 
 const route = useRoute()
 const router = useRouter()
@@ -368,7 +368,7 @@ async function load() {
       amenities.value = (await condRes.json()).filter((c) => !['Можно с детьми', 'Можно с животными'].includes(c.name))
     }
     initialSnapshot = snapshot()
-    useHead({ title: `Редактирование: ${data.title || data.type_object}` })
+    useHead({ title: () => t('Редактирование: {x}', { x: data.title || t(data.type_object) }) })
   } catch (e) {
     loadError.value = e.message || 'Не удалось загрузить объявление'
   } finally {

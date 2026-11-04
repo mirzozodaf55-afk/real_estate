@@ -15,6 +15,11 @@ class Kernel extends ConsoleKernel
         // $schedule->command('inspire')->hourly();
         // просроченные токены входа (config/sanctum.php → expiration) — удаляем из базы раз в сутки
         $schedule->command('sanctum:prune-expired --hours=24')->daily();
+
+        // публичное демо: каждую ночь — к исходным данным, что бы ни натворили посетители за день
+        if (\App\Support\Demo::enabled()) {
+            $schedule->command('demo:reset --clean-files')->dailyAt('03:00');
+        }
     }
 
     /**

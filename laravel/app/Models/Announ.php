@@ -64,6 +64,11 @@ class Announ extends Model
     public const NEEDS_CHANGES = 'needs_changes'; // модератор вернул на доработку с комментарием (moderation_reason)
     public const STATUSES = [self::PENDING, self::APPROVED, self::REJECTED, self::NEEDS_CHANGES];
 
+    // Выводы ИИ и кто модерировал — только для модераторов (makeVisible(Announ::STAFF_FIELDS) в админке):
+    // раньше поиск отдавал всем «подозрительно низкая цена, возможно мошенничество» по опубликованным объявлениям
+    public const STAFF_FIELDS = ['ai_review', 'ai_review_at', 'ai_risk', 'photo_check', 'photo_check_at', 'moderated_by'];
+    protected $hidden = self::STAFF_FIELDS;
+
     // координаты в БД — DECIMAL (строкой из MySQL), а карты на фронте ждут числа
     protected $casts = ['moderated_at' => 'datetime', 'sold_at' => 'datetime', 'photo_check' => 'array', 'photo_check_at' => 'datetime', 'coord_x' => 'float', 'coord_y' => 'float', 'promo_until' => 'datetime', 'ai_review' => 'array', 'ai_review_at' => 'datetime'];
 

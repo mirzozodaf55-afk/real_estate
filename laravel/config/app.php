@@ -60,6 +60,9 @@ return [
     // Адрес фронтенда (Nuxt) — для ссылок в письмах
     'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
 
+    // Публичное демо для портфолио: вход одной кнопкой, опасные действия закрыты, данные сбрасываются (App\Support\Demo)
+    'demo' => (bool) env('DEMO_MODE', false),
+
     'asset_url' => env('ASSET_URL'),
 
     /*
@@ -170,7 +173,7 @@ return [
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         Intervention\Image\ImageServiceProvider::class,
-        // App\Providers\BroadcastServiceProvider::class,
+        App\Providers\BroadcastServiceProvider::class, // /api/broadcasting/auth — приватные каналы чата и уведомлений
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
     ])->toArray(),

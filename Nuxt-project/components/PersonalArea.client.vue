@@ -10,7 +10,7 @@
                             <span v-if="load" class="absolute inset-0 grid place-items-center text-white"><font-awesome-icon :icon="['fas', 'rotate']" spin /></span>
                         </div>
                         <div class="min-w-0">
-                            <div class="text-[16px] font-bold text-[#152242] truncate">{{ [user?.name, user?.last_name].filter(Boolean).join(' ') || 'Личный кабинет' }}</div>
+                            <div class="text-[16px] font-bold text-[#152242] truncate">{{ [user?.name, user?.last_name].filter(Boolean).join(' ') || t('Личный кабинет') }}</div>
                             <div class="text-[13px] text-[#64748b] truncate">{{ user?.email }}</div>
                         </div>
                     </div>
@@ -23,22 +23,22 @@
                             :class="isActive(item) ? 'area-link--active bg-[#eef4ff] text-[#0468ff] font-semibold' : 'text-[#334155] font-medium hover:bg-[#f1f5f9]'"
                             :aria-current="isActive(item) ? 'page' : undefined">
                             <font-awesome-icon :icon="item.icon" class="w-[18px] text-[16px]" :class="isActive(item) ? 'text-[#0468ff]' : 'text-[#64748b]'" />
-                            {{ item.label }}
+                            {{ t(item.label) }}
                         </component>
                         <button type="button" @click="logOut" class="md:hidden shrink-0 flex items-center gap-[10px] h-[42px] px-[12px] rounded-[10px] text-[15px] font-medium text-[#334155] whitespace-nowrap">
-                            <font-awesome-icon :icon="['fas', 'arrow-right-from-bracket']" class="text-[#64748b] rotate-180" /> Выйти
+                            <font-awesome-icon :icon="['fas', 'arrow-right-from-bracket']" class="text-[#64748b] rotate-180" /> {{ t('Выйти') }}
                         </button>
                         <button type="button" @click="askDelete" class="md:hidden shrink-0 flex items-center gap-[10px] h-[42px] px-[12px] rounded-[10px] text-[15px] font-medium text-[#dc2626] whitespace-nowrap">
-                            <font-awesome-icon :icon="['fas', 'user-slash']" /> Удалить аккаунт
+                            <font-awesome-icon :icon="['fas', 'user-slash']" /> {{ t('Удалить аккаунт') }}
                         </button>
                     </nav>
 
                     <div class="hidden md:flex flex-col gap-[4px] px-[12px] pb-[12px] pt-[12px] border-t border-[#eef2f7]">
                         <button type="button" @click="logOut" class="shrink-0 flex items-center gap-[12px] h-[42px] px-[12px] rounded-[10px] text-[15px] font-medium text-[#334155] hover:bg-[#f1f5f9] whitespace-nowrap">
-                            <font-awesome-icon :icon="['fas', 'arrow-right-from-bracket']" class="w-[18px] text-[#64748b] rotate-180" /> Выйти
+                            <font-awesome-icon :icon="['fas', 'arrow-right-from-bracket']" class="w-[18px] text-[#64748b] rotate-180" /> {{ t('Выйти') }}
                         </button>
                         <button type="button" @click="askDelete" data-test="delete-account" class="shrink-0 flex items-center gap-[12px] h-[42px] px-[12px] rounded-[10px] text-[15px] font-medium text-[#dc2626] hover:bg-[#fef2f2] whitespace-nowrap">
-                            <font-awesome-icon :icon="['fas', 'user-slash']" class="w-[18px]" /> Удалить аккаунт
+                            <font-awesome-icon :icon="['fas', 'user-slash']" class="w-[18px]" /> {{ t('Удалить аккаунт') }}
                         </button>
                     </div>
                 </aside>
@@ -59,22 +59,22 @@
                 <div class="w-[52px] h-[52px] rounded-full bg-[#fef2f2] text-[#dc2626] grid place-items-center text-[22px] mx-auto">
                     <font-awesome-icon :icon="['fas', 'user-slash']" />
                 </div>
-                <h3 class="m-0 mt-[14px] text-[19px] font-bold text-[#152242] text-center">Вы действительно хотите удалить этот аккаунт?</h3>
+                <h3 class="m-0 mt-[14px] text-[19px] font-bold text-[#152242] text-center">{{ t('Вы действительно хотите удалить этот аккаунт?') }}</h3>
                 <ul class="mt-[14px] mb-0 pl-[18px] text-[14px] text-[#475569] leading-[1.6]">
-                    <li>все ваши объявления, фото и переписки будут удалены без возможности восстановления;</li>
-                    <li>30 дней на почту <b class="text-[#152242]">{{ id?.email }}</b> нельзя будет создать новый аккаунт.</li>
+                    <li>{{ t('все ваши объявления, фото и переписки будут удалены без возможности восстановления;') }}</li>
+                    <li>{{ t('30 дней на почту') }} <b class="text-[#152242]">{{ id?.email }}</b> {{ t('нельзя будет создать новый аккаунт.') }}</li>
                 </ul>
                 <p v-if="isAdmin" class="mt-[12px] mb-0 px-[12px] py-[10px] rounded-[12px] bg-[#fffbeb] border border-[#fde68a] text-[13.5px] text-[#b45309]">
                     <font-awesome-icon :icon="['fas', 'shield-halved']" class="mr-[4px]" />
-                    Вы {{ id.role === 'admin' ? 'администратор' : 'модератор' }}: вместе с аккаунтом пропадёт доступ к админке.
-                    <template v-if="id.role === 'admin'"> Если вы единственный администратор, удалить аккаунт не получится — сначала назначьте другого.</template>
+                    {{ t('Вы') }} {{ id.role === 'admin' ? t('администратор') : t('модератор') }}{{ t(': вместе с аккаунтом пропадёт доступ к админке.') }}
+                    <template v-if="id.role === 'admin'"> {{ t('Если вы единственный администратор, удалить аккаунт не получится — сначала назначьте другого.') }}</template>
                 </p>
-                <p v-if="deleteError" class="mt-[12px] mb-0 px-[12px] py-[10px] rounded-[12px] bg-[#fef2f2] border border-[#fecaca] text-[13.5px] text-[#b91c1c]" data-test="delete-error">{{ deleteError }}</p>
+                <p v-if="deleteError" class="mt-[12px] mb-0 px-[12px] py-[10px] rounded-[12px] bg-[#fef2f2] border border-[#fecaca] text-[13.5px] text-[#b91c1c]" data-test="delete-error">{{ t(deleteError) }}</p>
                 <div class="mt-[18px] flex flex-col-reverse sm:flex-row gap-[10px]">
-                    <button type="button" @click="closeDelete" class="flex-1 h-[46px] rounded-[12px] bg-[#f1f5f9] hover:bg-[#e2e8f0] text-[15px] font-semibold text-[#152242]">Отмена</button>
+                    <button type="button" @click="closeDelete" class="flex-1 h-[46px] rounded-[12px] bg-[#f1f5f9] hover:bg-[#e2e8f0] text-[15px] font-semibold text-[#152242]">{{ t('Отмена') }}</button>
                     <button type="button" @click="deleteAcount" :disabled="deleting" data-test="delete-confirm"
                         class="flex-1 h-[46px] rounded-[12px] bg-[#dc2626] hover:bg-[#b91c1c] text-white text-[15px] font-bold disabled:opacity-60">
-                        <font-awesome-icon v-if="deleting" :icon="['fas', 'spinner']" spin-pulse class="mr-[6px]" />Да, удалить
+                        <font-awesome-icon v-if="deleting" :icon="['fas', 'spinner']" spin-pulse class="mr-[6px]" />{{ t('Да, удалить') }}
                     </button>
                 </div>
             </div>

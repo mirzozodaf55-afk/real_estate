@@ -1,69 +1,69 @@
 <template>
-  <WzShell :title="`${d.objects || 'Коммерческая недвижимость'}: всё об объекте`" subtitle="Заполните параметры, добавьте фото и цену — после проверки модератором объявление появится в поиске"
+  <WzShell :title="t('{x}: всё об объекте', { x: t(d.objects || 'Коммерческая недвижимость') })" :subtitle="t('Заполните параметры, добавьте фото и цену — после проверки модератором объявление появится в поиске')"
     :error="error" :loading="sending" final @next="place">
 
     <WzLocationPicker :draft="d" :invalid="tried && !hasPoint" />
 
-    <div class="wz-section-title">Параметры</div>
+    <div class="wz-section-title">{{ t('Параметры') }}</div>
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-[16px]">
-      <WzNumber v-if="!isLand" v-model="d.generalArea" :label="isBuilding ? 'Площадь' : 'Общая площадь'" suffix="м²" :max="6" width="w-full"
-        :invalid="tried && !d.generalArea" error="Укажите площадь" />
-      <WzNumber v-if="!isLand" v-model="d.floor" :label="isBuilding ? 'Этажей в здании' : 'Этаж'" :max="3" width="w-full"
-        :invalid="tried && (!d.floor || floorTooHigh)" :error="floorTooHigh ? 'Больше этажности здания' : 'Укажите этаж'" />
-      <WzNumber v-if="!isLand && !isBuilding" v-model="d.floorHouse" label="Этажей в здании" :max="3" width="w-full"
-        :invalid="tried && !d.floorHouse" error="Укажите этажность" />
-      <WzNumber v-if="!isLand" v-model="d.CeilingHeight" label="Высота потолков" suffix="м" :max="2" width="w-full" hint="Необязательно" />
-      <WzNumber v-if="showSeats" v-model="d.numberSeats" label="Рабочих мест" :max="5" width="w-full" hint="Необязательно" />
-      <WzNumber v-model="d.landArea" :label="isLand ? 'Площадь участка' : 'Участок'" suffix="сот." :max="6" width="w-full"
-        :invalid="tried && isLand && !d.landArea" error="Укажите площадь участка" :hint="isLand ? '' : 'Необязательно'" />
+      <WzNumber v-if="!isLand" v-model="d.generalArea" :label="isBuilding ? t('Площадь') : t('Общая площадь')" :suffix="t('м²')" :max="6" width="w-full"
+        :invalid="tried && !d.generalArea" :error="t('Укажите площадь')" />
+      <WzNumber v-if="!isLand" v-model="d.floor" :label="isBuilding ? t('Этажей в здании') : t('Этаж')" :max="3" width="w-full"
+        :invalid="tried && (!d.floor || floorTooHigh)" :error="floorTooHigh ? t('Больше этажности здания') : t('Укажите этаж')" />
+      <WzNumber v-if="!isLand && !isBuilding" v-model="d.floorHouse" :label="t('Этажей в здании')" :max="3" width="w-full"
+        :invalid="tried && !d.floorHouse" :error="t('Укажите этажность')" />
+      <WzNumber v-if="!isLand" v-model="d.CeilingHeight" :label="t('Высота потолков')" :suffix="t('м')" :max="2" width="w-full" :hint="t('Необязательно')" />
+      <WzNumber v-if="showSeats" v-model="d.numberSeats" :label="t('Рабочих мест')" :max="5" width="w-full" :hint="t('Необязательно')" />
+      <WzNumber v-model="d.landArea" :label="isLand ? t('Площадь участка') : t('Участок')" :suffix="t('сот.')" :max="6" width="w-full"
+        :invalid="tried && isLand && !d.landArea" :error="t('Укажите площадь участка')" :hint="isLand ? '' : t('Необязательно')" />
     </div>
 
     <template v-if="!isLand">
-      <WzChoice v-if="showLayout" v-model="d.layout" label="Планировка" :options="['Открытая', 'Кабинетная', 'Коридорная', 'Смешанная']" />
-      <WzChoice v-model="d.State" :label="isBuilding ? 'Ремонт' : 'Состояние'" :options="stateOptions" />
+      <WzChoice v-if="showLayout" v-model="d.layout" :label="t('Планировка')" :options="['Открытая', 'Кабинетная', 'Коридорная', 'Смешанная']" />
+      <WzChoice v-model="d.State" :label="isBuilding ? t('Ремонт') : t('Состояние')" :options="stateOptions" />
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-[22px]">
-        <WzChoice v-model="d.Furniture" label="Мебель" :options="['Есть', 'Нет']" />
-        <WzChoice v-if="isBuilding" v-model="d.elevator" label="Лифт" :options="['Есть', 'Нет']" />
+        <WzChoice v-model="d.Furniture" :label="t('Мебель')" :options="['Есть', 'Нет']" />
+        <WzChoice v-if="isBuilding" v-model="d.elevator" :label="t('Лифт')" :options="['Есть', 'Нет']" />
       </div>
-      <WzChoice v-model="d.parking" label="Парковка" :options="['Наземная', 'Подземная', 'Многоуровневая', 'На крыше', 'Нет']" />
+      <WzChoice v-model="d.parking" :label="t('Парковка')" :options="['Наземная', 'Подземная', 'Многоуровневая', 'На крыше', 'Нет']" />
     </template>
 
     <template v-if="!isLand && !isBuilding">
-      <div class="wz-section-title">О здании</div>
+      <div class="wz-section-title">{{ t('О здании') }}</div>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-[16px]">
-        <WzNumber v-model="d.year" label="Год постройки" :max="4" width="w-full" hint="Необязательно" />
-        <WzNumber v-model="d.buildingArea" label="Площадь здания" suffix="м²" :max="7" width="w-full" hint="Необязательно" />
+        <WzNumber v-model="d.year" :label="t('Год постройки')" :max="4" width="w-full" :hint="t('Необязательно')" />
+        <WzNumber v-model="d.buildingArea" :label="t('Площадь здания')" :suffix="t('м²')" :max="7" width="w-full" :hint="t('Необязательно')" />
       </div>
     </template>
 
-    <WzChoice v-if="showInfrastructure && infrastructure.length" multiple label="Рядом есть" :options="infrastructure"
-      :model-value="d.infrastructure || []" @update:model-value="d.infrastructure = $event" hint="Необязательно" />
+    <WzChoice v-if="showInfrastructure && infrastructure.length" multiple :label="t('Рядом есть')" :options="infrastructure"
+      :model-value="d.infrastructure || []" @update:model-value="d.infrastructure = $event" :hint="t('Необязательно')" />
 
-    <div class="wz-section-title">Фото</div>
+    <div class="wz-section-title">{{ t('Фото') }}</div>
     <Pictures :invalid="tried && !images.length" />
 
-    <div class="wz-section-title">Описание</div>
-    <WzAiWrite :draft="d" hint="ИИ напишет текст по параметрам выше — проверьте и поправьте" />
+    <div class="wz-section-title">{{ t('Описание') }}</div>
+    <WzAiWrite :draft="d" :hint="t('ИИ напишет текст по параметрам выше — проверьте и поправьте')" />
     <label class="block">
-      <span class="wz-label">Заголовок</span>
-      <input v-model="d.title" maxlength="150" class="wz-input" :class="{ 'wz-input--bad': tried && !titleOk }" placeholder="Например: Офис 120 м² в бизнес-центре, первая линия" />
-      <span v-if="tried && !titleOk" class="wz-err block">Минимум 6 символов</span>
+      <span class="wz-label">{{ t('Заголовок') }}</span>
+      <input v-model="d.title" maxlength="150" class="wz-input" :class="{ 'wz-input--bad': tried && !titleOk }" :placeholder="t('Например: Офис 120 м² в бизнес-центре, первая линия')" />
+      <span v-if="tried && !titleOk" class="wz-err block">{{ t('Минимум 6 символов') }}</span>
     </label>
     <label class="block">
-      <span class="wz-label">Описание</span>
+      <span class="wz-label">{{ t('Описание') }}</span>
       <textarea v-model="d.description" rows="6" maxlength="3000" class="wz-input" :class="{ 'wz-input--bad': tried && !descriptionOk }"
-        placeholder="Расположение, отделка, коммуникации, для какого бизнеса подойдёт"></textarea>
-      <span v-if="tried && !descriptionOk" class="wz-err block">Напишите хотя бы пару предложений — от 15 символов</span>
+        :placeholder="t('Расположение, отделка, коммуникации, для какого бизнеса подойдёт')"></textarea>
+      <span v-if="tried && !descriptionOk" class="wz-err block">{{ t('Напишите хотя бы пару предложений — от 15 символов') }}</span>
     </label>
     <label class="block">
-      <span class="wz-label">Видео <span class="font-normal text-[#94a3b8]">— необязательно</span></span>
+      <span class="wz-label">{{ t('Видео') }} <span class="font-normal text-[#94a3b8]">{{ t('— необязательно') }}</span></span>
       <input v-model.trim="d.linkVideo" type="url" class="wz-input" :class="{ 'wz-input--bad': tried && !videoOk }" placeholder="https://youtube.com/…" />
-      <span v-if="tried && !videoOk" class="wz-err block">Ссылка должна начинаться с https://</span>
+      <span v-if="tried && !videoOk" class="wz-err block">{{ t('Ссылка должна начинаться с https://') }}</span>
     </label>
 
-    <div class="wz-section-title">Цена</div>
-    <WzNumber v-model="d.price" :label="d.rent === 'Аренда' ? 'Аренда в месяц' : 'Цена'" suffix="сомони" :max="10" width="max-w-[280px]"
-      :invalid="tried && !priceOk" error="Укажите цену — от 100 сомони" />
+    <div class="wz-section-title">{{ t('Цена') }}</div>
+    <WzNumber v-model="d.price" :label="d.rent === 'Аренда' ? t('Аренда в месяц') : t('Цена')" :suffix="t('сомони')" :max="10" width="max-w-[280px]"
+      :invalid="tried && !priceOk" :error="t('Укажите цену — от 100 сомони')" />
   </WzShell>
 </template>
 

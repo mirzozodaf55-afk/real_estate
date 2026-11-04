@@ -23,9 +23,9 @@ class MessageController extends Controller
         $data = $request->validate([
             'text'=>'required|string|max:5000',
             'friendId'=>'required|integer|exists:owners,id',
-            'type'=>'required',
-            'time'=>'required'
-
+            // фото и видео — только через send-file / send-video: иначе в «message» можно было подложить имя чужого файла
+            'type'=>'required|in:message',
+            'time'=>'required|string|max:20'
         ]);
         // отправитель — владелец токена, а не присланный userId (раньше можно было писать от чужого имени)
         $senderId = $request->user()->id;
@@ -143,13 +143,9 @@ class MessageController extends Controller
         $user_id = $request->user()->id; // отправитель из токена, а не из запроса
         $friend_id = (int) $request->input('friendId');
         $file = $request->file('file');
-        $type = $request->input('type');
-        $name = uniqid() .'.'. $file->getClientOriginalExtension();
-        if ($request->hasFile('file') && $request->input('type')=='picture') {
-            $img = Image::make($file->getPathname());
-            $img->fit(1024,720)->save(public_path('filemessage/'.$name));
-            
-        }
+        $type = 'picture'; // этот маршрут — только для фото (видео — send-video)
+        $name = \App\Support\UploadName::make($file, \App\Support\UploadName::IMAGES, 'jpg');
+        Image::make($file->getPathname())->fit(1024,720)->save(public_path('filemessage/'.$name));
         $dbfile = Message::create([
             'message'=>$name,
             'user_id'=>$user_id,
@@ -251,10 +247,11 @@ public function SendVideo(Request $request){
     $user_id = $request->user()->id; // отправитель из токена, а не из запроса
     $friend_id = (int) $request->input('friendId');
     $file = $request->file('video');
-    $type = $request->input('types');
+    $type = 'video';
     $time = $request->input('time');
 
-    $originalName = uniqid() . '.' . $file->getClientOriginalExtension();
+    // расширение по содержимому, не из имени файла: иначе «x.php» с видео внутри лёг бы в public/ исполняемым файлом
+    $originalName = \App\Support\UploadName::make($file, \App\Support\UploadName::VIDEOS, 'mp4');
     $originalPath = public_path("filemessage/original");
     $file->move($originalPath, $originalName);
     $dbfile = Message::create([
@@ -345,6 +342,7 @@ public function SendVideo(Request $request){
     
 
     public function Typing(Request $request){
+        $request->validate(['friendId' => 'required|integer', 'value' => 'nullable|string|max:5000']);
         $request->user()->update(['last_seen_at' => now()]);
         $this->broadcastSafely(fn () => event(new userTyping([
            'value'=>$request->value,
@@ -356,13 +354,19 @@ public function SendVideo(Request $request){
         ])));
     }
 
+    /** Собеседники для списка «Сообщения»: только те, с кем есть переписка (не все пользователи сайта) */
     public function getAllUser(Request $request){
-        // $request->user()->update(['last_seen_at' => now()]);
-        $alluser = Owner::all()->map(function($user){
+        $me = $request->user()->id;
+        $friendIds = messageUser::where('owner_id', $me)->pluck('friend_id')
+            ->merge(messageUser::where('friend_id', $me)->pluck('owner_id'))
+            ->unique();
+
+        $alluser = Owner::whereIn('id', $friendIds)->get()->map(function($user){
             $lastSeen = $user->last_seen_at ? Carbon::parse($user->last_seen_at):null;
             $isOnline = false;
             if ($lastSeen) {
-                $isOnline = $lastSeen->greaterThan(now()->subSeconds(5));
+                // сайт отмечает присутствие раз в минуту (app.vue) — запас на задержку
+                $isOnline = $lastSeen->greaterThan(now()->subSeconds(90));
             }
             return [
                 'id'=>$user->id,
@@ -372,20 +376,11 @@ public function SendVideo(Request $request){
                 'phone_number'=>$user->phone_number,
                 'online'=>$isOnline,
                 'last_seen_at'=>$lastSeen?$lastSeen->diffForHumans():null,
-                'uniq_id'=>$user->uniq_id
+                'uniq_id'=>$user->uniq_id,
+                'role'=>$user->role, // значок «Администрация» в списке
 
             ];
         });
-        $visitorUser = VisitorUser::all();
-        return [$alluser,$visitorUser];
-    }
-
-
-    public function getVideo(Request $request){
-        $request->user()->update(['last_seen_at' => now()]);
-        $video = Message::where('type','video')->get();
-
-        return response()->json($video);
-
+        return [$alluser];
     }
 }

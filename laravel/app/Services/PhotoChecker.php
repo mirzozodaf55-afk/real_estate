@@ -61,7 +61,7 @@ class PhotoChecker
                 'Подозрительно (suspicious): фото очень плохого качества или непонятно что; надписи с телефонами/ссылками поверх фото; явно чужое фото из интернета (водяной знак другого сайта).',
                 'Не соответствует (mismatch): на фото не недвижимость — машина, животное, еда, селфи/люди крупным планом, скриншот экрана, документ, мем, реклама; или явно другой тип объекта (офисный центр для объявления о комнате).',
                 'verdict: ok — все фото в порядке; suspicious — есть сомнения; mismatch — хотя бы одно фото явно не про это объявление.',
-                'Отвечай по-русски. what — что на фото, коротко (до 10 слов). summary — одно предложение для модератора.',
+                'what — что на фото, коротко (до 10 слов), summary — одно предложение для модератора: по-русски; what_en и summary_en — то же по-английски.',
             ])],
             ['role' => 'user', 'content' => array_merge(
                 [['type' => 'text', 'text' => 'Объявление: ' . json_encode($facts, JSON_UNESCAPED_UNICODE)]],
@@ -72,18 +72,20 @@ class PhotoChecker
             'properties' => [
                 'verdict' => ['type' => 'string', 'enum' => [self::OK, self::SUSPICIOUS, self::MISMATCH]],
                 'summary' => ['type' => 'string'],
+                'summary_en' => ['type' => 'string'],
                 'photos' => ['type' => 'array', 'items' => [
                     'type' => 'object',
                     'properties' => [
                         'index' => ['type' => 'integer'],
                         'ok' => ['type' => 'boolean'],
                         'what' => ['type' => 'string'],
+                        'what_en' => ['type' => 'string'],
                     ],
-                    'required' => ['index', 'ok', 'what'],
+                    'required' => ['index', 'ok', 'what', 'what_en'],
                     'additionalProperties' => false,
                 ]],
             ],
-            'required' => ['verdict', 'summary', 'photos'],
+            'required' => ['verdict', 'summary', 'summary_en', 'photos'],
             'additionalProperties' => false,
         ], ['model' => config('services.openai.vision_model'), 'reasoning_effort' => null, 'temperature' => 0.1, 'max_tokens' => 1500]);
 
@@ -91,14 +93,18 @@ class PhotoChecker
             throw new RuntimeException('Неожиданный ответ ИИ при проверке фото');
         }
 
-        // привязываем ответ к конкретным файлам: index из ответа модели — с 1
+        // привязываем ответ к конкретным файлам: просим нумерацию с 1, но модель иногда считает с 0 —
+        // если в ответе есть индекс 0, считаем с нуля; нет индекса — по порядку в ответе
+        $base = collect($result['photos'] ?? [])->contains(fn ($p) => ($p['index'] ?? null) === 0) ? 0 : 1;
         $check = [
             'verdict' => $result['verdict'],
             'summary' => $result['summary'],
-            'photos' => collect($result['photos'])->map(fn ($p) => [
-                'picture' => $pictures[($p['index'] ?? 0) - 1]->pictures ?? null,
+            'summary_en' => (string) ($result['summary_en'] ?? ''), // модератор видит текст на языке сайта
+            'photos' => collect($result['photos'] ?? [])->map(fn ($p, $i) => [
+                'picture' => $pictures[(isset($p['index']) ? $p['index'] - $base : $i)]->pictures ?? null,
                 'ok' => (bool) ($p['ok'] ?? true),
                 'what' => (string) ($p['what'] ?? ''),
+                'what_en' => (string) ($p['what_en'] ?? ''),
             ])->filter(fn ($p) => $p['picture'])->values()->all(),
             'checked_photos' => $pictures->count(),
         ];

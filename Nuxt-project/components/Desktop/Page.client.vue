@@ -16,10 +16,10 @@
 
             <div class="relative max-w-[1160px] mx-auto px-[24px] pt-[64px] pb-[72px]">
                 <h1 class="m-0 text-white font-bold text-[40px] leading-[1.15] tracking-[-0.01em] max-w-[720px]">
-                    Найдите жильё, которое подходит именно вам
+                    {{ t('Найдите жильё, которое подходит именно вам') }}
                 </h1>
                 <p class="mt-[12px] mb-[32px] text-[17px] text-white/80 max-w-[620px]">
-                    Квартиры, дома и коммерческая недвижимость — купить, снять надолго или посуточно
+                    {{ t('Квартиры, дома и коммерческая недвижимость — купить, снять надолго или посуточно') }}
                 </p>
 
                 <div class="flex flex-wrap items-center justify-between gap-[12px] mb-[12px]">
@@ -28,12 +28,12 @@
                             :aria-selected="form.dealType === deal.value" @click="setDeal(deal.value)"
                             class="px-[18px] h-[38px] rounded-[9px] text-[15px] font-semibold transition-colors"
                             :class="form.dealType === deal.value ? 'bg-white text-[#152242] shadow-sm' : 'text-white hover:bg-white/15'">
-                            {{ deal.label }}
+                            {{ t(deal.label) }}
                         </button>
                     </div>
                     <button type="button" @click="postAnnoun"
                         class="h-[38px] px-[16px] rounded-[10px] border border-white/40 text-white text-[14px] font-semibold hover:bg-white hover:text-[#0468ff] transition-colors">
-                        <font-awesome-icon :icon="['fas', 'plus']" class="mr-[6px]" />Разместить объявление
+                        <font-awesome-icon :icon="['fas', 'plus']" class="mr-[6px]" />{{ t('Разместить объявление') }}
                     </button>
                 </div>
 
@@ -43,20 +43,20 @@
                     <!-- Тип недвижимости -->
                     <div class="relative">
                         <button type="button" class="field" :class="{ 'field-open': panel === 'type' }" @click="toggle('type')" data-test="field-type">
-                            <span class="field-label">Тип недвижимости</span>
-                            <span class="field-value">{{ form.typeObject || 'Любой тип' }}</span>
+                            <span class="field-label">{{ t('Тип недвижимости') }}</span>
+                            <span class="field-value">{{ t(form.typeObject || 'Любой тип') }}</span>
                             <font-awesome-icon :icon="['fas', 'chevron-down']" class="field-chevron" :class="{ 'rotate-180': panel === 'type' }" />
                         </button>
                         <div v-if="panel === 'type'" class="panel w-[300px]">
                             <div class="grid grid-cols-2 p-[3px] rounded-[10px] bg-[#f1f5f9] mb-[10px]">
                                 <button v-for="c of CATEGORIES" :key="c.value" type="button" @click="category = c.value"
                                     class="h-[32px] rounded-[8px] text-[14px] font-semibold transition-colors"
-                                    :class="category === c.value ? 'bg-white text-[#152242] shadow-sm' : 'text-[#64748b]'">{{ c.label }}</button>
+                                    :class="category === c.value ? 'bg-white text-[#152242] shadow-sm' : 'text-[#64748b]'">{{ t(c.label) }}</button>
                             </div>
-                            <button v-for="t of typeOptions" :key="t || 'any'" type="button" @click="setType(t)"
-                                class="option" :class="{ 'option-active': form.typeObject === t }">
-                                <span class="radio" :class="{ 'radio-on': form.typeObject === t }"></span>
-                                {{ t || 'Любой тип' }}
+                            <button v-for="opt of typeOptions" :key="opt || 'any'" type="button" @click="setType(opt)"
+                                class="option" :class="{ 'option-active': form.typeObject === opt }">
+                                <span class="radio" :class="{ 'radio-on': form.typeObject === opt }"></span>
+                                {{ t(opt || t('Любой тип')) }}
                             </button>
                         </div>
                     </div>
@@ -64,18 +64,18 @@
                     <!-- Комнаты -->
                     <div class="relative">
                         <button type="button" class="field" :class="{ 'field-open': panel === 'rooms', 'opacity-50': !roomsApply }" :disabled="!roomsApply"
-                            @click="toggle('rooms')" data-test="field-rooms" :title="roomsApply ? '' : 'Не применяется к этому типу'">
-                            <span class="field-label">Комнаты</span>
-                            <span class="field-value">{{ roomsLabel }}</span>
+                            @click="toggle('rooms')" data-test="field-rooms" :title="roomsApply ? '' : t('Не применяется к этому типу')">
+                            <span class="field-label">{{ t('Комнаты') }}</span>
+                            <span class="field-value">{{ t(roomsLabel) }}</span>
                             <font-awesome-icon :icon="['fas', 'chevron-down']" class="field-chevron" :class="{ 'rotate-180': panel === 'rooms' }" />
                         </button>
                         <div v-if="panel === 'rooms'" class="panel w-[260px]">
-                            <div class="text-[13px] text-[#64748b] mb-[10px]">Можно выбрать несколько</div>
+                            <div class="text-[13px] text-[#64748b] mb-[10px]">{{ t('Можно выбрать несколько') }}</div>
                             <div class="flex gap-[8px]">
                                 <button v-for="r of ROOMS" :key="r.value" type="button" @click="toggleRoom(r.value)" :aria-pressed="form.quantityRoom.includes(r.value)"
                                     class="flex-1 h-[40px] rounded-[10px] border text-[15px] font-semibold transition-colors"
                                     :class="form.quantityRoom.includes(r.value) ? 'bg-[#0468ff] border-[#0468ff] text-white' : 'border-[#e2e8f0] text-[#152242] hover:border-[#0468ff]'">
-                                    {{ r.label }}
+                                    {{ t(r.label) }}
                                 </button>
                             </div>
                         </div>
@@ -84,39 +84,39 @@
                     <!-- Цена -->
                     <div class="relative">
                         <button type="button" class="field" :class="{ 'field-open': panel === 'price' }" @click="toggle('price')" data-test="field-price">
-                            <span class="field-label">Цена, сомони</span>
-                            <span class="field-value">{{ priceLabel }}</span>
+                            <span class="field-label">{{ t('Цена, сомони') }}</span>
+                            <span class="field-value">{{ t(priceLabel) }}</span>
                             <font-awesome-icon :icon="['fas', 'chevron-down']" class="field-chevron" :class="{ 'rotate-180': panel === 'price' }" />
                         </button>
                         <div v-if="panel === 'price'" class="panel w-[300px]">
                             <div class="flex items-center gap-[8px]">
-                                <input :value="formatNumber(form.priceFrom)" @input="setPrice('priceFrom', $event)" inputmode="numeric" placeholder="от" data-test="price-from"
+                                <input :value="formatNumber(form.priceFrom)" @input="setPrice('priceFrom', $event)" inputmode="numeric" :placeholder="t('от')" data-test="price-from"
                                     class="w-full h-[40px] px-[12px] rounded-[10px] border border-[#e2e8f0] outline-none focus:border-[#0468ff] text-[15px]" />
                                 <span class="text-[#94a3b8]">—</span>
-                                <input :value="formatNumber(form.priceTo)" @input="setPrice('priceTo', $event)" inputmode="numeric" placeholder="до" data-test="price-to"
+                                <input :value="formatNumber(form.priceTo)" @input="setPrice('priceTo', $event)" inputmode="numeric" :placeholder="t('до')" data-test="price-to"
                                     class="w-full h-[40px] px-[12px] rounded-[10px] border border-[#e2e8f0] outline-none focus:border-[#0468ff] text-[15px]" />
                             </div>
                             <button v-if="form.priceFrom || form.priceTo" type="button" @click="form.priceFrom = form.priceTo = ''"
-                                class="mt-[10px] text-[13px] text-[#0468ff] hover:underline">Сбросить цену</button>
+                                class="mt-[10px] text-[13px] text-[#0468ff] hover:underline">{{ t('Сбросить цену') }}</button>
                         </div>
                     </div>
 
                     <!-- Поиск по тексту объявления -->
                     <label class="field cursor-text">
-                        <span class="field-label">Поиск</span>
+                        <span class="field-label">{{ t('Поиск') }}</span>
                         <input v-model="form.q" @focus="panel = null" type="text" maxlength="255" autocomplete="off" data-test="field-q"
-                            placeholder="Район, улица или ключевое слово"
+                            :placeholder="t('Район, улица или ключевое слово')"
                             class="w-full bg-transparent outline-none text-[15px] text-[#152242] placeholder:text-[#94a3b8] p-0 border-0" />
                     </label>
 
                     <div class="flex gap-[6px] p-[2px] sm:col-span-2 lg:col-span-1">
-                        <button type="button" @click="openMap" title="Показать на карте" aria-label="Показать на карте"
+                        <button type="button" @click="openMap" :title="t('Показать на карте')" :aria-label="t('Показать на карте')"
                             class="h-[56px] w-[56px] shrink-0 rounded-[12px] bg-[#f1f5f9] text-[#152242] hover:bg-[#e2e8f0] transition-colors grid place-items-center">
                             <font-awesome-icon :icon="['fas', 'location-dot']" class="text-[18px]" />
                         </button>
                         <button type="submit" data-test="submit"
                             class="h-[56px] flex-1 lg:flex-none px-[26px] rounded-[12px] bg-[#0468ff] hover:bg-[#0353cc] text-white text-[16px] font-bold transition-colors">
-                            <font-awesome-icon :icon="['fas', 'magnifying-glass']" class="mr-[8px]" />Найти
+                            <font-awesome-icon :icon="['fas', 'magnifying-glass']" class="mr-[8px]" />{{ t('Найти') }}
                         </button>
                     </div>
                 </form>
@@ -129,11 +129,11 @@
                 <section class="pt-[36px]">
                     <div class="flex items-end justify-between gap-[12px] mb-[16px]">
                         <div>
-                            <h2 class="m-0 text-[26px] font-bold text-[#152242]">Новые объявления</h2>
-                            <p class="text-[14px] text-[#64748b] mt-[4px] mb-0">Только что опубликованные — проверены модератором</p>
+                            <h2 class="m-0 text-[26px] font-bold text-[#152242]">{{ t('Новые объявления') }}</h2>
+                            <p class="text-[14px] text-[#64748b] mt-[4px] mb-0">{{ t('Только что опубликованные — проверены модератором') }}</p>
                         </div>
                         <NuxtLink to="/list-announ" class="shrink-0 h-[40px] px-[16px] rounded-[10px] border border-[#e2e8f0] bg-white text-[14px] font-semibold text-[#152242] flex items-center gap-[8px] no-underline hover:border-[#0468ff] hover:text-[#0468ff]">
-                            Все объявления <font-awesome-icon :icon="['fas', 'arrow-right']" class="text-[12px]" />
+                            {{ t('Все объявления') }} <font-awesome-icon :icon="['fas', 'arrow-right']" class="text-[12px]" />
                         </NuxtLink>
                     </div>
 
@@ -141,9 +141,9 @@
                         <div v-for="n in 4" :key="n" class="h-[290px] rounded-[18px] bg-[#e2e8f0] animate-pulse"></div>
                     </div>
                     <div v-else-if="!latest.length" class="rounded-[18px] bg-white border border-[#e8edf3] p-[32px] text-center">
-                        <p class="text-[16px] font-semibold text-[#152242] m-0">Пока нет опубликованных объявлений</p>
-                        <p class="text-[14px] text-[#64748b] mt-[4px] mb-[14px]">Станьте первым — это займёт пару минут</p>
-                        <button type="button" @click="postAnnoun" class="h-[42px] px-[18px] rounded-[10px] bg-[#0468ff] text-white text-[14px] font-semibold">Разместить объявление</button>
+                        <p class="text-[16px] font-semibold text-[#152242] m-0">{{ t('Пока нет опубликованных объявлений') }}</p>
+                        <p class="text-[14px] text-[#64748b] mt-[4px] mb-[14px]">{{ t('Станьте первым — это займёт пару минут') }}</p>
+                        <button type="button" @click="postAnnoun" class="h-[42px] px-[18px] rounded-[10px] bg-[#0468ff] text-white text-[14px] font-semibold">{{ t('Разместить объявление') }}</button>
                     </div>
                     <div v-else class="grid grid-cols-2 lg:grid-cols-4 gap-[16px]" data-test="home-latest">
                         <NuxtLink v-for="a of latest" :key="a.id" :to="`/show_announ-${a.id}`"
@@ -155,7 +155,7 @@
                                 <div v-else class="w-full h-full grid place-items-center text-[#94a3b8] text-[26px]"><font-awesome-icon :icon="['far', 'image']" /></div>
                                 <div class="absolute left-[10px] top-[10px] flex gap-[6px]">
                                     <span v-if="a.promo_active === 'vip'" class="promo-badge-vip px-[7px] py-[2px] rounded-[8px] text-[11.5px] font-extrabold text-[#5b3a00] shadow-sm"><font-awesome-icon :icon="['fas', 'crown']" class="text-[9px] mr-[3px]" />VIP</span>
-                                    <span v-else-if="a.promo_active === 'top'" class="px-[7px] py-[2px] rounded-[8px] bg-[#0468ff] text-[11.5px] font-extrabold text-white shadow-sm"><font-awesome-icon :icon="['fas', 'arrow-up']" class="text-[9px] mr-[3px]" />ТОП</span>
+                                    <span v-else-if="a.promo_active === 'top'" class="px-[7px] py-[2px] rounded-[8px] bg-[#0468ff] text-[11.5px] font-extrabold text-white shadow-sm"><font-awesome-icon :icon="['fas', 'arrow-up']" class="text-[9px] mr-[3px]" />{{ t('ТОП') }}</span>
                                     <span class="px-[8px] py-[2px] rounded-[8px] bg-white text-[12px] font-semibold text-[#152242] shadow-sm">{{ dealLabel(a) }}</span>
                                 </div>
                                 <span v-if="a.pictures?.length > 1" class="absolute right-[10px] bottom-[10px] px-[7px] py-[1px] rounded-[8px] bg-black/55 text-white text-[11px]">
@@ -163,8 +163,8 @@
                                 </span>
                             </div>
                             <div class="p-[12px]">
-                                <div class="text-[18px] font-bold text-[#152242]">{{ formatNumber(a.price) }} <span class="text-[13px]">сомони</span><span class="text-[12px] font-normal text-[#64748b]">{{ priceSuffix(a) }}</span></div>
-                                <div class="text-[14px] font-semibold text-[#0468ff] line-clamp-1 mt-[2px]">{{ a.title || a.type_object }}</div>
+                                <div class="text-[18px] font-bold text-[#152242]">{{ formatNumber(a.price) }} <span class="text-[13px]">{{ t('сомони') }}</span><span class="text-[12px] font-normal text-[#64748b]">{{ priceSuffix(a) }}</span></div>
+                                <div class="text-[14px] font-semibold text-[#0468ff] line-clamp-1 mt-[2px]">{{ a.title || t(a.type_object) }}</div>
                                 <div class="text-[12.5px] text-[#64748b] truncate mt-[3px]">{{ announFacts(a) }}</div>
                                 <div v-if="a.address" class="text-[12px] text-[#94a3b8] truncate mt-[4px]"><font-awesome-icon :icon="['fas', 'location-dot']" class="mr-[3px]" />{{ a.address }}</div>
                             </div>
@@ -177,11 +177,11 @@
                     <div class="relative overflow-hidden rounded-[20px] p-[26px] bg-gradient-to-br from-[#0468ff] to-[#4f46e5] text-white">
                         <div class="absolute -right-[40px] -bottom-[60px] w-[220px] h-[220px] rounded-full bg-white/10"></div>
                         <div class="relative">
-                            <div class="text-[13px] font-semibold text-white/75 uppercase tracking-[0.08em]">Собственникам</div>
-                            <h3 class="m-0 mt-[6px] text-[22px] font-bold leading-tight">Разместите объявление бесплатно</h3>
-                            <p class="text-[14.5px] text-white/85 mt-[8px] mb-[18px] max-w-[380px]">Укажите адрес на карте, добавьте фото — ИИ поможет написать описание. После проверки модератором объявление увидят все.</p>
+                            <div class="text-[13px] font-semibold text-white/75 uppercase tracking-[0.08em]">{{ t('Собственникам') }}</div>
+                            <h3 class="m-0 mt-[6px] text-[22px] font-bold leading-tight">{{ t('Разместите объявление бесплатно') }}</h3>
+                            <p class="text-[14.5px] text-white/85 mt-[8px] mb-[18px] max-w-[380px]">{{ t('Укажите адрес на карте, добавьте фото — ИИ поможет написать описание. После проверки модератором объявление увидят все.') }}</p>
                             <button type="button" @click="postAnnoun" class="h-[44px] px-[20px] rounded-[12px] bg-white text-[#0468ff] text-[15px] font-bold hover:bg-[#eef4ff]">
-                                <font-awesome-icon :icon="['fas', 'plus']" class="mr-[6px]" />Разместить
+                                <font-awesome-icon :icon="['fas', 'plus']" class="mr-[6px]" />{{ t('Разместить') }}
                             </button>
                         </div>
                     </div>
@@ -190,25 +190,25 @@
                             <font-awesome-icon :icon="['fas', 'map-location-dot']" />
                         </div>
                         <div class="relative max-w-[60%]">
-                            <div class="text-[13px] font-semibold text-[#64748b] uppercase tracking-[0.08em]">Поиск по карте</div>
-                            <h3 class="m-0 mt-[6px] text-[22px] font-bold leading-tight text-[#152242]">Смотрите объявления рядом с нужным местом</h3>
-                            <p class="text-[14.5px] text-[#64748b] mt-[8px] mb-[18px]">Цены прямо на карте, фото — при наведении.</p>
-                            <span class="inline-flex items-center gap-[8px] h-[44px] px-[20px] rounded-[12px] bg-[#0468ff] text-white text-[15px] font-bold">Открыть карту <font-awesome-icon :icon="['fas', 'arrow-right']" class="text-[13px]" /></span>
+                            <div class="text-[13px] font-semibold text-[#64748b] uppercase tracking-[0.08em]">{{ t('Поиск по карте') }}</div>
+                            <h3 class="m-0 mt-[6px] text-[22px] font-bold leading-tight text-[#152242]">{{ t('Смотрите объявления рядом с нужным местом') }}</h3>
+                            <p class="text-[14.5px] text-[#64748b] mt-[8px] mb-[18px]">{{ t('Цены прямо на карте, фото — при наведении.') }}</p>
+                            <span class="inline-flex items-center gap-[8px] h-[44px] px-[20px] rounded-[12px] bg-[#0468ff] text-white text-[15px] font-bold">{{ t('Открыть карту') }} <font-awesome-icon :icon="['fas', 'arrow-right']" class="text-[13px]" /></span>
                         </div>
                     </NuxtLink>
                 </section>
 
                 <!-- Быстрые ссылки -->
                 <section class="pt-[44px]">
-                    <h2 class="m-0 mb-[16px] text-[26px] font-bold text-[#152242]">Быстрые ссылки</h2>
+                    <h2 class="m-0 mb-[16px] text-[26px] font-bold text-[#152242]">{{ t('Быстрые ссылки') }}</h2>
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-[16px]">
                         <div v-for="g of QUICK_LINKS" :key="g.title" class="rounded-[18px] bg-white border border-[#e8edf3] p-[18px]">
-                            <div class="text-[16px] font-bold text-[#152242] mb-[8px]">{{ g.title }}</div>
+                            <div class="text-[16px] font-bold text-[#152242] mb-[8px]">{{ t(g.title) }}</div>
                             <ul class="list-none m-0 p-0 flex flex-col">
                                 <li v-for="l of g.links" :key="l.label">
                                     <NuxtLink :to="{ path: '/list-announ', query: l.query }"
                                         class="flex items-center justify-between py-[7px] text-[14.5px] text-[#334155] no-underline hover:text-[#0468ff]">
-                                        {{ l.label }} <font-awesome-icon :icon="['fas', 'chevron-right']" class="text-[10px] text-[#cbd5e1]" />
+                                        {{ t(l.label) }} <font-awesome-icon :icon="['fas', 'chevron-right']" class="text-[10px] text-[#cbd5e1]" />
                                     </NuxtLink>
                                 </li>
                             </ul>
@@ -218,15 +218,15 @@
 
                 <!-- Как это работает -->
                 <section class="pt-[44px]">
-                    <h2 class="m-0 mb-[16px] text-[26px] font-bold text-[#152242]">Как это работает</h2>
+                    <h2 class="m-0 mb-[16px] text-[26px] font-bold text-[#152242]">{{ t('Как это работает') }}</h2>
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-[16px]">
                         <div v-for="(s, i) of STEPS" :key="s.title" class="rounded-[18px] bg-white border border-[#e8edf3] p-[20px]">
                             <div class="flex items-center gap-[12px]">
                                 <span class="w-[42px] h-[42px] rounded-[12px] bg-[#eef4ff] text-[#0468ff] grid place-items-center text-[17px]"><font-awesome-icon :icon="['fas', s.icon]" /></span>
-                                <span class="text-[13px] font-bold text-[#94a3b8]">Шаг {{ i + 1 }}</span>
+                                <span class="text-[13px] font-bold text-[#94a3b8]">{{ t('Шаг') }} {{ i + 1 }}</span>
                             </div>
-                            <h3 class="m-0 mt-[12px] text-[17px] font-bold text-[#152242]">{{ s.title }}</h3>
-                            <p class="text-[14px] text-[#64748b] mt-[6px] mb-0 leading-[1.55]">{{ s.text }}</p>
+                            <h3 class="m-0 mt-[12px] text-[17px] font-bold text-[#152242]">{{ t(s.title) }}</h3>
+                            <p class="text-[14px] text-[#64748b] mt-[6px] mb-0 leading-[1.55]">{{ t(s.text) }}</p>
                         </div>
                     </div>
                 </section>
@@ -236,6 +236,8 @@
     
 </template>
 <script setup>
+useHead({ title: () => t('Аренда и продажа недвижимости') })
+
 const router = useRouter()
 const route = useRoute()
 const { direction } = getData()
@@ -278,15 +280,15 @@ const typeOptions = computed(() => {
 const roomsApply = computed(() => !NO_ROOMS.includes(form.typeObject))
 
 const roomsLabel = computed(() => {
-    if (!roomsApply.value || !form.quantityRoom.length) return 'Любое количество'
-    return [...form.quantityRoom].sort().map((r) => (r === '4' ? '4+' : r)).join(', ') + ' комн.'
+    if (!roomsApply.value || !form.quantityRoom.length) return t('Любое количество')
+    return t('{n} комн.', { n: [...form.quantityRoom].sort().map((r) => (r === '4' ? '4+' : r)).join(', ') })
 })
 const priceLabel = computed(() => {
     const { priceFrom: from, priceTo: to } = form
     if (from && to) return `${formatNumber(from)} – ${formatNumber(to)}`
-    if (from) return `от ${formatNumber(from)}`
-    if (to) return `до ${formatNumber(to)}`
-    return 'Любая'
+    if (from) return t('от {n}', { n: formatNumber(from) })
+    if (to) return t('до {n}', { n: formatNumber(to) })
+    return t('Любая')
 })
 
 // --- выпадающие панели: открыта не больше одной, закрываются кликом мимо и Esc

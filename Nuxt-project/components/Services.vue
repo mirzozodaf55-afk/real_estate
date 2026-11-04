@@ -3,13 +3,19 @@
         <li v-for="item of MENU" :key="item.label">
             <button type="button" @click="go(item)" class="w-full flex items-center gap-[14px] px-[16px] py-[12px] text-left text-[16px] font-semibold text-[#152242] active:bg-[#f1f5f9]">
                 <font-awesome-icon :icon="item.icon" class="w-[20px] text-[18px] text-[#475569]" />
-                {{ item.label }}
+                {{ t(item.label) }}
             </button>
         </li>
         <li>
+            <div class="flex items-center justify-between gap-[12px] px-[16px] py-[10px]">
+                <span class="flex items-center gap-[14px] text-[16px] font-semibold text-[#152242]">
+                    <font-awesome-icon :icon="['fas', 'globe']" class="w-[20px] text-[18px] text-[#475569]" /> {{ t('Язык') }}
+                </span>
+                <LangSwitch />
+            </div>
             <button type="button" @click="toggleTheme" class="w-full flex items-center gap-[14px] px-[16px] py-[12px] text-left text-[16px] font-semibold text-[#152242] active:bg-[#f1f5f9]">
                 <font-awesome-icon :icon="theme === 'dark' ? ['fas', 'sun'] : ['far', 'moon']" class="w-[20px] text-[18px] text-[#475569]" />
-                {{ theme === 'dark' ? 'Светлая тема' : 'Тёмная тема' }}
+                {{ theme === 'dark' ? t('Светлая тема') : t('Тёмная тема') }}
             </button>
         </li>
         <Search />

@@ -1,24 +1,24 @@
 <template>
-  <WzShell title="Фото и цена" subtitle="Объявления с хорошими фото смотрят в несколько раз чаще" :error="error" :loading="sending" final
+  <WzShell :title="t('Фото и цена')" :subtitle="t('Объявления с хорошими фото смотрят в несколько раз чаще')" :error="error" :loading="sending" final
     @next="place">
     <div>
-      <span class="wz-label">Фотографии</span>
+      <span class="wz-label">{{ t('Фотографии') }}</span>
       <Pictures :invalid="tried && !images.length" />
     </div>
 
-    <div class="wz-section-title">{{ isRent ? 'Цена и условия' : 'Цена' }}</div>
+    <div class="wz-section-title">{{ isRent ? t('Цена и условия') : t('Цена') }}</div>
 
-    <WzNumber v-model="d.price" :label="priceLabel" suffix="сомони" :max="10" width="max-w-[280px]"
-      :invalid="tried && !priceOk" error="Укажите цену — от 100 сомони" :hint="pricePreview" />
+    <WzNumber v-model="d.price" :label="priceLabel" :suffix="t('сомони')" :max="10" width="max-w-[280px]"
+      :invalid="tried && !priceOk" :error="t('Укажите цену — от 100 сомони')" :hint="pricePreview" />
 
     <template v-if="isRent">
-      <WzChoice multiple label="Можно" :options="ALLOW" :model-value="allowed" @update:model-value="setAllowed" hint="Необязательно" />
-      <WzChoice v-if="d.typeRent !== 'Посуточно'" v-model="d.period" label="Срок договора" :options="['От года', 'Несколько месяцев']" hint="Необязательно" />
+      <WzChoice multiple :label="t('Можно')" :options="ALLOW" :model-value="allowed" @update:model-value="setAllowed" :hint="t('Необязательно')" />
+      <WzChoice v-if="d.typeRent !== 'Посуточно'" v-model="d.period" :label="t('Срок договора')" :options="['От года', 'Несколько месяцев']" :hint="t('Необязательно')" />
     </template>
 
     <div class="rounded-[14px] bg-[#f8fafc] border border-[#eef2f7] p-[14px] text-[13.5px] text-[#475569] leading-[1.55]">
       <font-awesome-icon :icon="['fas', 'shield-halved']" class="text-[#0468ff] mr-[6px]" />
-      После нажатия «Разместить» объявление проверит модератор — обычно это недолго. Когда его опубликуют, придёт уведомление и письмо на почту.
+      {{ t('После нажатия «Разместить» объявление проверит модератор — обычно это недолго. Когда его опубликуют, придёт уведомление и письмо на почту.') }}
     </div>
   </WzShell>
 </template>

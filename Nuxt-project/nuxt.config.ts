@@ -1,17 +1,26 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
+// NUXT_SSR=false — статический сайт без сервера Node (публичное демо на Netlify, см. netlify.toml)
+const ssr = process.env.NUXT_SSR !== 'false'
+
 export default defineNuxtConfig({
-  ssr:true,
+  ssr,
   // app:{
   //   baseURL: '/',
   // },
   nitro: {
-    preset: 'node-server'
+    preset: ssr ? 'node-server' : 'static'
   },
   runtimeConfig: {
     public: {
       // Адрес Laravel API. Пусто — тот же хост, с которого открыт сайт, порт 8000 (см. composables/apiBase.js),
-      // так сайт работает и с localhost, и с телефона по 192.168.x.x. На проде задай NUXT_PUBLIC_API_BASE
-      apiBase: '',
+      // так сайт работает и с localhost, и с телефона по 192.168.x.x. На проде задай NUXT_PUBLIC_API_BASE.
+      // Значения из окружения берём и при сборке: у статического сайта нет сервера, который прочитал бы их потом
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || '',
+      // Пусто — свой laravel-websockets (composables/usePusher.js); ключ — облачный Pusher
+      pusherKey: process.env.NUXT_PUBLIC_PUSHER_KEY || '',
+      pusherCluster: process.env.NUXT_PUBLIC_PUSHER_CLUSTER || 'mt1',
+      // публичное демо: вход одной кнопкой, панель «Смотреть как…» (components/DemoBar.client.vue)
+      demoMode: process.env.NUXT_PUBLIC_DEMO_MODE === 'true',
     }
   },
   devServer: {
@@ -49,7 +58,7 @@ plugins: ["~/plugins/pusher.client.js"],
   app: {
     baseURL:'/',
     head: {
-      title: "Авторизация Регистрация",
+      title: "Domly",
       meta: [
       ],
       script: [

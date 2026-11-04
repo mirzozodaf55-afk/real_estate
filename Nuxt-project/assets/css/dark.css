@@ -26,7 +26,7 @@ html.dark .bg-white, html.dark .bg-\[white\], html.dark .bg-\[\#fff\] { backgrou
 /* полупрозрачные белые кнопки и плашки поверх фото и карты (стрелки галереи, «повернуть фото»…) */
 html.dark .bg-white\/90, html.dark .bg-white\/70, html.dark .bg-white\/95:not([class*="lg:bg-transparent"]) { background-color: rgba(19, 28, 46, .9) !important; }
 html.dark .bg-\[\#f4f6fb\], html.dark .bg-\[\#f6f8fc\], html.dark .bg-\[\#f4f4f4\] { background-color: var(--d-page) !important; }
-html.dark .bg-\[\#f8fafc\], html.dark .bg-\[\#f1f5f9\], html.dark .bg-\[\#eef2f7\], html.dark .bg-\[\#e9eef5\] { background-color: var(--d-surface-2) !important; }
+html.dark .bg-\[\#f8fafc\], html.dark .bg-\[\#fafbfd\], html.dark .bg-\[\#f1f5f9\], html.dark .bg-\[\#eef2f7\], html.dark .bg-\[\#e9eef5\] { background-color: var(--d-surface-2) !important; }
 html.dark .bg-\[\#e2e8f0\], html.dark .bg-\[\#cbd5e1\] { background-color: var(--d-surface-3) !important; }
 html.dark .bg-\[\#eef4ff\], html.dark .bg-\[\#eff6ff\], html.dark .bg-\[\#dbe8ff\], html.dark .bg-\[\#f5f9ff\] { background-color: var(--d-accent-bg) !important; }
 html.dark .bg-\[\#ecfdf5\], html.dark .bg-\[\#f0fdf4\], html.dark .bg-\[\#d1fae5\] { background-color: rgba(34, 197, 94, .14) !important; }
@@ -61,7 +61,7 @@ html.dark .text-\[\#94a3b8\] { color: var(--d-faint) !important; }
 html.dark .text-\[\#0468ff\], html.dark .text-\[\#2b87db\] { color: #6ea8ff !important; }
 html.dark .text-\[\#047857\], html.dark .text-\[\#059669\] { color: #4ade80 !important; }
 html.dark .text-\[\#dc2626\], html.dark .text-\[\#b91c1c\], html.dark .text-\[\#991b1b\] { color: #f87171 !important; }
-html.dark .text-\[\#b45309\], html.dark .text-\[\#92400e\], html.dark .text-\[\#d97706\], html.dark .text-\[\#ea580c\] { color: #fbbf24 !important; }
+html.dark .text-\[\#b45309\], html.dark .text-\[\#92400e\], html.dark .text-\[\#9a3412\], html.dark .text-\[\#d97706\], html.dark .text-\[\#ea580c\] { color: #fbbf24 !important; }
 html.dark .text-\[\#4338ca\], html.dark .text-\[\#3730a3\], html.dark .text-\[\#6d28d9\], html.dark .text-\[\#7c3aed\] { color: #a5b4fc !important; }
 html.dark .text-\[\#0e7490\] { color: #67e8f9 !important; }
 html.dark .hover\:text-\[\#152242\]:hover { color: #fff !important; }
@@ -134,6 +134,9 @@ html.dark .ym-hint__title { color: #6ea8ff; }
 .promo-vip { box-shadow: 0 0 0 1px #f5c451, 0 10px 28px rgba(245, 180, 61, .18); }
 .promo-badge-vip { background: linear-gradient(135deg, #ffe08a 0%, #f5b83d 100%); }
 html.dark .promo-vip { box-shadow: 0 0 0 1px #d9a93a, 0 10px 28px rgba(217, 169, 58, .14); border-color: #d9a93a !important; }
+
+/* зазор вокруг кольца выбранной миниатюры (ring-offset) — цвет карточки */
+html.dark .ring-offset-white { --tw-ring-offset-color: var(--d-surface) !important; }
 
 /* фон переписки с узором (светлый — ниже без html.dark: этот файл подключён всегда; рисунки — public/patterns) */
 .chat-doodles {

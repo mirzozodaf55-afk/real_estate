@@ -39,12 +39,13 @@ class AiController extends Controller
             'messages' => 'required|array|min:1|max:12',
             'messages.*.role' => 'required|in:user,assistant',
             'messages.*.content' => 'required|string|max:1500',
+            'lang' => 'nullable|in:ru,en', // язык сайта — на нём и отвечаем
         ]);
 
         $user = $request->user('sanctum');
         $loggedIn = $user && !$user->isBlocked();
 
-        $messages = [['role' => 'system', 'content' => $this->chatPrompt($loggedIn)]];
+        $messages = [['role' => 'system', 'content' => $this->chatPrompt($loggedIn, $data['lang'] ?? 'ru')]];
         foreach ($data['messages'] as $m) {
             $messages[] = ['role' => $m['role'], 'content' => $m['content']];
         }
@@ -251,11 +252,13 @@ class AiController extends Controller
         return trim($text);
     }
 
-    private function chatPrompt(bool $loggedIn): string
+    private function chatPrompt(bool $loggedIn, string $lang = 'ru'): string
     {
         // Инструкция уходит с каждым сообщением, а бесплатный Groq даёт 8000 токенов в минуту — поэтому кратко
         return implode("\n", [
-            'Ты Domly-помощник — помощник сайта недвижимости Domly в Таджикистане. Отвечай на языке пользователя (русский/таджикский), 2–5 предложений, обычным текстом без markdown.',
+            'Ты Domly-помощник — помощник сайта недвижимости Domly в Таджикистане. ' . ($lang === 'en'
+                ? 'Сайт открыт на английском — ВСЕГДА отвечай по-английски, даже если пишут по-русски (названия и адреса из объявлений оставляй как есть). Цены пиши словом somoni, без значков валют'
+                : 'Отвечай на языке пользователя (русский/таджикский)') . ', 2–5 предложений, обычным текстом без markdown.',
             'ПОИСК: сразу вызывай search_listings с тем, что уже известно, — не спрашивай цену и комнаты до поиска; уточнить можно после, по результатам. Советуй только найденное. Цены в сомони. Город/район — в query. rooms 4 = «4+». Карточки видны под ответом — выдели 1–3 лучших. Пусто — предложи ослабить условия или «Уведомить меня».',
             'ПОДАЧА: ' . ($loggedIn
                 ? 'пользователь вошёл. Не переспрашивай то, что он уже сказал. Спрашивай только недостающее, не больше 2 вопросов за раз: сделка, тип, цена; для квартиры/комнаты — комнаты, площадь, этаж/этажность; район; ремонт и мебель. Не передавай поля, о которых он не говорил. '
@@ -288,7 +291,10 @@ class AiController extends Controller
                         'rooms' => ['type' => ['array', 'null'], 'items' => ['type' => 'number'], 'description' => 'Количество комнат; 4 = 4 и больше'],
                         'price_from' => ['type' => ['number', 'null'], 'description' => 'Цена от, сомони'],
                         'price_to' => ['type' => ['number', 'null'], 'description' => 'Цена до, сомони'],
-                        'query' => ['type' => ['string', 'null'], 'description' => 'Город, район, улица или особенности (ремонт, мебель, у парка)'],
+                        'query' => ['type' => ['string', 'null'], 'description' => \App\Support\Demo::enabled()
+                            // в публичном демо объявления на английском (Database\Seeders\DemoSeeder)
+                            ? 'City, district, street or features (renovated, furnished, near a park). Only in English — listings are in English: Душанбе → Dushanbe'
+                            : 'Город, район, улица или особенности (ремонт, мебель, у парка). Только по-русски — база на русском: Dushanbe → Душанбе, Khujand → Худжанд'],
                         'sort' => ['type' => ['string', 'null'], 'enum' => ['new', 'price_asc', 'price_desc', null]],
                     ],
                     'additionalProperties' => false,
@@ -368,6 +374,7 @@ class AiController extends Controller
     {
         $data = $request->validate([
             'facts' => 'required|array|max:60',
+            'lang' => 'nullable|in:ru,en',
             'title' => 'nullable|string|max:200',
             'description' => 'nullable|string|max:5000',
         ]);
@@ -383,7 +390,8 @@ class AiController extends Controller
         try {
             $result = OpenAi::json([
                 ['role' => 'system', 'content' => implode("\n", [
-                    'Ты помогаешь владельцу написать объявление о недвижимости в Таджикистане. Пиши по-русски, грамотно и честно.',
+                    'Ты помогаешь владельцу написать объявление о недвижимости в Таджикистане. Пиши '
+                        . (($data['lang'] ?? 'ru') === 'en' ? 'по-английски (характеристики даны по-русски — переведи)' : 'по-русски') . ', грамотно и честно.',
                     'СТРОГО: каждое утверждение в тексте должно опираться на характеристики или черновик владельца. Покупатель приедет и проверит.',
                     'Не добавляй ничего, чего нет в данных: окна, подъезд, соседи, тишина, транспорт, парковка, магазины, инфраструктура, «светлая», «уютная», «качественный» — только если это указано.',
                     'Лучше короткое правдивое описание, чем длинное с выдумками. Можно кратко сказать, кому подойдёт, если это следует из фактов (например, рядом школа — удобно семьям).',

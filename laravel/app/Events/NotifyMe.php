@@ -33,7 +33,7 @@ class NotifyMe implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new Channel('user.'.$this->userId),
+            new PrivateChannel('user.'.$this->userId), // подписаться может только сам пользователь (routes/channels.php)
         ];
     }
 

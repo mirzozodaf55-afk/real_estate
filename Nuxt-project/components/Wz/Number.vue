@@ -1,13 +1,13 @@
 <template>
   <label class="block">
-    <span v-if="label" class="wz-label">{{ label }}</span>
+    <span v-if="label" class="wz-label">{{ t(label) }}</span>
     <span class="relative block" :class="width">
       <input :value="modelValue ?? ''" @input="onInput" type="text" inputmode="numeric" :placeholder="placeholder"
         class="wz-input" :class="[{ 'wz-input--bad': invalid }, suffix ? '!pr-[64px]' : '']" />
-      <span v-if="suffix" class="absolute right-[14px] top-1/2 -translate-y-1/2 text-[14px] text-[#94a3b8] pointer-events-none">{{ suffix }}</span>
+      <span v-if="suffix" class="absolute right-[14px] top-1/2 -translate-y-1/2 text-[14px] text-[#94a3b8] pointer-events-none">{{ t(suffix) }}</span>
     </span>
-    <span v-if="invalid && error" class="wz-err block">{{ error }}</span>
-    <span v-else-if="hint" class="wz-hint block">{{ hint }}</span>
+    <span v-if="invalid && error" class="wz-err block">{{ t(error) }}</span>
+    <span v-else-if="hint" class="wz-hint block">{{ t(hint) }}</span>
   </label>
 </template>
 

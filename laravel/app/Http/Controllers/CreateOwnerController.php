@@ -96,46 +96,82 @@ class CreateOwnerController extends Controller
     public function UpdateOwner(Request $request){
         // Редактировать можно только себя — пользователь берётся из токена, а не из присланного phone
         $owner = $request->user();
-        $owner->update(['last_seen_at' => now()]);
+        $data = $request->validate([
+            'name' => 'nullable|string|max:60',
+            'lastName' => 'nullable|string|max:60',
+            'date' => 'nullable|date|before:today|after:1900-01-01',
+        ], ['date.*' => 'Проверьте дату рождения']);
 
-             $owner->update([
-                'name'=>$request->name,
-                'last_name'=>$request->lastName,
-                'birth_date'=>$request->date
-                ]
-             );
-            
-            return $owner;
+        $owner->update([
+            'name' => $data['name'] ?? null,
+            'last_name' => $data['lastName'] ?? null,
+            'birth_date' => $data['date'] ?? null,
+            'last_seen_at' => now(),
+        ]);
+
+        return $owner;
     }
 
     public function getUser(Request $request){
         $user = $request->user();
-        // $request->user()->update(['last_seen_at'=>now()]);
-        
-        // if ($request->user()->last_seen_at === null || now()->diffInSeconds($request->user()->last_seen_at) > 60) {
-            $request->user()->update(['last_seen_at' => now()]);
-        // }
+        // «в сети» (порог 90 с, MessageController::getAllUser): пишем в базу не чаще раза в 30 с, а не на каждый запрос
+        if (!$user->last_seen_at || $user->last_seen_at->lt(now()->subSeconds(30))) {
+            $user->update(['last_seen_at' => now()]);
+        }
         return $user;
     }
 
 
+    /**
+     * Смена почты в профиле — в два шага, как вход: сначала код на новую почту, потом {email, code}.
+     * Почта — это логин: без подтверждения можно было записать себе чужой адрес и потом получить доступ к аккаунту его хозяина.
+     */
     public function SendMessage(Request $request){
         $owner = $request->user();
-        $email = mb_strtolower(trim((string) $request->email));
-        // email теперь логин — один адрес не может принадлежать двум аккаунтам
+        $data = $request->validate([
+            'email' => 'required|email:rfc|max:255',
+            'code' => 'nullable|digits:6',
+        ], ['email.*' => 'Введите корректную почту']);
+        $email = mb_strtolower(trim($data['email']));
+        // email — логин: один адрес не может принадлежать двум аккаунтам
         if (Owner::where('email', $email)->where('id', '!=', $owner->id)->exists()) {
             return response()->json(['message' => 'Эта почта уже используется другим аккаунтом'], 422);
         }
-        $owner->update(['email'=>$email]);
+        if ($email === $owner->email) {
+            return $owner;
+        }
+
+        $key = "email_change:{$owner->id}";
+        if (empty($data['code'])) {
+            $code = strval(random_int(100000, 999999));
+            Cache::put($key, ['email' => $email, 'code' => $code], now()->addMinutes(10));
+            Cache::forget("$key:attempts");
+            try {
+                Mail::to($email)->send(new LoginCodeMail($code, true));
+            } catch (\Throwable $e) {
+                Log::error('Не удалось отправить код смены почты', ['email' => $email, 'error' => $e->getMessage()]);
+                Cache::forget($key);
+                return response()->json(['message' => 'Не удалось отправить письмо. Попробуйте позже.'], 500);
+            }
+            return response()->json(['message' => 'Код отправлен на новую почту', 'pending' => true]);
+        }
+
+        $stored = Cache::get($key);
+        if (!$stored || $stored['email'] !== $email) {
+            return response()->json(['message' => 'Код истёк или не запрашивался. Запросите новый.'], 422);
+        }
+        if (Cache::increment("$key:attempts") > 5) {
+            Cache::forget($key);
+            return response()->json(['message' => 'Слишком много попыток. Запросите новый код.'], 429);
+        }
+        if (!hash_equals($stored['code'], (string) $data['code'])) {
+            return response()->json(['message' => 'Неверный код'], 422);
+        }
+        Cache::forget($key);
+        Cache::forget("$key:attempts");
+        $owner->update(['email' => $email]);
         return $owner;
     }
-
-    public function getOwnerFromAnnoun(Request $request){
-        $owner = Owner::WhereIn('id', $request->owner_id)->get();
-        $announ  = Announ::WhereIn('owner_id',$request->owner_id)->get();
-        
-        return [$announ, $owner];
-    } 
     
     
 }

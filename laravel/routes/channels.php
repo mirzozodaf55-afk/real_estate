@@ -7,22 +7,17 @@ use Illuminate\Support\Facades\Broadcast;
 | Broadcast Channels
 |--------------------------------------------------------------------------
 |
-| Here you may register all of the event broadcasting channels that your
-| application supports. The given channel authorization callbacks are
-| used to check if an authenticated user can listen to the channel.
+| Кто может подписаться на приватный канал websocket. Сайт спрашивает POST /api/broadcasting/auth
+| (BroadcastServiceProvider) с токеном пользователя; false — подписка отклоняется.
 |
 */
 
-Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
-    return (int) $user->id === (int) $id;
-});
+// колокольчик и «новое сообщение» — только самому пользователю (App\Events\NotifyMe, NewChatMessage)
 Broadcast::channel('user.{id}', function ($user, $id) {
     return (int) $user->id === (int) $id;
 });
-Broadcast::channel('your-channel', function ($user) {
-    return true; // Для теста
-});
-Broadcast::channel('status', function ($user) {
-    return ['id' => $user->id, 'name' => $user->name];
-});
 
+// переписка — только двум её участникам (App\Support\ChatChannel: chat.{меньший id}.{больший id})
+Broadcast::channel('chat.{a}.{b}', function ($user, $a, $b) {
+    return in_array((int) $user->id, [(int) $a, (int) $b], true);
+});

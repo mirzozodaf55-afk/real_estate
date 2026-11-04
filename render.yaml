@@ -1,0 +1,80 @@
+# Render Blueprint: API Laravel публичного демо на бесплатном тарифе.
+# Render → New → Blueprint → этот репозиторий. Значения с sync: false Render спросит при создании.
+services:
+  - type: web
+    name: domly-api
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerContext: ./laravel
+    dockerfilePath: ./laravel/Dockerfile
+    healthCheckPath: /api/site-settings
+    envVars:
+      - key: APP_NAME
+        value: Domly
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY            # php artisan key:generate --show
+        sync: false
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: DEMO_MODE
+        value: "true"
+      - key: FRONTEND_URL       # адрес сайта на Netlify
+        sync: false
+      # MySQL на Aiven (вкладка Overview сервиса)
+      - key: DB_CONNECTION
+        value: mysql
+      - key: DB_HOST
+        sync: false
+      - key: DB_PORT
+        sync: false
+      - key: DB_DATABASE
+        value: defaultdb
+      - key: DB_USERNAME
+        value: avnadmin
+      - key: DB_PASSWORD
+        sync: false
+      - key: DB_CA_CERT         # весь текст файла ca.pem, вместе с BEGIN/END CERTIFICATE
+        sync: false
+      - key: CACHE_DRIVER
+        value: file
+      - key: SESSION_DRIVER
+        value: array
+      - key: QUEUE_CONNECTION
+        value: sync
+      # на бесплатном Render письма не уходят (порты SMTP закрыты) — в демо вход без почты
+      - key: MAIL_MAILER
+        value: log
+      # чат и уведомления в реальном времени — облачный Pusher (вкладка App Keys)
+      - key: BROADCAST_DRIVER
+        value: pusher
+      - key: PUSHER_APP_ID
+        sync: false
+      - key: PUSHER_APP_KEY
+        sync: false
+      - key: PUSHER_APP_SECRET
+        sync: false
+      - key: PUSHER_APP_CLUSTER
+        value: eu
+      - key: PUSHER_HOST
+        value: api-eu.pusher.com
+      - key: PUSHER_PORT
+        value: "443"
+      - key: PUSHER_SCHEME
+        value: https
+      # ИИ: Groq через OpenAI-совместимый API
+      - key: OPENAI_BASE_URL
+        value: https://api.groq.com/openai/v1
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: OPENAI_MODEL
+        value: openai/gpt-oss-120b
+      - key: OPENAI_REASONING_EFFORT
+        value: low
+      - key: OPENAI_VISION_MODEL
+        value: qwen/qwen3.8-27b
+      - key: INTERVENTION_IMAGE_DRIVER
+        value: gd

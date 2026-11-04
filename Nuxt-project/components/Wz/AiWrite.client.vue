@@ -3,12 +3,12 @@
     <button type="button" @click="writeWithAi" :disabled="aiBusy" data-test="ai-describe"
       class="h-[38px] px-[14px] rounded-[10px] bg-gradient-to-r from-[#0468ff] to-[#7c3aed] text-white text-[14px] font-semibold disabled:opacity-60 flex items-center gap-[8px]">
       <font-awesome-icon :icon="['fas', aiBusy ? 'spinner' : 'wand-magic-sparkles']" :spin-pulse="aiBusy" />
-      {{ aiBusy ? 'Пишу…' : (draft.description ? 'Улучшить текст с ИИ' : 'Написать текст с ИИ') }}
+      {{ aiBusy ? t('Пишу…') : (draft.description ? t('Улучшить текст с ИИ') : t('Написать текст с ИИ')) }}
     </button>
     <button v-if="aiUndo" type="button" @click="undoAi" class="h-[38px] px-[10px] rounded-[10px] text-[13.5px] font-semibold text-[#475569] hover:bg-white/70">
-      <font-awesome-icon :icon="['fas', 'rotate-left']" /> Вернуть мой текст
+      <font-awesome-icon :icon="['fas', 'rotate-left']" /> {{ t('Вернуть мой текст') }}
     </button>
-    <span class="text-[12.5px] text-[#64748b]">{{ aiError || hint }}</span>
+    <span class="text-[12.5px] text-[#64748b]">{{ aiError ? t(aiError) : t(hint) }}</span>
   </div>
 </template>
 

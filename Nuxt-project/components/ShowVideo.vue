@@ -25,7 +25,7 @@
         :class="currentQuality === quality.value?'bg-[skyblue] text-black':''"
         class="text-white p-1 m-1 bg-gray-700 rounded"
       >
-        {{ quality.label }}
+        {{ t(quality.label) }}
       </button>
       <button 
       class="text-white p-1 m-1 bg-gray-700 rounded"

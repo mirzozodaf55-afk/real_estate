@@ -1,4 +1,5 @@
 <template>
+  <DemoBar />
   <NuxtLayout>
     <NavBar v-if="showNavBar"/>
   </NuxtLayout>
@@ -73,114 +74,13 @@ useHead({
        
      },200)
 
-     setInterval(async () => {
-      await fetch(`${apiBase()}/api/get_user`, {
-      method: 'GET',
-      headers: {
-        Authorization: 'Bearer ' + getToken(), 
-      }
-    })
-     },5000)
-      
-      // if (navigator.maxTouchPoints < 1 && route.fullPath == '/announ') {
-      //   isShow.value = false
-      // }
-    const announId = ref([])
-    const {announ} = getData()
-    
-    //   if (!getToken()) {
-    //     fetch(`${apiBase()}/api/get_data`)
-    // .then(res=>res.json())
-    // .then(res=>{
-    //   for (const item of res[0]) {
-    //     announId.value.push(item.id);
-    //     // responce
-        
-    //   }
-    //   })
-    //   }
-
-  
-    const infrastructure = ["автомойка",
-     "автосервис",
-     "аптека",
-     "ателье-одежды",
-     "банкомат",
-     "бассейн",
-     "автомойка",
-     "буфет",
-     "выставочно-складской комплекс",
-     "гостиница",
-     "кафе",
-     "кинотеатр",
-     "конференц-зал",
-     "медицинский-центр",
-     "минимаркет",
-     "нотариальная контора",
-     "отделение банка",
-     "парк",
-     "ресторан",
-     "салон красоты",
-     "складские помещения",
-     "столовой",
-     "супермаркет",
-     "торговая зона",
-     "фитнес-центр",
-     "фотосалон",
-     "центральная рецепция",
-     ];
-     const cityData = [
-      "Душанбе",
-      "Худжанд",
-      "Абдурахмони Джоми",
-      "Айни",
-      "Ашт",
-      "Бальджувон",
-      "Бободжон Гафуров",
-      "Бохтар (Курган-Тюбе)",
-      "Бустон (Чкаловск)",
-      "Вандж",
-      "Варзоб",
-      "Вахдат",
-      "Вахш",
-      "Восе",
-      "Гиссар",
-      "Горная Матча",
-      "Гулистон",
-      "Дангара",
-      "Дарваз",
-      "Деваштич (Ганчи)",
-      "Джаббор Расулов",
-      "Джайхун (Кумсангир)",
-      "Джалолиддини Балхи (Руми)",
-      "Джами",
-      "Дусти",
-      "Зафарабад",
-      "Истаравшан",
-      "Исфара",
-      "Ишкашим",
-      "Кубодиён",
-      "Канибадам",
-      "Куляб",
-      "Кушониён",
-      
-     ]
-  
-      await fetch(`${apiBase()}/api/create/infrastructure`,{
-        method:'post',
-        headers:{
-          "Content-type":"application/json"
-        },
-        body: JSON.stringify(infrastructure)
-      })
-      
-      await fetch(`${apiBase()}/api/create/city`, {
-        method:'post',
-        headers:{
-          "Content-type": "application/json"
-        },
-        body: JSON.stringify(cityData)
-      })
+     // «в сети» для чата: сервер отмечает last_seen_at — раз в минуту и только пока вкладка открыта перед глазами
+     const pingOnline = () => {
+      if (!getToken() || document.hidden) return
+      fetch(`${apiBase()}/api/get_user`, { headers: { Authorization: 'Bearer ' + getToken() } }).catch(() => {})
+     }
+     setInterval(pingOnline, 60000)
+     document.addEventListener('visibilitychange', pingOnline)
     })
 </script>
 <style>

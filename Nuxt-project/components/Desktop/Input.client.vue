@@ -1,8 +1,8 @@
 <template>
 <div>
 <!-- <div class="d-none"><component :is='tag'></component>{{title}}</div> -->
-    <input id="place" @input="write" v-model="obj.from" v-maska data-maska="####" type="text" class="border w-[50px] outline-0 px-[5px] ml-[3px] py-[3px] text-[15px]" placeholder="от" style="border-top-left-radius: 5px; border-bottom-left-radius: 5px;">
-    <input id="place" @input="write" v-model="obj.to" v-maska data-maska="####" type="text" class="border w-[50px] outline-0 px-[5px]  py-[3px] text-[15px]" placeholder="до" style="border-top-right-radius: 5px; border-bottom-right-radius: 5px;">
+    <input id="place" @input="write" v-model="obj.from" v-maska data-maska="####" type="text" class="border w-[50px] outline-0 px-[5px] ml-[3px] py-[3px] text-[15px]" :placeholder="t('от')" style="border-top-left-radius: 5px; border-bottom-left-radius: 5px;">
+    <input id="place" @input="write" v-model="obj.to" v-maska data-maska="####" type="text" class="border w-[50px] outline-0 px-[5px]  py-[3px] text-[15px]" :placeholder="t('до')" style="border-top-right-radius: 5px; border-bottom-right-radius: 5px;">
 </div>
 </template>
 

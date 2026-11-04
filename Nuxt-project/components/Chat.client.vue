@@ -68,11 +68,11 @@
             {{ friend.name && friend.last_name ? `${friend.name} ${friend.last_name}` : (friend.phone_number || friend.email || "") }}
             <span v-if="isStaff(friend)" data-test="staff-badge"
               class="ml-[4px] align-middle px-[7px] py-[1px] rounded-full bg-[#eef2ff] text-[#4338ca] text-[11px] font-semibold">
-              <font-awesome-icon :icon="['fas', 'shield-halved']" class="text-[10px]" /> Администрация
+              <font-awesome-icon :icon="['fas', 'shield-halved']" class="text-[10px]" /> {{ t('Администрация') }}
             </span>
           </h5>
           <p class="text-[12.5px] truncate m-0" :class="typingMessage === 'online' ? 'text-[#22c55e]' : 'text-[#0468ff]'">
-            {{ typingMessage }}
+            {{ t(typingMessage) }}
           </p>
         </div>
       </div>
@@ -125,7 +125,7 @@
           <div v-if="mess.failed"
             class="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-red-900/70 px-2 text-center">
             <font-awesome-icon class="text-white text-[18px]" :icon="['fas', 'triangle-exclamation']" />
-            <span class="text-white text-[10.5px] leading-tight">{{ mess.errorText || 'Ошибка отправки' }}</span>
+            <span class="text-white text-[10.5px] leading-tight">{{ mess.errorText || t('Ошибка отправки') }}</span>
           </div>
 
           <button v-if="mess.pending" @click.stop="removeFile(mess)"
@@ -155,7 +155,7 @@
           <div v-if="mess.failed"
             class="absolute inset-0 flex flex-col items-center justify-center gap-1 bg-red-900/70 px-2 text-center">
             <font-awesome-icon class="text-white text-[18px]" :icon="['fas', 'triangle-exclamation']" />
-            <span class="text-white text-[10.5px] leading-tight">{{ mess.errorText || 'Не удалось отправить видео'
+            <span class="text-white text-[10.5px] leading-tight">{{ mess.errorText || t('Не удалось отправить видео')
               }}</span>
           </div>
 
@@ -188,7 +188,7 @@
             class="pointer-events-none w-[64px] h-[64px] rounded-[18px] grid place-items-center bg-[#eff6ff]">
             <font-awesome-icon class="pointer-events-none text-[26px] text-[#0468ff]" :icon="['fas', 'image']" />
           </span>
-          <span class="pointer-events-none text-[12.5px] text-[#475569]">Фото</span>
+          <span class="pointer-events-none text-[12.5px] text-[#475569]">{{ t('Фото') }}</span>
         </button>
 
         <button @click.prevent="open" data-name="video" type="button" class="flex flex-col items-center gap-2">
@@ -196,7 +196,7 @@
             class="pointer-events-none w-[64px] h-[64px] rounded-[18px] grid place-items-center bg-[#eff6ff]">
             <font-awesome-icon class="pointer-events-none text-[26px] text-[#0468ff]" :icon="['fa', 'video']" />
           </span>
-          <span class="pointer-events-none text-[12.5px] text-[#475569]">Видео</span>
+          <span class="pointer-events-none text-[12.5px] text-[#475569]">{{ t('Видео') }}</span>
         </button>
       </div>
 
@@ -208,7 +208,7 @@
           <font-awesome-icon style="pointer-events: none;" :icon="['far', 'folder-closed']" />
         </button>
 
-        <input v-model="message" type="text" placeholder="Написать сообщение..."
+        <input v-model="message" type="text" :placeholder="t('Написать сообщение...')"
           class="flex-1 min-w-0 h-[38px] px-[14px] bg-[#f1f5f9] rounded-full outline-none text-[14.5px] text-[#152242]" />
 
         <button type="submit" :disabled="!message.trim()"
@@ -479,24 +479,11 @@ const handleFileChange = async (event) => {
     messagePending.value = false
   }
 };
-import Pusher from 'pusher-js';
+const pusher = createPusher()
 
-// Логируем Pusher в консоль
-Pusher.logToConsole = false;
-
-// Инициализируем Pusher
-const pusher = new Pusher('local', {
-  wsHost: wsHost(),
-  wsPort: '6001',
-  forceTLS: false,
-  disableStats: true,
-  cluster: 'mt1',
-  enabledTransports: ['ws', 'wss']
-});
-
-// Один канал на переписку (см. App\Support\ChatChannel): сообщения, файлы и «печатает…»
-// приходят только участникам этого чата, а не всем открытым чатам
-const chatChannelName = `chat.${Math.min(+route.params.uid, +route.params.fid)}.${Math.max(+route.params.uid, +route.params.fid)}`
+// Один приватный канал на переписку (см. App\Support\ChatChannel): сообщения, файлы и «печатает…»
+// приходят только участникам этого чата — подписку подтверждает сервер (routes/channels.php)
+const chatChannelName = `private-chat.${Math.min(+route.params.uid, +route.params.fid)}.${Math.max(+route.params.uid, +route.params.fid)}`
 const channel = pusher.subscribe(chatChannelName),
   fileChannel = channel,
   typingChanel = channel

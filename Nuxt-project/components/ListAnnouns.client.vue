@@ -8,12 +8,12 @@
           <button @click="showMobileFilters = !showMobileFilters"
             class="flex-1 h-[40px] rounded-[10px] bg-[#eef4ff] text-[#0468ff] font-semibold text-[14px] flex items-center justify-center gap-[8px]">
             <font-awesome-icon :icon="['fas', 'sliders']" />
-            Фильтры
+            {{ t('Фильтры') }}
             <span v-if="activeCount" class="min-w-[20px] h-[20px] px-[6px] rounded-full bg-[#0468ff] text-white text-[12px] grid place-items-center">{{ activeCount }}</span>
           </button>
           <button @click="goToMap"
             class="h-[40px] px-[14px] rounded-[10px] border border-[#e2e8f0] text-[#152242] text-[14px] font-semibold flex items-center gap-[6px]">
-            <font-awesome-icon :icon="['far', 'map']" class="text-[#0468ff]" /> На карте
+            <font-awesome-icon :icon="['far', 'map']" class="text-[#0468ff]" /> {{ t('На карте') }}
           </button>
         </div>
 
@@ -23,54 +23,54 @@
             <button v-for="d of DEALS" :key="d.value" @click="updateQuery({ dealType: d.value })"
               class="flex-1 md:flex-none whitespace-nowrap px-[14px] h-[34px] rounded-[8px] text-[14px] font-semibold transition-colors"
               :class="filters.dealType === d.value ? 'bg-white text-[#0468ff] shadow-sm' : 'text-[#475569] hover:text-[#152242]'">
-              {{ d.label }}
+              {{ t(d.label) }}
             </button>
           </div>
 
           <select :value="filters.typeObject" @change="updateQuery({ typeObject: $event.target.value, buildingType: '' })"
             class="h-[40px] px-[10px] rounded-[10px] border border-[#e2e8f0] bg-white text-[14px] text-[#152242] outline-none focus:border-[#0468ff] md:w-[190px]">
-            <option value="">Любой тип</option>
-            <optgroup label="Жилая">
-              <option v-for="t of RESIDENTIAL" :key="t" :value="t">{{ t }}</option>
+            <option value="">{{ t('Любой тип') }}</option>
+            <optgroup :label="t('Жилая')">
+              <option v-for="opt of RESIDENTIAL" :key="opt" :value="opt">{{ t(opt) }}</option>
             </optgroup>
-            <optgroup label="Коммерческая">
-              <option v-for="t of COMMERCIAL" :key="t" :value="t">{{ t }}</option>
+            <optgroup :label="t('Коммерческая')">
+              <option v-for="opt of COMMERCIAL" :key="opt" :value="opt">{{ t(opt) }}</option>
             </optgroup>
           </select>
 
           <div class="flex items-center gap-[4px]">
-            <span class="text-[13px] text-[#64748b] mr-[2px]">Комнат</span>
+            <span class="text-[13px] text-[#64748b] mr-[2px]">{{ t('Комнат') }}</span>
             <button v-for="r of ROOMS" :key="r.value" @click="toggleRoom(r.value)"
               class="w-[38px] h-[38px] rounded-[10px] border text-[14px] font-semibold transition-colors"
               :class="filters.quantityRoom.includes(r.value) ? 'bg-[#0468ff] border-[#0468ff] text-white' : 'bg-white border-[#e2e8f0] text-[#152242] hover:border-[#0468ff]'">
-              {{ r.label }}
+              {{ t(r.label) }}
             </button>
           </div>
 
           <div class="flex items-center gap-[6px]">
-            <input v-model="priceFromInput" @input="onTextFilter" inputmode="numeric" placeholder="Цена от"
+            <input v-model="priceFromInput" @input="onTextFilter" inputmode="numeric" :placeholder="t('Цена от')"
               class="w-full md:w-[110px] h-[40px] px-[12px] rounded-[10px] border border-[#e2e8f0] text-[14px] outline-none focus:border-[#0468ff]" />
             <span class="text-[#94a3b8]">—</span>
-            <input v-model="priceToInput" @input="onTextFilter" inputmode="numeric" placeholder="до"
+            <input v-model="priceToInput" @input="onTextFilter" inputmode="numeric" :placeholder="t('до')"
               class="w-full md:w-[110px] h-[40px] px-[12px] rounded-[10px] border border-[#e2e8f0] text-[14px] outline-none focus:border-[#0468ff]" />
           </div>
 
           <div class="relative md:flex-1 md:min-w-[200px]">
             <font-awesome-icon :icon="['fas', 'magnifying-glass']" class="absolute left-[12px] top-1/2 -translate-y-1/2 text-[#94a3b8] text-[13px]" />
-            <input v-model="qInput" @input="onTextFilter" placeholder="Поиск по объявлениям"
+            <input v-model="qInput" @input="onTextFilter" :placeholder="t('Поиск по объявлениям')"
               class="w-full h-[40px] pl-[34px] pr-[12px] rounded-[10px] border border-[#e2e8f0] text-[14px] outline-none focus:border-[#0468ff]" />
           </div>
 
           <button @click="openExtraFilters"
             class="h-[40px] px-[14px] rounded-[10px] border border-[#e2e8f0] text-[14px] font-semibold text-[#152242] hover:border-[#0468ff] flex items-center justify-center gap-[8px]">
             <font-awesome-icon :icon="['fas', 'sliders']" class="text-[#0468ff]" />
-            Ещё фильтры
+            {{ t('Ещё фильтры') }}
             <span v-if="extraCount" class="min-w-[20px] h-[20px] px-[6px] rounded-full bg-[#0468ff] text-white text-[12px] grid place-items-center">{{ extraCount }}</span>
           </button>
 
           <button v-if="activeCount" @click="resetFilters"
             class="h-[40px] px-[10px] text-[14px] font-semibold text-[#64748b] hover:text-[#ef4444]">
-            Сбросить
+            {{ t('Сбросить') }}
           </button>
         </div>
       </section>
@@ -78,24 +78,24 @@
       <!-- Заголовок результатов -->
       <div class="flex flex-wrap items-center justify-between gap-[10px] mt-[18px] mb-[12px]">
         <div>
-          <h1 class="text-[20px] md:text-[22px] font-bold text-[#152242] m-0">{{ heading }}</h1>
+          <h1 class="text-[20px] md:text-[22px] font-bold text-[#152242] m-0">{{ t(heading) }}</h1>
           <p class="text-[14px] text-[#64748b] m-0 mt-[2px]">
-            <template v-if="loading">Ищем объявления…</template>
-            <template v-else>Найдено {{ total }} {{ plural(total, ['объявление', 'объявления', 'объявлений']) }}</template>
+            <template v-if="loading">{{ t('Ищем объявления…') }}</template>
+            <template v-else>{{ t('Найдено') }} {{ total }} {{ tn(total, ['объявление', 'объявления', 'объявлений']) }}</template>
           </p>
         </div>
         <div class="flex flex-wrap items-center gap-[8px]">
           <NotifyMe v-if="items.length" compact />
           <select :value="filters.sort" @change="updateQuery({ sort: $event.target.value === 'new' ? '' : $event.target.value })"
             class="h-[38px] px-[10px] rounded-[10px] border border-[#e2e8f0] bg-white text-[14px] text-[#152242] outline-none">
-            <option value="new">Сначала новые</option>
-            <option value="price_asc">Сначала дешевле</option>
-            <option value="price_desc">Сначала дороже</option>
-            <option value="area_desc">По площади</option>
+            <option value="new">{{ t('Сначала новые') }}</option>
+            <option value="price_asc">{{ t('Сначала дешевле') }}</option>
+            <option value="price_desc">{{ t('Сначала дороже') }}</option>
+            <option value="area_desc">{{ t('По площади') }}</option>
           </select>
           <button @click="goToMap"
             class="hidden md:flex h-[38px] px-[14px] rounded-[10px] bg-[#eef4ff] text-[#0468ff] text-[14px] font-semibold items-center gap-[6px]">
-            <font-awesome-icon :icon="['far', 'map']" /> На карте
+            <font-awesome-icon :icon="['far', 'map']" /> {{ t('На карте') }}
           </button>
         </div>
       </div>
@@ -115,8 +115,8 @@
 
       <!-- Ошибка -->
       <div v-else-if="loadError" class="bg-white rounded-[16px] border border-[#e8edf3] p-[32px] text-center">
-        <p class="text-[#152242] font-semibold m-0">{{ loadError }}</p>
-        <button @click="load(true)" class="mt-[12px] h-[38px] px-[18px] rounded-[10px] bg-[#0468ff] text-white text-[14px] font-semibold">Повторить</button>
+        <p class="text-[#152242] font-semibold m-0">{{ t(loadError) }}</p>
+        <button @click="load(true)" class="mt-[12px] h-[38px] px-[18px] rounded-[10px] bg-[#0468ff] text-white text-[14px] font-semibold">{{ t('Повторить') }}</button>
       </div>
 
       <!-- Пусто -->
@@ -124,9 +124,9 @@
         <div class="w-[64px] h-[64px] mx-auto rounded-full bg-[#eef4ff] grid place-items-center text-[#0468ff] text-[26px]">
           <font-awesome-icon :icon="['fas', 'magnifying-glass']" />
         </div>
-        <p class="text-[18px] font-bold text-[#152242] mt-[14px] mb-[4px]">Ничего не нашлось</p>
-        <p class="text-[14px] text-[#64748b] m-0">Попробуйте изменить или сбросить фильтры</p>
-        <button v-if="activeCount" @click="resetFilters" class="mt-[14px] h-[38px] px-[18px] rounded-[10px] bg-[#0468ff] text-white text-[14px] font-semibold">Сбросить фильтры</button>
+        <p class="text-[18px] font-bold text-[#152242] mt-[14px] mb-[4px]">{{ t('Ничего не нашлось') }}</p>
+        <p class="text-[14px] text-[#64748b] m-0">{{ t('Попробуйте изменить или сбросить фильтры') }}</p>
+        <button v-if="activeCount" @click="resetFilters" class="mt-[14px] h-[38px] px-[18px] rounded-[10px] bg-[#0468ff] text-white text-[14px] font-semibold">{{ t('Сбросить фильтры') }}</button>
         <NotifyMe class="mt-[16px]" />
       </div>
 
@@ -157,24 +157,24 @@
                 <font-awesome-icon :icon="['fas', 'crown']" class="text-[10px] mr-[3px]" />VIP
               </span>
               <span v-else-if="item.promo_active === 'top'" class="px-[8px] py-[3px] rounded-[8px] bg-[#0468ff] text-[12px] font-extrabold text-white shadow-sm">
-                <font-awesome-icon :icon="['fas', 'arrow-up']" class="text-[10px] mr-[3px]" />ТОП
+                <font-awesome-icon :icon="['fas', 'arrow-up']" class="text-[10px] mr-[3px]" />{{ t('ТОП') }}
               </span>
               <span class="px-[8px] py-[3px] rounded-[8px] bg-white text-[12px] font-semibold text-[#152242] shadow-sm">
                 {{ dealLabel(item) }}
               </span>
             </div>
 
-            <button @click.stop="toggleLike(item)" :aria-label="item.is_liked ? 'Убрать из избранного' : 'В избранное'"
+            <button @click.stop="toggleLike(item)" :aria-label="item.is_liked ? t('Убрать из избранного') : t('В избранное')"
               class="absolute top-[10px] right-[10px] w-[36px] h-[36px] rounded-full bg-white grid place-items-center shadow-sm hover:scale-105 transition-transform">
               <font-awesome-icon :icon="[item.is_liked ? 'fas' : 'far', 'heart']" :class="item.is_liked ? 'text-[#ef4444]' : 'text-[#152242]'" />
             </button>
 
             <template v-if="item.pictures.length > 1">
-              <button @click.stop="shiftPhoto(item, -1)" aria-label="Предыдущее фото"
+              <button @click.stop="shiftPhoto(item, -1)" :aria-label="t('Предыдущее фото')"
                 class="absolute left-[8px] top-1/2 -translate-y-1/2 w-[30px] h-[30px] rounded-full bg-black/45 text-white grid place-items-center md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                 <font-awesome-icon :icon="['fas', 'chevron-left']" class="text-[12px]" />
               </button>
-              <button @click.stop="shiftPhoto(item, 1)" aria-label="Следующее фото"
+              <button @click.stop="shiftPhoto(item, 1)" :aria-label="t('Следующее фото')"
                 class="absolute right-[8px] top-1/2 -translate-y-1/2 w-[30px] h-[30px] rounded-full bg-black/45 text-white grid place-items-center md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                 <font-awesome-icon :icon="['fas', 'chevron-right']" class="text-[12px]" />
               </button>
@@ -193,18 +193,18 @@
             <div class="flex items-start justify-between gap-[12px]">
               <div class="min-w-0">
                 <div class="text-[22px] font-bold text-[#152242] leading-tight">
-                  {{ fmt(item.price) }} <span class="text-[15px] font-semibold">сомони</span><span class="text-[14px] font-normal text-[#64748b]">{{ priceSuffix(item) }}</span>
+                  {{ fmt(item.price) }} <span class="text-[15px] font-semibold">{{ t('сомони') }}</span><span class="text-[14px] font-normal text-[#64748b]">{{ priceSuffix(item) }}</span>
                 </div>
-                <div v-if="pricePerMeter(item)" class="text-[13px] text-[#64748b] mt-[2px]">{{ pricePerMeter(item) }} сомони/м²</div>
+                <div v-if="pricePerMeter(item)" class="text-[13px] text-[#64748b] mt-[2px]">{{ pricePerMeter(item) }} {{ t('сомони/м²') }}</div>
               </div>
               <span class="text-[12px] text-[#94a3b8] whitespace-nowrap mt-[5px]">{{ timeAgo(item.created_at) }}</span>
             </div>
 
-            <h3 class="mt-[10px] mb-0 text-[16px] font-semibold text-[#0468ff] leading-snug line-clamp-2">{{ item.title || item.type_object }}</h3>
+            <h3 class="mt-[10px] mb-0 text-[16px] font-semibold text-[#0468ff] leading-snug line-clamp-2">{{ item.title || t(item.type_object) }}</h3>
             <div v-if="facts(item)" class="mt-[6px] text-[14px] text-[#152242]">{{ facts(item) }}</div>
             <div class="mt-[6px] flex items-center gap-[6px] text-[13px] text-[#64748b] min-w-0">
               <font-awesome-icon :icon="['fas', 'house']" class="text-[11px] shrink-0" />
-              <span class="shrink-0">{{ item.type_object }}</span>
+              <span class="shrink-0">{{ t(item.type_object) }}</span>
               <template v-if="item.address">
                 <span class="shrink-0">·</span>
                 <font-awesome-icon :icon="['fas', 'location-dot']" class="text-[11px] shrink-0 text-[#0468ff]" />
@@ -225,11 +225,11 @@
                 </a>
                 <button v-else-if="!user?.id || item.owner?.phone_number" @click.stop="revealPhone(item)"
                   class="h-[36px] px-[14px] rounded-[10px] bg-[#0468ff] hover:bg-[#0353cc] text-white text-[14px] font-semibold flex items-center gap-[6px]">
-                  <font-awesome-icon :icon="['fas', 'phone']" class="text-[12px]" /> Показать телефон
+                  <font-awesome-icon :icon="['fas', 'phone']" class="text-[12px]" /> {{ t('Показать телефон') }}
                 </button>
                 <button @click.stop="goToChat(item)"
                   class="h-[36px] px-[14px] rounded-[10px] bg-[#eef4ff] hover:bg-[#dbe8ff] text-[#0468ff] text-[14px] font-semibold flex items-center gap-[6px]">
-                  <font-awesome-icon :icon="['far', 'comment']" class="text-[12px]" /> Написать
+                  <font-awesome-icon :icon="['far', 'comment']" class="text-[12px]" /> {{ t('Написать') }}
                 </button>
               </div>
             </div>
@@ -239,7 +239,7 @@
         <button v-if="page < lastPage" @click="load(false)" :disabled="loadingMore"
           class="h-[44px] rounded-[12px] bg-white border border-[#e2e8f0] text-[#0468ff] text-[15px] font-semibold hover:border-[#0468ff]">
           <font-awesome-icon v-if="loadingMore" :icon="['fas', 'spinner']" spin-pulse />
-          <span v-else>Показать ещё</span>
+          <span v-else>{{ t('Показать ещё') }}</span>
         </button>
       </div>
     </div>
@@ -249,7 +249,7 @@
 </template>
 
 <script setup>
-useHead({ title: 'Объявления' })
+useHead({ title: () => t('Объявления') })
 
 const DEALS = [
   { label: 'Все', value: '' },
@@ -494,53 +494,16 @@ function goToMap() {
   router.push({ path: '/yandex-map', query: route.query })
 }
 
-// --- Форматирование
-const fmt = (n) => (n === null || n === undefined ? '' : Number(n).toLocaleString('ru-RU'))
+// --- Форматирование: общие помощники на языке сайта (composables/announFormat.js) — dealLabel, priceSuffix, timeAgo, announFacts
+const fmt = formatNumber
 const photoUrl = (picture) => `${apiBase()}/api/image/medium/${picture.pictures}`
 
-function dealLabel(item) {
-  if (item.deal_type === 'Аренда') return item.rental_type === 'Посуточно' ? 'Посуточно' : 'Аренда'
-  return item.deal_type || 'Объявление'
-}
-function priceSuffix(item) {
-  if (item.deal_type !== 'Аренда') return ''
-  return item.rental_type === 'Посуточно' ? ' / сутки' : ' / мес'
-}
 function pricePerMeter(item) {
   if (item.deal_type !== 'Продажа' || !item.price || !item.total_area) return ''
   return fmt(Math.round(item.price / item.total_area))
 }
-function facts(item) {
-  const parts = []
-  if (item.quantity_room) parts.push(`${item.quantity_room}-комн.`)
-  else if (item.quantity_bedrooms) parts.push(`${item.quantity_bedrooms} ${plural(item.quantity_bedrooms, ['спальня', 'спальни', 'спален'])}`)
-  const area = item.total_area || item.house_area || item.building_area
-  if (area) parts.push(`${area} м²`)
-  if (item.land_area) parts.push(`участок ${item.land_area} сот.`)
-  if (item.floor && item.floor_in_house) parts.push(`${item.floor}/${item.floor_in_house} эт.`)
-  else if (item.floor_in_house) parts.push(`${item.floor_in_house} ${plural(item.floor_in_house, ['этаж', 'этажа', 'этажей'])}`)
-  if (item.numberSeats) parts.push(`${item.numberSeats} раб. мест`)
-  return parts.join(' · ')
-}
+const facts = (item) => [announFacts(item), item.numberSeats && t('{n} раб. мест', { n: item.numberSeats })].filter(Boolean).join(' · ')
 function ownerName(owner) {
-  return [owner.name, owner.last_name].filter(Boolean).join(' ') || 'Владелец'
-}
-function plural(n, forms) {
-  const mod10 = n % 10
-  const mod100 = n % 100
-  if (mod10 === 1 && mod100 !== 11) return forms[0]
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 10 || mod100 >= 20)) return forms[1]
-  return forms[2]
-}
-function timeAgo(dateString) {
-  const minutes = Math.floor((Date.now() - new Date(dateString).getTime()) / 60000)
-  if (minutes < 1) return 'только что'
-  if (minutes < 60) return `${minutes} мин. назад`
-  const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours} ч. назад`
-  const days = Math.floor(hours / 24)
-  if (days < 7) return `${days} ${plural(days, ['день', 'дня', 'дней'])} назад`
-  if (days < 30) return `${Math.floor(days / 7)} нед. назад`
-  return new Date(dateString).toLocaleDateString('ru-RU', { day: 'numeric', month: 'long', year: 'numeric' })
+  return [owner.name, owner.last_name].filter(Boolean).join(' ') || t('Владелец')
 }
 </script>

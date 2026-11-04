@@ -1,11 +1,11 @@
 <template>
   <div>
-    <span class="wz-label">Адрес</span>
+    <span class="wz-label">{{ t('Адрес') }}</span>
     <div class="relative">
       <font-awesome-icon :icon="['fas', 'magnifying-glass']" class="absolute left-[14px] top-[15px] text-[#94a3b8] text-[14px] pointer-events-none" />
       <input v-model="query" @input="onType" @keydown.down.prevent="move(1)" @keydown.up.prevent="move(-1)" @keydown.enter.prevent="pickActive"
         @focus="open = suggestions.length > 0" @blur="closeSoon" type="text" autocomplete="off" data-test="address-input"
-        placeholder="Город, улица, дом — например: Душанбе, Рудаки 45"
+        :placeholder="t('Город, улица, дом — например: Душанбе, Рудаки 45')"
         class="wz-input !pl-[40px] !pr-[40px]" :class="{ 'wz-input--bad': invalid && !hasPoint }" />
       <font-awesome-icon v-if="searching" :icon="['fas', 'spinner']" spin-pulse class="absolute right-[14px] top-[15px] text-[#94a3b8]" />
 
@@ -16,37 +16,37 @@
             :class="i === active ? 'bg-[#eef4ff]' : 'hover:bg-[#f8fafc]'">
             <font-awesome-icon :icon="['fas', 'location-dot']" class="text-[#94a3b8] mt-[3px] text-[13px]" />
             <span class="min-w-0">
-              <span class="block text-[14.5px] text-[#152242] font-semibold truncate">{{ s.title }}</span>
-              <span v-if="s.subtitle" class="block text-[12.5px] text-[#64748b] truncate">{{ s.subtitle }}</span>
+              <span class="block text-[14.5px] text-[#152242] font-semibold truncate">{{ t(s.title) }}</span>
+              <span v-if="s.subtitle" class="block text-[12.5px] text-[#64748b] truncate">{{ t(s.subtitle) }}</span>
             </span>
           </button>
         </li>
       </ul>
     </div>
-    <p v-if="searchError" class="wz-err">{{ searchError }}</p>
+    <p v-if="searchError" class="wz-err">{{ t(searchError) }}</p>
 
     <div class="relative mt-[12px] rounded-[14px] overflow-hidden border border-[#e2e8f0] h-[320px] sm:h-[380px] bg-[#eef2f7]">
       <div ref="mapEl" class="absolute inset-0" data-test="location-map"></div>
       <div v-if="!ready" class="absolute inset-0 grid place-items-center text-[14px] text-[#64748b]">
-        <span><font-awesome-icon :icon="['fas', 'spinner']" spin-pulse class="mr-[6px]" />Загружаем карту…</span>
+        <span><font-awesome-icon :icon="['fas', 'spinner']" spin-pulse class="mr-[6px]" />{{ t('Загружаем карту…') }}</span>
       </div>
       <div v-else-if="!hasPoint" class="absolute left-1/2 -translate-x-1/2 top-[12px] px-[14px] py-[8px] rounded-full bg-[#152242]/85 text-white text-[13px] pointer-events-none whitespace-nowrap">
-        Найдите адрес или нажмите на карту
+        {{ t('Найдите адрес или нажмите на карту') }}
       </div>
-      <button type="button" @click="locateMe" :disabled="locating" title="Где я"
+      <button type="button" @click="locateMe" :disabled="locating" :title="t('Где я')"
         class="absolute right-[10px] bottom-[34px] h-[38px] px-[12px] rounded-[10px] bg-white shadow-md text-[13px] font-semibold text-[#152242] hover:text-[#0468ff] flex items-center gap-[6px]">
-        <font-awesome-icon :icon="['fas', locating ? 'spinner' : 'location-crosshairs']" :spin-pulse="locating" /> Где я
+        <font-awesome-icon :icon="['fas', locating ? 'spinner' : 'location-crosshairs']" :spin-pulse="locating" /> {{ t('Где я') }}
       </button>
     </div>
 
     <div v-if="hasPoint" class="mt-[10px] flex items-start gap-[10px] px-[12px] py-[10px] rounded-[12px] bg-[#f0fdf4] border border-[#bbf7d0]" data-test="picked-address">
       <font-awesome-icon :icon="['fas', 'location-dot']" class="text-[#16a34a] mt-[3px]" />
       <div class="min-w-0">
-        <div class="text-[14px] font-semibold text-[#152242] break-words">{{ draft.address || 'Точка выбрана на карте' }}</div>
-        <div class="text-[12px] text-[#64748b]">Неточно? Перетащите метку или нажмите на нужное место карты.</div>
+        <div class="text-[14px] font-semibold text-[#152242] break-words">{{ draft.address || t('Точка выбрана на карте') }}</div>
+        <div class="text-[12px] text-[#64748b]">{{ t('Неточно? Перетащите метку или нажмите на нужное место карты.') }}</div>
       </div>
     </div>
-    <p v-else-if="invalid" class="wz-err">Укажите, где находится объект: найдите адрес или нажмите на карту</p>
+    <p v-else-if="invalid" class="wz-err">{{ t('Укажите, где находится объект: найдите адрес или нажмите на карту') }}</p>
   </div>
 </template>
 

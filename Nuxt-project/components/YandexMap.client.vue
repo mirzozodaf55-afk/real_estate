@@ -4,21 +4,21 @@
     <aside class="hidden lg:flex flex-col w-[380px] shrink-0 bg-white border-r border-[#e8edf3]">
       <div class="px-[16px] pt-[14px] pb-[12px] border-b border-[#eef2f7]">
         <NuxtLink :to="{ path: '/list-announ', query: route.query }" class="inline-flex items-center gap-[6px] text-[13.5px] font-semibold text-[#0468ff] no-underline hover:underline">
-          <font-awesome-icon :icon="['fas', 'list']" /> Списком
+          <font-awesome-icon :icon="['fas', 'list']" /> {{ t('Списком') }}
         </NuxtLink>
         <h1 class="text-[20px] font-bold text-[#152242] mt-[6px] mb-0">
-          {{ loading ? 'Загружаем…' : `${onMap.length} ${plural(onMap.length, ['объявление', 'объявления', 'объявлений'])} на карте` }}
+          {{ loading ? t('Загружаем…') : t('{n} {w} на карте', { n: onMap.length, w: tn(onMap.length, ['объявление', 'объявления', 'объявлений']) }) }}
         </h1>
-        <p v-if="filterLabel" class="text-[13px] text-[#64748b] mt-[2px] mb-0 truncate">{{ filterLabel }}</p>
-        <p v-if="!loading && withoutCoords" class="text-[12px] text-[#94a3b8] mt-[4px] mb-0">Ещё {{ withoutCoords }} без адреса на карте — они есть в списке</p>
+        <p v-if="filterLabel" class="text-[13px] text-[#64748b] mt-[2px] mb-0 truncate">{{ t(filterLabel) }}</p>
+        <p v-if="!loading && withoutCoords" class="text-[12px] text-[#94a3b8] mt-[4px] mb-0">{{ t('Ещё') }} {{ withoutCoords }} {{ t('без адреса на карте — они есть в списке') }}</p>
       </div>
 
       <div class="flex-1 overflow-y-auto p-[10px] flex flex-col gap-[8px]">
         <template v-if="loading">
           <div v-for="n in 4" :key="n" class="h-[96px] rounded-[12px] bg-[#f1f5f9] animate-pulse"></div>
         </template>
-        <p v-else-if="error" class="text-center text-[14px] text-[#b91c1c] p-[20px]">{{ error }}</p>
-        <p v-else-if="!onMap.length" class="text-center text-[14px] text-[#64748b] p-[20px]">По этим условиям нет объявлений с адресом на карте.</p>
+        <p v-else-if="error" class="text-center text-[14px] text-[#b91c1c] p-[20px]">{{ t(error) }}</p>
+        <p v-else-if="!onMap.length" class="text-center text-[14px] text-[#64748b] p-[20px]">{{ t('По этим условиям нет объявлений с адресом на карте.') }}</p>
         <button v-for="a of onMap" :key="a.id" :ref="(el) => (cardEls[a.id] = el)"
           @mouseenter="setActive(a.id)" @mouseleave="setActive(null)" @click="openAnnoun(a)" :data-test="`map-card-${a.id}`"
           class="w-full text-left flex gap-[10px] p-[8px] rounded-[12px] border transition-all"
@@ -27,8 +27,8 @@
             <img v-if="a.pictures?.[0]" :src="photoUrl(a, 'small')" class="w-full h-full object-cover" alt="" loading="lazy" />
           </div>
           <div class="min-w-0 flex-1">
-            <div class="text-[16px] font-bold text-[#152242] leading-tight">{{ formatNumber(a.price) }} с.<span class="text-[12px] font-normal text-[#64748b]">{{ priceSuffix(a) }}</span></div>
-            <div class="text-[13px] font-semibold text-[#0468ff] line-clamp-2 leading-[1.3] mt-[2px]">{{ a.title || a.type_object }}</div>
+            <div class="text-[16px] font-bold text-[#152242] leading-tight">{{ formatNumber(a.price) }} {{ t('с.') }}<span class="text-[12px] font-normal text-[#64748b]">{{ priceSuffix(a) }}</span></div>
+            <div class="text-[13px] font-semibold text-[#0468ff] line-clamp-2 leading-[1.3] mt-[2px]">{{ a.title || t(a.type_object) }}</div>
             <div class="text-[12px] text-[#64748b] mt-[2px] truncate">{{ facts(a) }}</div>
           </div>
         </button>
@@ -40,17 +40,17 @@
       <div id="map-yandex" class="absolute inset-0"></div>
 
       <div v-if="!mapReady" class="absolute inset-0 grid place-items-center bg-[#eef2f7] text-[#64748b] text-[14px]">
-        <span><font-awesome-icon :icon="['fas', 'spinner']" spin-pulse class="mr-[6px]" /> Загружаем карту…</span>
+        <span><font-awesome-icon :icon="['fas', 'spinner']" spin-pulse class="mr-[6px]" /> {{ t('Загружаем карту…') }}</span>
       </div>
 
       <!-- Телефон: сверху — назад и счётчик -->
       <div class="lg:hidden absolute top-[12px] left-[12px] right-[12px] flex items-center gap-[8px] pointer-events-none">
-        <NuxtLink :to="{ path: '/list-announ', query: route.query }" aria-label="Списком"
+        <NuxtLink :to="{ path: '/list-announ', query: route.query }" :aria-label="t('Списком')"
           class="pointer-events-auto h-[40px] px-[14px] rounded-full bg-white shadow-md text-[14px] font-semibold text-[#152242] flex items-center gap-[6px] no-underline">
-          <font-awesome-icon :icon="['fas', 'list']" /> Списком
+          <font-awesome-icon :icon="['fas', 'list']" /> {{ t('Списком') }}
         </NuxtLink>
         <span v-if="!loading" class="pointer-events-auto h-[40px] px-[14px] rounded-full bg-white/95 shadow-md text-[13.5px] text-[#334155] flex items-center">
-          {{ onMap.length }} на карте
+          {{ onMap.length }} {{ t('на карте') }}
         </span>
       </div>
 
@@ -61,8 +61,8 @@
           <img v-if="selected.pictures?.[0]" :src="photoUrl(selected, 'small')" class="w-full h-full object-cover" alt="" />
         </div>
         <div class="min-w-0 flex-1">
-          <div class="text-[16px] font-bold text-[#152242]">{{ formatNumber(selected.price) }} с.<span class="text-[12px] font-normal text-[#64748b]">{{ priceSuffix(selected) }}</span></div>
-          <div class="text-[13px] font-semibold text-[#0468ff] line-clamp-2 leading-[1.3]">{{ selected.title || selected.type_object }}</div>
+          <div class="text-[16px] font-bold text-[#152242]">{{ formatNumber(selected.price) }} {{ t('с.') }}<span class="text-[12px] font-normal text-[#64748b]">{{ priceSuffix(selected) }}</span></div>
+          <div class="text-[13px] font-semibold text-[#0468ff] line-clamp-2 leading-[1.3]">{{ selected.title || t(selected.type_object) }}</div>
           <div class="text-[12px] text-[#64748b] truncate">{{ facts(selected) }}</div>
         </div>
         <span class="self-center text-[#0468ff]"><font-awesome-icon :icon="['fas', 'chevron-right']" /></span>
@@ -72,7 +72,7 @@
 </template>
 
 <script setup>
-useHead({ title: 'Объявления на карте' })
+useHead({ title: () => t('Объявления на карте') })
 
 const route = useRoute()
 const router = useRouter()
@@ -97,15 +97,15 @@ const filterLabel = computed(() => (Object.keys(route.query).length ? describeFi
 const photoUrl = (a, size) => `${apiBase()}/api/image/${size}/${a.pictures[0].pictures}`
 function facts(a) {
   const area = a.total_area || a.house_area || a.building_area
-  return [a.type_object, a.quantity_room && `${a.quantity_room}-комн.`, area && `${area} м²`,
-    a.floor && a.floor_in_house && `${a.floor}/${a.floor_in_house} эт.`].filter(Boolean).join(' · ')
+  return [t(a.type_object), announFacts(a)].filter(Boolean).join(' · ')
 }
 // Коротко для ценника на карте: 650 000 → «650 тыс.», 1 250 000 → «1,3 млн»
 function shortPrice(p) {
   p = Number(p) || 0
-  if (p >= 1e6) return `${(p / 1e6).toLocaleString('ru-RU', { maximumFractionDigits: 1 })} млн`
-  if (p >= 1e4) return `${Math.round(p / 1e3)} тыс.`
-  return p.toLocaleString('ru-RU')
+  const locale = useLang().locale.value
+  if (p >= 1e6) return `${(p / 1e6).toLocaleString(locale, { maximumFractionDigits: 1 })} ${t('млн')}`
+  if (p >= 1e4) return `${Math.round(p / 1e3)} ${t('тыс.')}`
+  return p.toLocaleString(locale)
 }
 
 function openAnnoun(a) {
@@ -194,7 +194,7 @@ function drawPlacemarks() {
         '<div class="ym-hint__price">{{ properties.priceFull }}</div>' +
         '<div class="ym-hint__title">{{ properties.title }}</div>' +
         '<div class="ym-hint__facts">{{ properties.facts }}</div>' +
-        '<div class="ym-hint__more">Нажмите, чтобы открыть →</div>' +
+        '<div class="ym-hint__more">' + t('Нажмите, чтобы открыть →') + '</div>' +
       '</div>' +
     '</div>',
   )

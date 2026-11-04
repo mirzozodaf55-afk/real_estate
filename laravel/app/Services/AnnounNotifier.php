@@ -96,6 +96,10 @@ class AnnounNotifier
         // страница объявления (/show_announ-...) ждёт фото в поле image
         $data['image'] = $data['pictures'];
         $data['picture'] = $data['pictures'][0]['pictures'] ?? null;
+        // сигнал модераторам о фото: им нужен вывод ИИ (в нём и английский текст); остальным поля проверок не отдаём
+        if ($notification->kind === AnnounNotification::KIND_PHOTO_ALERT) {
+            $data['photo_check'] = $announ->photo_check;
+        }
 
         return [
             'id' => $notification->id,

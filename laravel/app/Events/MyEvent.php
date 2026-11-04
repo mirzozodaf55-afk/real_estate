@@ -23,8 +23,8 @@ class MyEvent implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        // только участникам этой переписки, а не всем открытым чатам
-        return new \Illuminate\Broadcasting\Channel(\App\Support\ChatChannel::name((int) $this->data['user_id'], (int) $this->data['friend_id']));
+        // приватный канал переписки: подписаться могут только её участники (routes/channels.php)
+        return new PrivateChannel(\App\Support\ChatChannel::name((int) $this->data['user_id'], (int) $this->data['friend_id']));
     }
 
     public function broadcastAs()

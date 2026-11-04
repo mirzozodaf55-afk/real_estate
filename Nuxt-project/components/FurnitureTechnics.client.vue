@@ -1,36 +1,36 @@
 <template>
-  <WzShell :title="kind === 'flat' ? 'Мебель и техника' : kind === 'land' ? 'Об участке' : 'Дом и участок'"
-    :subtitle="kind === 'flat' ? 'Отметьте, что есть в квартире, — арендаторы ищут по этим пунктам' : 'Площадь и состояние — главное, на что смотрят покупатели'"
+  <WzShell :title="kind === 'flat' ? t('Мебель и техника') : kind === 'land' ? t('Об участке') : t('Дом и участок')"
+    :subtitle="kind === 'flat' ? t('Отметьте, что есть в квартире, — арендаторы ищут по этим пунктам') : t('Площадь и состояние — главное, на что смотрят покупатели')"
     :error="error" @next="next">
 
     <template v-if="kind === 'flat'">
-      <p v-if="loadingConditions" class="text-[14px] text-[#94a3b8] m-0"><font-awesome-icon :icon="['fas', 'spinner']" spin-pulse /> Загружаем список…</p>
+      <p v-if="loadingConditions" class="text-[14px] text-[#94a3b8] m-0"><font-awesome-icon :icon="['fas', 'spinner']" spin-pulse /> {{ t('Загружаем список…') }}</p>
       <WzChoice v-for="g of groups" :key="g.title" multiple :label="g.title" :options="g.options"
         :model-value="d.condition || []" @update:model-value="d.condition = $event" />
-      <p class="wz-hint -mt-[10px]">Можно ничего не отмечать — тогда в объявлении этого раздела не будет.</p>
+      <p class="wz-hint -mt-[10px]">{{ t('Можно ничего не отмечать — тогда в объявлении этого раздела не будет.') }}</p>
     </template>
 
     <template v-else>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-[16px]">
-        <WzNumber v-model="d.landArea" label="Площадь участка" suffix="сот." :max="6" width="w-full"
-          :invalid="tried && !d.landArea" error="Укажите площадь участка" hint="1 сотка = 100 м²" />
-        <WzNumber v-if="kind === 'house'" v-model="d.homeArea" label="Площадь дома" suffix="м²" :max="5" width="w-full"
-          :invalid="tried && !d.homeArea" error="Укажите площадь дома" />
-        <WzNumber v-if="kind === 'house'" v-model="d.quantityBedroom" label="Спален" :max="2" width="w-full"
-          :invalid="tried && !d.quantityBedroom" error="Укажите количество спален" />
+        <WzNumber v-model="d.landArea" :label="t('Площадь участка')" :suffix="t('сот.')" :max="6" width="w-full"
+          :invalid="tried && !d.landArea" :error="t('Укажите площадь участка')" :hint="t('1 сотка = 100 м²')" />
+        <WzNumber v-if="kind === 'house'" v-model="d.homeArea" :label="t('Площадь дома')" :suffix="t('м²')" :max="5" width="w-full"
+          :invalid="tried && !d.homeArea" :error="t('Укажите площадь дома')" />
+        <WzNumber v-if="kind === 'house'" v-model="d.quantityBedroom" :label="t('Спален')" :max="2" width="w-full"
+          :invalid="tried && !d.quantityBedroom" :error="t('Укажите количество спален')" />
       </div>
 
-      <WzChoice v-model="d.landCategry" label="Категория земли" :options="LAND_CATEGORIES"
-        :invalid="tried && !d.landCategry" error="Выберите категорию земли" />
+      <WzChoice v-model="d.landCategry" :label="t('Категория земли')" :options="LAND_CATEGORIES"
+        :invalid="tried && !d.landCategry" :error="t('Выберите категорию земли')" />
 
-      <WzChoice v-if="kind === 'house'" v-model="d.conditionHome" label="Состояние дома" :options="HOME_CONDITIONS"
-        :invalid="tried && !d.conditionHome" error="Выберите состояние дома" />
+      <WzChoice v-if="kind === 'house'" v-model="d.conditionHome" :label="t('Состояние дома')" :options="HOME_CONDITIONS"
+        :invalid="tried && !d.conditionHome" :error="t('Выберите состояние дома')" />
 
-      <WzChoice v-model="d.electricity" label="Электричество" :options="YES_NO"
-        :invalid="tried && !d.electricity" error="Укажите, есть ли электричество" />
+      <WzChoice v-model="d.electricity" :label="t('Электричество')" :options="YES_NO"
+        :invalid="tried && !d.electricity" :error="t('Укажите, есть ли электричество')" />
 
-      <WzChoice v-if="kind === 'house' && yardOptions.length" multiple label="На участке" :options="yardOptions"
-        :model-value="d.condition || []" @update:model-value="d.condition = $event" hint="Необязательно" />
+      <WzChoice v-if="kind === 'house' && yardOptions.length" multiple :label="t('На участке')" :options="yardOptions"
+        :model-value="d.condition || []" @update:model-value="d.condition = $event" :hint="t('Необязательно')" />
     </template>
   </WzShell>
 </template>

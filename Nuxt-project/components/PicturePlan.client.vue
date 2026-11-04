@@ -1,20 +1,20 @@
 <template>
-  <WzShell :title="d.objects === 'Комната' ? 'Комната и квартира' : 'Комнаты и площадь'"
-    subtitle="Площадь указывайте как в документах — по ней ищут чаще всего" :error="error" @next="next">
-    <WzChoice v-model="d.quantityRoom" :label="d.objects === 'Комната' ? 'Комнат в квартире' : 'Количество комнат'"
-      :options="ROOMS" :invalid="tried && !d.quantityRoom" error="Выберите количество комнат" />
+  <WzShell :title="d.objects === 'Комната' ? t('Комната и квартира') : t('Комнаты и площадь')"
+    :subtitle="t('Площадь указывайте как в документах — по ней ищут чаще всего')" :error="error" @next="next">
+    <WzChoice v-model="d.quantityRoom" :label="d.objects === 'Комната' ? t('Комнат в квартире') : t('Количество комнат')"
+      :options="ROOMS" :invalid="tried && !d.quantityRoom" :error="t('Выберите количество комнат')" />
 
     <div>
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-[16px]">
-        <WzNumber v-model="d.generalArea" label="Общая площадь" suffix="м²" :max="5" width="w-full"
-          :invalid="tried && (!d.generalArea || areaConflict)" :error="areaConflict ? '' : 'Укажите общую площадь'" />
-        <WzNumber v-model="d.liveArea" label="Жилая площадь" suffix="м²" :max="5" width="w-full"
-          :invalid="tried && (!d.liveArea || areaConflict)" :error="areaConflict ? '' : 'Укажите жилую площадь'" />
-        <WzNumber v-model="d.kitchenArea" label="Площадь кухни" suffix="м²" :max="4" width="w-full"
-          :invalid="tried && (!d.kitchenArea || areaConflict)" :error="areaConflict ? '' : 'Укажите площадь кухни'" />
+        <WzNumber v-model="d.generalArea" :label="t('Общая площадь')" :suffix="t('м²')" :max="5" width="w-full"
+          :invalid="tried && (!d.generalArea || areaConflict)" :error="areaConflict ? '' : t('Укажите общую площадь')" />
+        <WzNumber v-model="d.liveArea" :label="t('Жилая площадь')" :suffix="t('м²')" :max="5" width="w-full"
+          :invalid="tried && (!d.liveArea || areaConflict)" :error="areaConflict ? '' : t('Укажите жилую площадь')" />
+        <WzNumber v-model="d.kitchenArea" :label="t('Площадь кухни')" :suffix="t('м²')" :max="4" width="w-full"
+          :invalid="tried && (!d.kitchenArea || areaConflict)" :error="areaConflict ? '' : t('Укажите площадь кухни')" />
       </div>
-      <p v-if="areaConflict" class="wz-err">Жилая площадь и кухня вместе не могут быть больше общей ({{ d.liveArea }} + {{ d.kitchenArea }} &gt; {{ d.generalArea }} м²)</p>
-      <p v-else class="wz-hint">Общая = жилая + кухня + коридор, санузел, балкон</p>
+      <p v-if="areaConflict" class="wz-err">{{ t('Жилая площадь и кухня вместе не могут быть больше общей (') }}{{ d.liveArea }} + {{ d.kitchenArea }} &gt; {{ d.generalArea }} {{ t('м²)') }}</p>
+      <p v-else class="wz-hint">{{ t('Общая = жилая + кухня + коридор, санузел, балкон') }}</p>
     </div>
   </WzShell>
 </template>

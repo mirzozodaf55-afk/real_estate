@@ -20,12 +20,20 @@
     <php>
         <env name="APP_ENV" value="testing"/>
         <env name="BCRYPT_ROUNDS" value="4"/>
-        <env name="CACHE_DRIVER" value="array"/>
-        <!-- <env name="DB_CONNECTION" value="sqlite"/> -->
-        <!-- <env name="DB_DATABASE" value=":memory:"/> -->
-        <env name="MAIL_MAILER" value="array"/>
-        <env name="QUEUE_CONNECTION" value="sync"/>
-        <env name="SESSION_DRIVER" value="array"/>
+        <env name="CACHE_DRIVER" value="array" force="true"/>
+        <!-- отдельная база: тесты очищают её перед запуском (RefreshDatabase); миграции под MySQL, поэтому не sqlite -->
+        <env name="DB_DATABASE" value="announcement_test" force="true"/>
+        <!-- события websocket в тестах подменяются (Event::fake); незаглушённое не уйдёт на живой сервер чата -->
+        <env name="BROADCAST_DRIVER" value="pusher" force="true"/>
+        <env name="PUSHER_APP_KEY" value="test-key" force="true"/>
+        <env name="PUSHER_APP_SECRET" value="test-secret" force="true"/>
+        <env name="PUSHER_APP_ID" value="test" force="true"/>
+        <env name="PUSHER_PORT" value="1" force="true"/>
+        <!-- ИИ не вызываем: без ключа OpenAi::enabled() = false -->
+        <env name="OPENAI_API_KEY" value="" force="true"/>
+        <env name="MAIL_MAILER" value="array" force="true"/>
+        <env name="QUEUE_CONNECTION" value="sync" force="true"/>
+        <env name="SESSION_DRIVER" value="array" force="true"/>
         <env name="TELESCOPE_ENABLED" value="false"/>
     </php>
 </phpunit>

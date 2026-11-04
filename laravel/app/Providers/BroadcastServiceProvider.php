@@ -12,7 +12,8 @@ class BroadcastServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Broadcast::routes();
+        // POST /api/broadcasting/auth — сайт подтверждает подписку на приватный канал токеном Sanctum (как остальной API)
+        Broadcast::routes(['prefix' => 'api', 'middleware' => ['auth:sanctum', 'not.blocked']]);
 
         require base_path('routes/channels.php');
     }

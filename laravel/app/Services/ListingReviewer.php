@@ -28,6 +28,7 @@ class ListingReviewer
                 'несоответствия (комнат больше, чем позволяет площадь, этаж выше этажности), пустое или бессмысленное описание, оскорбления, рекламу.',
                 'Фото ты не видишь — не делай выводов о них. Не придумывай проблем: если всё в порядке, так и скажи.',
                 'suggested_reason — вежливая причина отказа для владельца (1–2 предложения) или пустая строка, если отказывать не за что.',
+                'summary, issues, suggested_reason — по-русски; summary_en, issues_en, suggested_reason_en — то же самое по-английски (модератор может работать на английском).',
             ])],
             ['role' => 'user', 'content' => json_encode([
                 'объявление' => array_filter([
@@ -46,8 +47,11 @@ class ListingReviewer
                 'summary' => ['type' => 'string'],
                 'issues' => ['type' => 'array', 'items' => ['type' => 'string']],
                 'suggested_reason' => ['type' => 'string'],
+                'summary_en' => ['type' => 'string'],
+                'issues_en' => ['type' => 'array', 'items' => ['type' => 'string']],
+                'suggested_reason_en' => ['type' => 'string'],
             ],
-            'required' => ['risk', 'summary', 'issues', 'suggested_reason'],
+            'required' => ['risk', 'summary', 'issues', 'suggested_reason', 'summary_en', 'issues_en', 'suggested_reason_en'],
             'additionalProperties' => false,
         ], ['temperature' => 0.2]);
 
@@ -59,6 +63,10 @@ class ListingReviewer
             'summary' => (string) $result['summary'],
             'issues' => array_values(array_map('strval', $result['issues'] ?? [])),
             'suggested_reason' => (string) $result['suggested_reason'],
+            // то же по-английски — модератор видит текст на языке сайта
+            'summary_en' => (string) ($result['summary_en'] ?? ''),
+            'issues_en' => array_values(array_map('strval', $result['issues_en'] ?? [])),
+            'suggested_reason_en' => (string) ($result['suggested_reason_en'] ?? ''),
             'market' => $market,
         ];
 

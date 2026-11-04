@@ -17,3 +17,16 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+
+# загруженные пользователями файлы — не в git (репозиторий публичный; демо заполняет их само, DemoSeeder)
+/public/large/*
+/public/medium/*
+/public/small/*
+/public/xsmall/*
+/public/avatar/*
+/public/filemessage/*
+!/public/*/.gitkeep
+!/public/filemessage/original/
+/public/filemessage/original/*
+!/public/filemessage/original/.gitkeep
+/public/site/*

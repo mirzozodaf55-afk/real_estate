@@ -1,7 +1,7 @@
 <template>
-  <WzShell title="Что вы хотите разместить?" subtitle="Выберите тип сделки и объект — от этого зависят следующие шаги" :error="error" @next="next" :hide-back="true">
+  <WzShell :title="t('Что вы хотите разместить?')" :subtitle="t('Выберите тип сделки и объект — от этого зависят следующие шаги')" :error="error" @next="next" :hide-back="true">
     <div>
-      <span class="wz-label">Тип сделки</span>
+      <span class="wz-label">{{ t('Тип сделки') }}</span>
       <div class="grid grid-cols-2 gap-[10px] max-w-[460px]">
         <button v-for="o of DEALS" :key="o.value" type="button" @click="setDeal(o.value)" :data-test="`deal-${o.value}`"
           class="flex items-center gap-[12px] p-[14px] rounded-[14px] border-2 text-left transition-colors"
@@ -10,31 +10,31 @@
             <font-awesome-icon :icon="['fas', o.icon]" />
           </span>
           <span>
-            <span class="block text-[16px] font-bold text-[#152242]">{{ o.label }}</span>
-            <span class="block text-[12.5px] text-[#64748b]">{{ o.hint }}</span>
+            <span class="block text-[16px] font-bold text-[#152242]">{{ t(o.label) }}</span>
+            <span class="block text-[12.5px] text-[#64748b]">{{ t(o.hint) }}</span>
           </span>
         </button>
       </div>
     </div>
 
-    <WzChoice v-if="d.rent === 'Аренда'" label="Срок аренды" :model-value="d.typeRent" @update:model-value="setRentType"
-      :options="['Длительно', 'Несколько месяцев', 'Посуточно']" :invalid="tried && !d.typeRent" error="Выберите срок аренды" />
+    <WzChoice v-if="d.rent === 'Аренда'" :label="t('Срок аренды')" :model-value="d.typeRent" @update:model-value="setRentType"
+      :options="['Длительно', 'Несколько месяцев', 'Посуточно']" :invalid="tried && !d.typeRent" :error="t('Выберите срок аренды')" />
 
-    <WzChoice v-if="d.rent && (d.rent === 'Продажа' || d.typeRent)" label="Тип недвижимости" :model-value="d.Estate" @update:model-value="setEstate"
-      :options="estateOptions" :invalid="tried && !d.Estate" error="Выберите тип недвижимости"
-      :hint="d.typeRent === 'Посуточно' ? 'Посуточно сдают только жилую недвижимость' : ''" />
+    <WzChoice v-if="d.rent && (d.rent === 'Продажа' || d.typeRent)" :label="t('Тип недвижимости')" :model-value="d.Estate" @update:model-value="setEstate"
+      :options="estateOptions" :invalid="tried && !d.Estate" :error="t('Выберите тип недвижимости')"
+      :hint="d.typeRent === 'Посуточно' ? t('Посуточно сдают только жилую недвижимость') : ''" />
 
     <div v-if="d.Estate">
-      <span class="wz-label">Объект</span>
+      <span class="wz-label">{{ t('Объект') }}</span>
       <div class="grid grid-cols-2 sm:grid-cols-3 gap-[10px]">
         <button v-for="o of objectOptions" :key="o.value" type="button" @click="d.objects = o.value" :data-test="`object-${o.value}`"
           class="flex flex-col items-start gap-[8px] p-[14px] rounded-[14px] border-2 text-left transition-colors min-h-[96px]"
           :class="d.objects === o.value ? 'border-[#0468ff] bg-[#eef4ff]' : tried && !validObject ? 'border-[#fecaca]' : 'border-[#e8edf3] hover:border-[#cbd5e1]'">
           <font-awesome-icon :icon="['fas', o.icon]" class="text-[22px]" :class="d.objects === o.value ? 'text-[#0468ff]' : 'text-[#64748b]'" />
-          <span class="text-[14.5px] font-semibold text-[#152242] leading-tight">{{ o.label }}</span>
+          <span class="text-[14.5px] font-semibold text-[#152242] leading-tight">{{ t(o.label) }}</span>
         </button>
       </div>
-      <p v-if="tried && !validObject" class="wz-err">Выберите объект</p>
+      <p v-if="tried && !validObject" class="wz-err">{{ t('Выберите объект') }}</p>
     </div>
   </WzShell>
 </template>
@@ -97,14 +97,4 @@ function next() {
   if (!canGo.value) return
   navigateTo(announStepNav(d.value, route.path).next)
 }
-
-// Справочник удобств (мебель, техника, «можно с детьми»…) — нужен на следующих шагах; сервер добавит недостающие
-onMounted(() => {
-  fetch(`${apiBase()}/api/create/furniture`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(['Можно с детьми', 'Можно с животными', 'Холодильник', 'Посудамоечная машина', 'Стиральная машина',
-      'В комнатах', 'На кухне', 'Кондиционер', 'Телевизор', 'Интернет', 'Телефон', 'Ванна', 'Душевая кабина', 'Баня', 'Гараж', 'Бассейн']),
-  }).catch(() => {})
-})
 </script>

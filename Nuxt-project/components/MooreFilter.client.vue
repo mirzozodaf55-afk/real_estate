@@ -2,8 +2,8 @@
   <div class="fixed inset-0 z-[300] bg-black/50 flex items-end sm:items-center justify-center" @click.self="close" data-test="more-filters">
     <div class="w-full sm:w-[640px] sm:max-w-[94vw] max-h-[88vh] sm:max-h-[85vh] flex flex-col bg-white rounded-t-[20px] sm:rounded-[18px] shadow-[0_-10px_40px_rgba(15,23,42,0.25)] overflow-hidden">
       <header class="flex items-center justify-between gap-[12px] px-[20px] h-[60px] border-b border-[#eef2f7] shrink-0">
-        <h3 class="m-0 text-[19px] font-bold text-[#152242]">Ещё фильтры</h3>
-        <button type="button" @click="close" aria-label="Закрыть" class="w-[36px] h-[36px] rounded-full grid place-items-center text-[#64748b] hover:bg-[#f1f5f9]">
+        <h3 class="m-0 text-[19px] font-bold text-[#152242]">{{ t('Ещё фильтры') }}</h3>
+        <button type="button" @click="close" :aria-label="t('Закрыть')" class="w-[36px] h-[36px] rounded-full grid place-items-center text-[#64748b] hover:bg-[#f1f5f9]">
           <font-awesome-icon :icon="['fas', 'xmark']" class="text-[18px]" />
         </button>
       </header>
@@ -12,12 +12,12 @@
         <!-- Диапазоны «от — до» -->
         <div v-if="ranges.length" class="grid grid-cols-1 sm:grid-cols-2 gap-x-[16px] gap-y-[16px]">
           <div v-for="r of ranges" :key="r.key">
-            <div class="text-[14px] font-semibold text-[#152242] mb-[6px]">{{ r.label }}<span v-if="r.unit" class="font-normal text-[#94a3b8]">, {{ r.unit }}</span></div>
+            <div class="text-[14px] font-semibold text-[#152242] mb-[6px]">{{ t(r.label) }}<span v-if="r.unit" class="font-normal text-[#94a3b8]">, {{ t(r.unit) }}</span></div>
             <div class="flex items-center gap-[8px]">
-              <input :value="f[r.key + 'From']" @input="setNumber(r.key + 'From', $event)" inputmode="numeric" placeholder="от"
+              <input :value="f[r.key + 'From']" @input="setNumber(r.key + 'From', $event)" inputmode="numeric" :placeholder="t('от')"
                 class="flex-1 min-w-0 h-[42px] px-[12px] rounded-[10px] border border-[#e2e8f0] bg-white text-[15px] text-[#152242] outline-none focus:border-[#0468ff]" />
               <span class="text-[#94a3b8]">—</span>
-              <input :value="f[r.key + 'To']" @input="setNumber(r.key + 'To', $event)" inputmode="numeric" placeholder="до"
+              <input :value="f[r.key + 'To']" @input="setNumber(r.key + 'To', $event)" inputmode="numeric" :placeholder="t('до')"
                 class="flex-1 min-w-0 h-[42px] px-[12px] rounded-[10px] border border-[#e2e8f0] bg-white text-[15px] text-[#152242] outline-none focus:border-[#0468ff]" />
             </div>
           </div>
@@ -25,12 +25,12 @@
 
         <!-- Варианты чипами -->
         <div v-for="g of groups" :key="g.key">
-          <div class="text-[14px] font-semibold text-[#152242] mb-[8px]">{{ g.label }}</div>
+          <div class="text-[14px] font-semibold text-[#152242] mb-[8px]">{{ t(g.label) }}</div>
           <div class="flex flex-wrap gap-[8px]">
             <button v-for="o of g.options" :key="o.value" type="button" @click="toggle(g, o.value)"
               class="h-[38px] px-[14px] rounded-full border text-[14px] transition-colors"
               :class="isOn(g, o.value) ? 'border-[#0468ff] bg-[#eef4ff] text-[#0468ff] font-semibold' : 'border-[#e2e8f0] bg-white text-[#334155] hover:border-[#94a3b8]'">
-              <font-awesome-icon v-if="isOn(g, o.value)" :icon="['fas', 'check']" class="text-[11px] mr-[4px]" />{{ o.label }}
+              <font-awesome-icon v-if="isOn(g, o.value)" :icon="['fas', 'check']" class="text-[11px] mr-[4px]" />{{ t(o.label) }}
             </button>
           </div>
         </div>
@@ -38,10 +38,10 @@
 
       <footer class="flex items-center gap-[10px] px-[20px] py-[12px] border-t border-[#eef2f7] shrink-0">
         <button type="button" @click="clearAll" class="h-[46px] px-[16px] rounded-[12px] text-[15px] font-semibold text-[#334155] hover:bg-[#f1f5f9]">
-          Сбросить<span v-if="selectedCount"> ({{ selectedCount }})</span>
+          {{ t('Сбросить') }}<span v-if="selectedCount"> ({{ selectedCount }})</span>
         </button>
         <button type="button" @click="apply" data-test="more-filters-apply"
-          class="flex-1 h-[46px] rounded-[12px] bg-[#0468ff] hover:bg-[#0353cc] text-white text-[15px] font-bold">Показать объявления</button>
+          class="flex-1 h-[46px] rounded-[12px] bg-[#0468ff] hover:bg-[#0353cc] text-white text-[15px] font-bold">{{ t('Показать объявления') }}</button>
       </footer>
     </div>
   </div>

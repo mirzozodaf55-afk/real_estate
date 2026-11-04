@@ -8,9 +8,9 @@
                 <div class="w-[40px] h-[40px] rounded-full bg-[#e2e8f0] bg-cover bg-center shrink-0"
                     :style="`background-image: url('${apiBase()}/api/avatar/${toast.from.avatar}')`"></div>
                 <div class="min-w-0">
-                    <div class="text-[13px] text-[#64748b]">{{ isStaff(toast.from) ? 'Сообщение от администрации' : 'Новое сообщение' }}</div>
-                    <div class="text-[14px] font-semibold text-[#152242] truncate">{{ [toast.from.name, toast.from.last_name].filter(Boolean).join(' ') || 'Пользователь' }}</div>
-                    <div class="text-[13px] text-[#334155] truncate">{{ toast.preview }}</div>
+                    <div class="text-[13px] text-[#64748b]">{{ isStaff(toast.from) ? t('Сообщение от администрации') : t('Новое сообщение') }}</div>
+                    <div class="text-[14px] font-semibold text-[#152242] truncate">{{ [toast.from.name, toast.from.last_name].filter(Boolean).join(' ') || t('Пользователь') }}</div>
+                    <div class="text-[13px] text-[#334155] truncate">{{ tPreview(toast.preview) }}</div>
                 </div>
             </template>
             <template v-else-if="toast.kind === 'photo_alert'">
@@ -18,8 +18,8 @@
                     <font-awesome-icon :icon="['fas', 'wand-magic-sparkles']" />
                 </div>
                 <div class="min-w-0">
-                    <div class="text-[13px] text-[#64748b]">ИИ: проверьте фото · №{{ toast.announ.id }}</div>
-                    <div class="text-[13px] text-[#b45309] font-semibold line-clamp-2">{{ toast.message }}</div>
+                    <div class="text-[13px] text-[#64748b]">{{ t('ИИ: проверьте фото · №') }}{{ toast.announ.id }}</div>
+                    <div class="text-[13px] text-[#b45309] font-semibold line-clamp-2">{{ tNotice(toast) }}</div>
                 </div>
             </template>
             <template v-else-if="toast.kind === 'promoted' || toast.kind === 'promo_rejected'">
@@ -28,9 +28,19 @@
                     <font-awesome-icon :icon="['fas', toast.kind === 'promoted' ? 'crown' : 'circle-exclamation']" />
                 </div>
                 <div class="min-w-0">
-                    <div class="text-[13px] text-[#64748b]">{{ toast.kind === 'promoted' ? 'Продвижение включено' : 'Заявка на продвижение отклонена' }}</div>
-                    <div class="text-[14px] font-semibold text-[#152242] truncate">{{ toast.announ.title || toast.announ.type_object }}</div>
-                    <div class="text-[13px] truncate" :class="toast.kind === 'promoted' ? 'text-[#b45309]' : 'text-[#dc2626]'">{{ toast.message }}</div>
+                    <div class="text-[13px] text-[#64748b]">{{ toast.kind === 'promoted' ? t('Продвижение включено') : t('Заявка на продвижение отклонена') }}</div>
+                    <div class="text-[14px] font-semibold text-[#152242] truncate">{{ toast.announ.title || t(toast.announ.type_object) }}</div>
+                    <div class="text-[13px] truncate" :class="toast.kind === 'promoted' ? 'text-[#b45309]' : 'text-[#dc2626]'">{{ tNotice(toast) }}</div>
+                </div>
+            </template>
+            <template v-else-if="toast.kind === 'needs_changes'">
+                <div class="w-[40px] h-[40px] rounded-full grid place-items-center shrink-0 bg-[#fff7ed] text-[#ea580c]">
+                    <font-awesome-icon :icon="['fas', 'pen']" />
+                </div>
+                <div class="min-w-0">
+                    <div class="text-[13px] text-[#64748b]">{{ t('Объявление нужно доработать') }}</div>
+                    <div class="text-[14px] font-semibold text-[#152242] truncate">{{ toast.announ.title || t(toast.announ.type_object) }}</div>
+                    <div class="text-[13px] text-[#ea580c] truncate">{{ tNotice(toast) }}</div>
                 </div>
             </template>
             <template v-else-if="toast.kind === 'approved' || toast.kind === 'rejected'">
@@ -39,9 +49,9 @@
                     <font-awesome-icon :icon="['fas', toast.kind === 'approved' ? 'circle-check' : 'circle-exclamation']" />
                 </div>
                 <div class="min-w-0">
-                    <div class="text-[13px] text-[#64748b]">{{ toast.kind === 'approved' ? 'Объявление опубликовано' : 'Объявление отклонено' }}</div>
-                    <div class="text-[14px] font-semibold text-[#152242] truncate">{{ toast.announ.title || toast.announ.type_object }}</div>
-                    <div v-if="toast.kind === 'rejected'" class="text-[13px] text-[#dc2626] truncate">{{ toast.message }}</div>
+                    <div class="text-[13px] text-[#64748b]">{{ toast.kind === 'approved' ? t('Объявление опубликовано') : t('Объявление отклонено') }}</div>
+                    <div class="text-[14px] font-semibold text-[#152242] truncate">{{ toast.announ.title || t(toast.announ.type_object) }}</div>
+                    <div v-if="toast.kind === 'rejected'" class="text-[13px] text-[#dc2626] truncate">{{ tNotice(toast) }}</div>
                 </div>
             </template>
             <template v-else>
@@ -49,16 +59,16 @@
                 <font-awesome-icon :icon="['fas', 'bell']" />
             </div>
             <div class="min-w-0">
-                <div class="text-[13px] text-[#64748b]">Новое объявление по вашей подписке</div>
-                <div class="text-[14px] font-semibold text-[#152242] truncate">{{ toast.announ.title || toast.announ.type_object }}</div>
-                <div class="text-[13px] font-bold text-[#0468ff]">{{ formatNumber(toast.announ.price) }} сомони{{ priceSuffix(toast.announ) }}</div>
+                <div class="text-[13px] text-[#64748b]">{{ t('Новое объявление по вашей подписке') }}</div>
+                <div class="text-[14px] font-semibold text-[#152242] truncate">{{ toast.announ.title || t(toast.announ.type_object) }}</div>
+                <div class="text-[13px] font-bold text-[#0468ff]">{{ formatNumber(toast.announ.price) }} {{ t('сомони') }}{{ priceSuffix(toast.announ) }}</div>
             </div>
             </template>
         </div>
         <div class="wrapper">
             <div class="inner">
                 <div class="containers" v-if="!desktopSize">
-                    <button class="nav-bars" @click="isActive()" >
+                    <button class="nav-bars" @click="isActive()" :aria-label="t('Меню')">
                     <font-awesome-icon  :icon="['fas', 'bars']" />
                     </button>
                     
@@ -70,7 +80,7 @@
                     <ul class="lists">
                         <!-- те же разделы, что в боковом меню и на мобильной главной (composables/siteLinks.js) -->
                         <li v-for="c of CATEGORY_LINKS.filter((x) => x.label !== 'Дома и дачи')" :key="c.label">
-                            <NuxtLink :to="categoryRoute(c)">{{ c.label === 'Купить' ? 'Продажа' : c.label === 'Снять' ? 'Аренда' : c.label }}</NuxtLink>
+                            <NuxtLink :to="categoryRoute(c)">{{ t(c.label === 'Купить' ? 'Продажа' : c.label === 'Снять' ? 'Аренда' : c.label) }}</NuxtLink>
                         </li>
                     </ul>
                     <!-- <div class="special-promos">
@@ -82,12 +92,13 @@
 
                 <div class="containers-icons">
                     <div class="utilities" >
+                        <LangSwitch v-if="desktopSize" class="mr-[6px]" />
                         <button type="button" @click="toggleTheme" class="buttons" data-test="theme-toggle"
-                            :title="theme === 'dark' ? 'Светлая тема' : 'Тёмная тема'" :aria-label="theme === 'dark' ? 'Включить светлую тему' : 'Включить тёмную тему'">
+                            :title="theme === 'dark' ? t('Светлая тема') : t('Тёмная тема')" :aria-label="theme === 'dark' ? t('Включить светлую тему') : t('Включить тёмную тему')">
                             <font-awesome-icon style="font-size:18px; pointer-events: none;" :icon="theme === 'dark' ? ['fas', 'sun'] : ['far', 'moon']" />
                         </button>
                         <div class="containers ">
-                            <button @click="goToLink" class="buttons relative" data-value="Пользователи" data-name="listfriend">
+                            <button @click="goToLink" class="buttons relative" data-value="Пользователи" data-name="listfriend" :aria-label="t('Сообщения')" :title="t('Сообщения')">
                                 <font-awesome-icon style="font-size:18px; pointer-events: none;" :icon="['far', 'comment']" />
                                 <span v-if="messagesUnread" style="pointer-events: none;" data-test="messages-badge"
                                     class="absolute -top-[4px] -right-[6px] min-w-[18px] h-[18px] px-[5px] rounded-full bg-[#ef4444] text-white text-[11px] leading-[18px] font-bold text-center">
@@ -95,10 +106,10 @@
                                 </span>
                             </button>
                         </div>
-                        <button @click="goToLink" class="buttons" data-name="personal_area/favorite" data-value="Избранное">
+                        <button @click="goToLink" class="buttons" data-name="personal_area/favorite" data-value="Избранное" :aria-label="t('Избранное')" :title="t('Избранное')">
                             <font-awesome-icon style="font-size:18px; pointer-events: none;" :icon="['far', 'heart']" />
                         </button> 
-                        <NuxtLink v-if="isStaff(user)" to="/admin" class="buttons relative grid place-items-center text-inherit" title="Админка" data-test="admin-link">
+                        <NuxtLink v-if="isStaff(user)" to="/admin" class="buttons relative grid place-items-center text-inherit" :title="t('Админка')" data-test="admin-link">
                             <font-awesome-icon style="font-size:17px; pointer-events: none;" :icon="['fas', 'shield-halved']" />
                             <span v-if="pendingCount" style="pointer-events: none;"
                                 class="absolute -top-[4px] -right-[6px] min-w-[18px] h-[18px] px-[5px] rounded-full bg-[#f59e0b] text-white text-[11px] leading-[18px] font-bold text-center">
@@ -106,7 +117,7 @@
                             </span>
                         </NuxtLink>
                         <div class="bell" v-if="desktopSize">
-                            <button @click="goToLink" class="buttons relative" data-name="personal_area/notification" data-value="Уведомления">
+                            <button @click="goToLink" class="buttons relative" data-name="personal_area/notification" data-value="Уведомления" :aria-label="t('Уведомления')" :title="t('Уведомления')">
                             <font-awesome-icon style="font-size:18px; pointer-events: none;" :icon="['far', 'bell']" />
                             <span v-if="unread" style="pointer-events: none;"
                                 class="absolute -top-[4px] -right-[6px] min-w-[18px] h-[18px] px-[5px] rounded-full bg-[#ef4444] text-white text-[11px] leading-[18px] font-bold text-center">
@@ -122,14 +133,14 @@
                 <div class="place" v-if="mobileSize" @click="showAndHide">
                     <NuxtLink to="/announ" rel="noopener">
                         <span >
-                            <span >&plus;</span>&nbsp;Разместить oбъявление
+                            <span >&plus;</span>&nbsp;{{ t('Разместить объявление') }}
                         </span>
                     </NuxtLink>
                 </div>
                     <!-- Here will be button login -->
                         <a  rel="noopener" v-if="!data" href="#" class="login" @click="showModalWindow">
                             <span>
-                                Войти
+                                {{ t('Войти') }}
                             </span>
                         </a>
                     <div v-if="data" class="user" @click="logOut" :style="`background-image: url('${apiBase()}/api/avatar/${data.avatar}');`">
@@ -140,7 +151,7 @@
     </div>
     <div class="container-menu" v-if="!showModal" :class="!active ? `active`: 'no-active'">
             <div class="wrap" >
-                <button class="btn"  @click="isActive()" >
+                <button class="btn" @click="isActive()" :aria-label="t('Закрыть меню')">
                     <font-awesome-icon class="fawe" style="font-weight:bolder; font-size:1.1em;" :icon="['fas', 'chevron-left']"/>
                 </button>
                 <Navigation  />
@@ -203,7 +214,7 @@
         const me = user.value
         if (item?.from && me) {
             navigateTo(`/chat-${me.id}-${me.uniq_id}-${item.from.id}-${item.from.uniq_id}`)
-        } else if (['approved', 'rejected', 'promoted', 'promo_rejected'].includes(item?.kind)) {
+        } else if (['approved', 'rejected', 'needs_changes', 'promoted', 'promo_rejected'].includes(item?.kind)) {
             navigateTo('/personal_area/my_announ')
         } else if (item?.kind === 'photo_alert') {
             navigateTo(`/admin/announs?status=${item.announ.moderation_status || 'pending'}&id=${item.announ.id}`)

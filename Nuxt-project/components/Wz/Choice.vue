@@ -1,6 +1,6 @@
 <template>
   <div>
-    <span v-if="label" class="wz-label">{{ label }}</span>
+    <span v-if="label" class="wz-label">{{ t(label) }}</span>
     <div class="flex flex-wrap gap-[8px]" role="group" :aria-label="label">
       <button v-for="o of normalized" :key="String(o.value)" type="button" @click="toggle(o.value)"
         :aria-pressed="isOn(o.value)"
@@ -9,12 +9,13 @@
           ? 'border-[#0468ff] bg-[#eef4ff] text-[#0468ff]'
           : invalid ? 'border-[#fecaca] bg-white text-[#334155] hover:border-[#f87171]' : 'border-[#e2e8f0] bg-white text-[#334155] hover:border-[#94a3b8]'">
         <font-awesome-icon v-if="o.icon" :icon="o.icon" class="text-[14px]" />
-        {{ o.label }}
+        <!-- value уходит в базу как есть (по-русски), переводим только подпись -->
+        {{ t(o.label) }}
         <font-awesome-icon v-if="multiple && isOn(o.value)" :icon="['fas', 'check']" class="text-[12px]" />
       </button>
     </div>
-    <p v-if="invalid && error" class="wz-err">{{ error }}</p>
-    <p v-else-if="hint" class="wz-hint">{{ hint }}</p>
+    <p v-if="invalid && error" class="wz-err">{{ t(error) }}</p>
+    <p v-else-if="hint" class="wz-hint">{{ t(hint) }}</p>
   </div>
 </template>
 

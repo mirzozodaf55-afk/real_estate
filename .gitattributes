@@ -1,1 +1,5 @@
 *.psd filter=lfs diff=lfs merge=lfs -text
+
+# shell-скрипты контейнера должны быть с LF, иначе sh на Linux не запустит их после клона на Windows
+*.sh text eol=lf
+Dockerfile text eol=lf

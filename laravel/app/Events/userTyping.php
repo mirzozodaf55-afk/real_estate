@@ -33,9 +33,9 @@ class userTyping implements ShouldBroadcast
     {
         // «печатает…» видит только собеседник, а не все открытые чаты
         if (!empty($this->data['friendId'])) {
-            return [new \Illuminate\Broadcasting\Channel(\App\Support\ChatChannel::name((int) $this->data['userId'], (int) $this->data['friendId']))];
+            return [new PrivateChannel(\App\Support\ChatChannel::name((int) $this->data['userId'], (int) $this->data['friendId']))];
         }
-        return ['typing'];
+        return []; // без собеседника — никому (раньше уходило в общий публичный канал)
     }
     
     public function broadcastAs()

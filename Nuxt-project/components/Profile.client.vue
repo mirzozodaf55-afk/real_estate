@@ -27,7 +27,7 @@
                                                 <a style="text-decoration: none;" class="font-normal cursor-pointer text-[#2b87db] text-[14px]">
                                                     <div class="text-[#121212] font-bold text-[16px] leading-[1.43]">{{ name }}</div>
                                                     <div class="text-[#121212] font-bold text-[16px] leading-[1.43]">{{ lastName }}</div>
-                                                    <p v-if="age" class="text-[black]">{{ age }} лет</p>
+                                                    <p v-if="age" class="text-[black]">{{ age }} {{ t('лет') }}</p>
                                                 </a>
                                             </div>
                                     </div>
@@ -36,28 +36,28 @@
                                 <div class="w-[65%] flex  flex-col">
                                     <div class="mx-[15px] mt-[10px] flex w-full justify-between">
                                         <input @change="addNewPicture" accept="image/*" type="file" id="file" class="d-none">
-                                        <button @click="open" class="rounded bg-[rgba(4,104,255,.2)] text-[#075ad9] m-[0] px-[10px] text-[14px] h-[30px] w-[max-content]">Обновить фото</button>
-                                        <button class="rounded bg-[rgba(255,31,52,.2)] text-[red] m-[0] px-[10px] text-[14px] h-[30px] w-[max-content]">Удалить фото</button>
+                                        <button @click="open" class="rounded bg-[rgba(4,104,255,.2)] text-[#075ad9] m-[0] px-[10px] text-[14px] h-[30px] w-[max-content]">{{ t('Обновить фото') }}</button>
+                                        <button class="rounded bg-[rgba(255,31,52,.2)] text-[red] m-[0] px-[10px] text-[14px] h-[30px] w-[max-content]">{{ t('Удалить фото') }}</button>
                                     </div>
 
                                     <div class="flex h-[250px] justify-around flex-col mx-[15px] mt-[10px] w-full">
                                         <div class="flex flex-col">
 
-                                            <label class="text-[14px]" for="">Имя</label>
+                                            <label class="text-[14px]" for="">{{ t('Имя') }}</label>
                                             <input v-model="name" class="border h-[30px] rounded outline-0 px-[8px]" type="text">
                                         </div>
                                         <div class="flex flex-col">
 
-                                            <label class="text-[14px]" for="">Фамилия</label>
+                                            <label class="text-[14px]" for="">{{ t('Фамилия') }}</label>
                                             <input v-model="lastName" class="border h-[30px] rounded outline-0 px-[8px]" type="text">
                                         </div>
                                         <div class="flex flex-col">
 
-                                            <label class="text-[14px]" for="">Дата рождения</label>
+                                            <label class="text-[14px]" for="">{{ t('Дата рождения') }}</label>
                                             <input @change="data" v-model="date" class="border bg-[white] h-[30px] rounded outline-0 px-[8px]" type="date">
                                         </div>
 
-                                        <button @click="sendData" class="w-[max-content] bg-[#075ad9] px-[10px] outline-0 text-[white] rounded h-[28px]">Сохранить</button>
+                                        <button @click="sendData" class="w-[max-content] bg-[#075ad9] px-[10px] outline-0 text-[white] rounded h-[28px]">{{ t('Сохранить') }}</button>
                                     </div>
                                 </div>
                             </div>
@@ -65,17 +65,22 @@
                                 <div class="w-[100%] my-[2px] sm:w-[100%] bg-[white]">
                                     <div class="flex flex-col p-[10px]">
                                         <label for="email" class="text-[14px]">
-                                        Электронная почта
+                                        {{ t('Электронная почта') }}
                                         </label>
                                         <input  v-model="message" class="border outline-0 text-[15px] rounded-[4px] py-[2px] px-[8px]" type="email"  id="email">
                                     </div>
+                                    <div v-if="emailPending" class="flex flex-col px-[10px] pb-[10px]">
+                                        <label for="email-code" class="text-[14px]">{{ t('Код из письма на новую почту') }}</label>
+                                        <input v-model="emailCode" id="email-code" inputmode="numeric" maxlength="6" autocomplete="one-time-code"
+                                            class="border outline-0 text-[15px] rounded-[4px] py-[2px] px-[8px] w-[140px] tracking-[4px]">
+                                    </div>
                                     <div class="p-[10px] pt-[0]">
-                                        <button @click="sendMessage" class="px-[8px] rounded bg-[#0d6efd] text-[white] py-[2px] outline-0 text-[15px] border">Отправить</button>
+                                        <button @click="sendMessage" class="px-[8px] rounded bg-[#0d6efd] text-[white] py-[2px] outline-0 text-[15px] border">{{ emailPending ? t('Подтвердить') : t('Отправить') }}</button>
                                     </div>
                                 </div>
                                 <div class=" w-[100%] mt-[3px] sm:w-[100%] bg-[white]">
                                     <div @click="show" class="block py-[5px] justify-between flex px-[10px]">
-                                        <h6 class="text-[15px] mt-[5px] font-bold">Сменить пароль</h6>
+                                        <h6 class="text-[15px] mt-[5px] font-bold">{{ t('Сменить пароль') }}</h6>
                                         <div>
                                             <font-awesome-icon
                                                 v-if="!showHide"
@@ -107,7 +112,7 @@
                                             </button>
                                         </div>
                                         <div class="py-[10px] pt-[0]">
-                                        <button @click="confirm" class="px-[8px] rounded bg-[#0d6efd] text-[white] py-[2px] outline-0 text-[15px] border">Сохранить</button>
+                                        <button @click="confirm" class="px-[8px] rounded bg-[#0d6efd] text-[white] py-[2px] outline-0 text-[15px] border">{{ t('Сохранить') }}</button>
                                         </div>
                                     </div>
                                 </div>
@@ -119,9 +124,7 @@
 </template>
 <script setup>
 
-// useHead({
-//     title:'Профиль'
-// })
+useHead({ title: () => t('Профиль') })
 const route = useRoute()
 getUser()
 const {responce,loadImage} = getData()
@@ -131,6 +134,10 @@ const name = ref('')
 const lastName = ref('')
 const date = ref('')
 const message = ref('')
+// смена почты в два шага: код приходит на новую почту, потом вводится здесь
+const emailPending = ref(false)
+const emailCode = ref('')
+watch(message, () => { emailPending.value = false }) // поменяли адрес — старый код к нему не подходит
 const password = ref('')
 const confirm_password = ref('')
 const {user} = getUserByServer()
@@ -231,17 +238,25 @@ async function sendMessage(){
             Authorization:'Bearer '+getToken()
         },
         body:JSON.stringify({
-            'email':message.value
+            'email':message.value,
+            ...(emailPending.value ? { code: emailCode.value.trim() } : {})
         })
     })
     .then(res=>res.ok ? res.json() : Promise.reject(res))
     .then(res=>{
+       if (res.pending) {
+          emailPending.value = true
+          emailCode.value = ''
+          alert(t(res.message))
+          return
+       }
+       emailPending.value = false
        message.value = res.email
        user.value = owner.value = res
     })
     .catch(async (res) => {
        // например, почта уже занята другим аккаунтом
-       try { alert((await res.json()).message) } catch (e) {}
+       try { alert(t((await res.json()).message)) } catch (e) {}
     })
     
 }

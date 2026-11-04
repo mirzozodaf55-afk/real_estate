@@ -1,13 +1,13 @@
 <template>
-  <WzShell title="Ремонт и удобства дома" subtitle="Эти параметры чаще всего выбирают в фильтрах поиска" :error="error" @next="next">
-    <WzChoice v-model="d.repair" label="Ремонт" :options="REPAIR_OPTIONS" :invalid="tried && !d.repair" error="Выберите ремонт" />
+  <WzShell :title="t('Ремонт и удобства дома')" :subtitle="t('Эти параметры чаще всего выбирают в фильтрах поиска')" :error="error" @next="next">
+    <WzChoice v-model="d.repair" :label="t('Ремонт')" :options="REPAIR_OPTIONS" :invalid="tried && !d.repair" :error="t('Выберите ремонт')" />
 
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-[22px]">
-      <WzChoice v-model="d.balcon" label="Балкон или лоджия" :options="YES_NO" :invalid="tried && !d.balcon" error="Укажите, есть ли балкон" />
-      <WzChoice v-model="d.elevator" label="Лифт" :options="YES_NO" :invalid="tried && !d.elevator" error="Укажите, есть ли лифт" />
+      <WzChoice v-model="d.balcon" :label="t('Балкон или лоджия')" :options="YES_NO" :invalid="tried && !d.balcon" :error="t('Укажите, есть ли балкон')" />
+      <WzChoice v-model="d.elevator" :label="t('Лифт')" :options="YES_NO" :invalid="tried && !d.elevator" :error="t('Укажите, есть ли лифт')" />
     </div>
 
-    <WzChoice v-model="d.parking" label="Парковка" :options="PARKING" :invalid="tried && !d.parking" error="Выберите парковку" />
+    <WzChoice v-model="d.parking" :label="t('Парковка')" :options="PARKING" :invalid="tried && !d.parking" :error="t('Выберите парковку')" />
   </WzShell>
 </template>
 

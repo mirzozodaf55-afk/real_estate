@@ -19,7 +19,8 @@ class NewChatMessage implements ShouldBroadcast
 
     public function broadcastOn(): array
     {
-        return [new Channel('user.' . $this->recipientId)];
+        // приватный канал пользователя: подписаться может только он сам (routes/channels.php)
+        return [new \Illuminate\Broadcasting\PrivateChannel('user.' . $this->recipientId)];
     }
 
     public function broadcastAs(): string

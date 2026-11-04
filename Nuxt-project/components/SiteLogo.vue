@@ -1,5 +1,5 @@
 <template>
-  <span class="site-logo inline-flex items-center gap-[9px] select-none" :class="{ 'site-logo--light': light }" aria-label="Domly — недвижимость">
+  <span class="site-logo inline-flex items-center gap-[9px] select-none" :class="{ 'site-logo--light': light }" :aria-label="t('Domly — недвижимость')">
     <svg :width="size" :height="size" viewBox="0 0 40 40" fill="none" aria-hidden="true">
       <defs>
         <linearGradient id="site-logo-bg" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">

@@ -12,6 +12,8 @@ use App\Models\InfrastructureAnnoun;
 use App\Models\ModerationLog;
 use App\Models\Owner;
 use App\Models\RejectionReason;
+use App\Models\SiteSetting;
+use App\Services\AutoModerator;
 use App\Services\DuplicateFinder;
 use App\Services\AnnounNotifier;
 use App\Services\ModerationNotifier;
@@ -24,6 +26,8 @@ use Illuminate\Support\Facades\DB;
 class ModerationController extends Controller
 {
     private const OWNER_FIELDS = 'owner:id,name,last_name,email,phone_number,avatar,uniq_id,role,created_at';
+    // очередь: сначала высокий риск по мнению ИИ, потом средний, низкий, не проверенные (внутри — кто дольше ждёт)
+    private const QUEUE_ORDER = "CASE ai_risk WHEN 'high' THEN 0 WHEN 'medium' THEN 1 WHEN 'low' THEN 2 ELSE 3 END";
 
     public function stats()
     {
@@ -47,7 +51,22 @@ class ModerationController extends Controller
             'moderated_today' => ModerationLog::whereIn('action', ['approve', 'reject'])->where('created_at', '>=', today())->count(),
             // самое старое из ждущих — видно, не копится ли очередь
             'oldest_pending_at' => Announ::anyStatus()->where('moderation_status', Announ::PENDING)->min('updated_at'),
+            'auto_moderation' => AutoModerator::mode(),
+            'auto_moderated_today' => ModerationLog::whereNull('moderator_id')->whereIn('action', ['approve', 'reject', 'needs_changes'])->where('created_at', '>=', today())->count(),
+            // без ИИ автомодерации не на что опереться — всё останется в очереди
+            'ai_enabled' => \App\Services\OpenAi::enabled(),
+            'vision_enabled' => \App\Services\PhotoChecker::enabled(),
         ]);
+    }
+
+    /** Режим автомодерации (только админ): off / approve / full — см. App\Services\AutoModerator */
+    public function autoModeration(Request $request)
+    {
+        $data = $request->validate(['mode' => 'required|in:' . implode(',', AutoModerator::MODES)]);
+        SiteSetting::put('auto_moderation', $data['mode']);
+        ModerationLog::create(['moderator_id' => $request->user()->id, 'action' => 'auto_moderation', 'reason' => $data['mode']]);
+
+        return response()->json(['auto_moderation' => AutoModerator::mode()]);
     }
 
     public function index(Request $request)
@@ -89,13 +108,15 @@ class ModerationController extends Controller
 
         if ($status === Announ::PENDING) {
             // очередь: сначала высокий риск по мнению ИИ, потом средний, низкий, не проверенные; внутри — кто дольше ждёт
-            $query->orderByRaw("CASE ai_risk WHEN 'high' THEN 0 WHEN 'medium' THEN 1 WHEN 'low' THEN 2 ELSE 3 END")->orderBy('updated_at');
+            $query->orderByRaw(self::QUEUE_ORDER)->orderBy('updated_at');
         } else {
             // архив — сначала свежие решения
             $query->orderByDesc('moderated_at');
         }
 
-        return response()->json($query->paginate(20));
+        $page = $query->paginate(20);
+        $page->getCollection()->each->makeVisible(Announ::STAFF_FIELDS);
+        return response()->json($page);
     }
 
     public function show(int $id)
@@ -103,7 +124,7 @@ class ModerationController extends Controller
         $announ = $this->find($id);
         $announ->load(['pictures:id,announ_id,pictures,rotation,position', self::OWNER_FIELDS]);
 
-        $data = $announ->toArray();
+        $data = $announ->makeVisible(Announ::STAFF_FIELDS)->toArray();
         $data['conditions'] = Conditions::whereIn('id', ConditionAnnoun::where('announ_id', $id)->select('condition_id'))->pluck('name');
         $data['infrastructure'] = Infrastructure::whereIn('id', InfrastructureAnnoun::where('announ_id', $id)->select('infrastructure_id'))->pluck('name');
         // чтобы модератор видел, новичок это или владелец, которому уже отказывали
@@ -136,7 +157,9 @@ class ModerationController extends Controller
     public function approve(Request $request, int $id)
     {
         $announ = $this->find($id);
-        $this->decide($request, $announ, Announ::APPROVED, null);
+        if (!$this->decide($request, $announ, Announ::APPROVED, null)) {
+            return response()->json(['message' => 'Объявление уже одобрено', 'next_id' => $this->nextPendingId($announ->id)]);
+        }
 
         ModerationNotifier::notifyOwner($announ, AnnounNotification::KIND_APPROVED);
         // подписчики «Уведомить меня» узнают о объявлении только теперь, когда его видно в поиске
@@ -151,7 +174,9 @@ class ModerationController extends Controller
     {
         $reason = $this->reasonFromRequest($request);
         $announ = $this->find($id);
-        $this->decide($request, $announ, Announ::REJECTED, $reason);
+        if (!$this->decide($request, $announ, Announ::REJECTED, $reason)) {
+            return response()->json(['message' => 'Объявление уже отклонено с этой причиной', 'next_id' => $this->nextPendingId($announ->id)]);
+        }
 
         ModerationNotifier::notifyOwner($announ, AnnounNotification::KIND_REJECTED, $announ->moderation_reason);
 
@@ -166,7 +191,9 @@ class ModerationController extends Controller
             'comment.min' => 'Опишите подробнее, что нужно исправить',
         ]);
         $announ = $this->find($id);
-        $this->decide($request, $announ, Announ::NEEDS_CHANGES, trim($data['comment']));
+        if (!$this->decide($request, $announ, Announ::NEEDS_CHANGES, trim($data['comment']))) {
+            return response()->json(['message' => 'Уже отправлено на доработку с этим комментарием', 'next_id' => $this->nextPendingId($announ->id)]);
+        }
 
         ModerationNotifier::notifyOwner($announ, AnnounNotification::KIND_NEEDS_CHANGES, $announ->moderation_reason);
 
@@ -184,8 +211,13 @@ class ModerationController extends Controller
         $reason = $data['action'] === 'reject' ? $this->reasonFromRequest($request) : null;
 
         $announs = Announ::anyStatus()->withTrashed()->whereIn('id', $data['ids'])->get();
+        $count = 0;
         foreach ($announs as $announ) {
-            DB::transaction(fn () => $this->decide($request, $announ, $data['action'] === 'approve' ? Announ::APPROVED : Announ::REJECTED, $reason));
+            // уже с таким решением (например, другой модератор успел раньше) — владельцу второй раз не пишем
+            if (!DB::transaction(fn () => $this->decide($request, $announ, $data['action'] === 'approve' ? Announ::APPROVED : Announ::REJECTED, $reason))) {
+                continue;
+            }
+            $count++;
             if ($data['action'] === 'approve') {
                 ModerationNotifier::notifyOwner($announ, AnnounNotification::KIND_APPROVED);
                 if (!$announ->trashed()) {
@@ -196,7 +228,6 @@ class ModerationController extends Controller
             }
         }
 
-        $count = $announs->count();
         return response()->json([
             'message' => ($data['action'] === 'approve' ? 'Одобрено: ' : 'Отклонено: ') . $count,
             'count' => $count,
@@ -205,14 +236,18 @@ class ModerationController extends Controller
 
     /**
      * Причина отказа: готовая из справочника (reason_id) + уточнение модератора (reason), или только свой текст («Другое»).
+     * Готовая причина уходит владельцу по-русски (text): английский перевод (text_en) — только для модератора на сайте.
      */
     private function reasonFromRequest(Request $request): string
     {
         $data = $request->validate([
             'reason_id' => 'nullable|integer|exists:rejection_reasons,id',
             'reason' => 'nullable|string|max:500',
-        ]);
-        $preset = !empty($data['reason_id']) ? RejectionReason::find($data['reason_id'])?->text : null;
+        ], ['reason_id.exists' => 'Такой причины отказа нет — обновите страницу']);
+        $preset = null;
+        if (!empty($data['reason_id']) && ($r = RejectionReason::find($data['reason_id']))) {
+            $preset = $r->text;
+        }
         $own = trim((string) ($data['reason'] ?? ''));
 
         if (!$preset && mb_strlen($own) < 5) {
@@ -224,8 +259,12 @@ class ModerationController extends Controller
         return trim($preset . ($preset && $own ? ' ' : '') . $own);
     }
 
-    private function decide(Request $request, Announ $announ, string $status, ?string $reason): void
+    /** Записать решение. false — у объявления уже такое решение: ничего не меняем, в журнал не пишем */
+    private function decide(Request $request, Announ $announ, string $status, ?string $reason): bool
     {
+        if ($announ->moderation_status === $status && $announ->moderation_reason === $reason) {
+            return false;
+        }
         $announ->forceFill([
             'moderation_status' => $status,
             'moderation_reason' => $reason,
@@ -243,13 +282,14 @@ class ModerationController extends Controller
             'target_user_id' => $announ->owner_id,
             'reason' => $reason,
         ]);
+        return true;
     }
 
     /** Следующее в очереди — чтобы модератор шёл по списку, не возвращаясь к нему */
     private function nextPendingId(int $exceptId): ?int
     {
         return Announ::anyStatus()->where('moderation_status', Announ::PENDING)
-            ->where('id', '!=', $exceptId)->orderBy('updated_at')->value('id');
+            ->where('id', '!=', $exceptId)->orderByRaw(self::QUEUE_ORDER)->orderBy('updated_at')->value('id');
     }
 
     private function find(int $id): Announ

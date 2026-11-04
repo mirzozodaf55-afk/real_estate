@@ -43,6 +43,8 @@ class RejectionReasonController extends Controller
         return $request->validate([
             'title' => $rule . 'required|string|min:3|max:100',
             'text' => $rule . 'required|string|min:5|max:500',
+            'title_en' => 'sometimes|nullable|string|max:100',
+            'text_en' => 'sometimes|nullable|string|max:500',
             'active' => 'sometimes|boolean',
             'sort' => 'sometimes|integer|min:0|max:1000',
         ], [

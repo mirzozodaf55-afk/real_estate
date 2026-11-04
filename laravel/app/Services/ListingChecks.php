@@ -7,7 +7,8 @@ use Illuminate\Support\Facades\Log;
 
 /**
  * Всё, что делаем с объявлением после подачи или правки, пока оно ждёт модератора — после ответа пользователю:
- * отпечатки фото (для поиска дубликатов), ИИ-проверка фото, ИИ-проверка текста и цены → общий риск для очереди.
+ * отпечатки фото (для поиска дубликатов), ИИ-проверка фото, ИИ-проверка текста и цены → общий риск для очереди,
+ * затем автомодерация (AutoModerator), если она включена.
  * Сбой одной проверки не мешает остальным; не проверенное можно перепроверить кнопкой в карточке модерации.
  */
 class ListingChecks
@@ -39,6 +40,11 @@ class ListingChecks
                 }
             }
             ListingReviewer::refreshRisk($announ->refresh());
+            try {
+                AutoModerator::run($announ->refresh());
+            } catch (\Throwable $e) {
+                Log::warning('Автомодерация не удалась', ['announ_id' => $announ->id, 'error' => $e->getMessage()]);
+            }
         };
         app()->runningInConsole() ? $run() : dispatch($run)->afterResponse();
     }

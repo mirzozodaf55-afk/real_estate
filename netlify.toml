@@ -1,0 +1,20 @@
+# Сайт публичного демо на бесплатном Netlify: статическая сборка (без SSR), данные берутся из API на Render.
+# Адрес API и ключ Pusher задаются в настройках сайта на Netlify: Site configuration → Environment variables
+#   NUXT_PUBLIC_API_BASE   = https://domly-api.onrender.com
+#   NUXT_PUBLIC_PUSHER_KEY = key из вкладки App Keys в Pusher
+[build]
+  base = "Nuxt-project"
+  command = "npm run generate"
+  publish = ".output/public"
+
+[build.environment]
+  NODE_VERSION = "22"
+  NUXT_SSR = "false"
+  NUXT_PUBLIC_DEMO_MODE = "true"
+  NUXT_PUBLIC_PUSHER_CLUSTER = "eu"
+
+# все адреса отдаёт одна страница приложения (объявления, чаты и т.п. — динамические маршруты)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -4,13 +4,13 @@
       :class="dragOver ? 'border-[#0468ff] bg-[#eef4ff]' : invalid && !pictures.length ? 'border-[#fca5a5] bg-[#fef2f2]/40' : 'border-[#cbd5e1] hover:border-[#0468ff] hover:bg-[#f8fafc]'"
       @dragover.prevent="dragOver = true" @dragleave="dragOver = false" @drop.prevent="onDrop">
       <font-awesome-icon :icon="['fas', 'camera']" class="text-[26px] text-[#0468ff]" />
-      <span class="text-[15px] font-semibold text-[#152242]">{{ pictures.length ? 'Добавить ещё фото' : 'Выберите или перетащите фото' }}</span>
-      <span class="text-[12.5px] text-[#94a3b8]">JPG, PNG, WEBP · от 800×400 px · до {{ MAX }} фото · свои снимки без водяных знаков</span>
+      <span class="text-[15px] font-semibold text-[#152242]">{{ pictures.length ? t('Добавить ещё фото') : t('Выберите или перетащите фото') }}</span>
+      <span class="text-[12.5px] text-[#94a3b8]">{{ t('JPG, PNG, WEBP · от 800×400 px · до') }} {{ MAX }} {{ t('фото · свои снимки без водяных знаков') }}</span>
       <input type="file" multiple accept=".jpg,.jpeg,.png,.webp" class="hidden" @change="addFiles($event.target.files); $event.target.value = ''" data-test="photos-input" />
     </label>
 
     <p v-for="(e, i) of rejected" :key="i" class="wz-err">{{ e }}</p>
-    <p v-if="invalid && !pictures.length" class="wz-err">Добавьте хотя бы одно фото — без фото объявление не опубликовать</p>
+    <p v-if="invalid && !pictures.length" class="wz-err">{{ t('Добавьте хотя бы одно фото — без фото объявление не опубликовать') }}</p>
 
     <div v-if="pictures.length" class="mt-[12px] grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-[10px]" data-test="photos-grid">
       <div v-for="(img, i) of pictures" :key="img.url" draggable="true"
@@ -18,21 +18,21 @@
         class="group relative aspect-[4/3] rounded-[12px] overflow-hidden bg-[#0f172a] cursor-grab"
         :class="dragIndex === i ? 'opacity-40' : ''">
         <img :src="img.url" :style="`transform: rotate(${img.rotation}deg)`" class="w-full h-full object-cover transition-transform" alt="" />
-        <span v-if="i === 0" class="absolute left-[8px] top-[8px] px-[8px] py-[2px] rounded-full bg-[#0468ff] text-white text-[11.5px] font-bold">Обложка</span>
+        <span v-if="i === 0" class="absolute left-[8px] top-[8px] px-[8px] py-[2px] rounded-full bg-[#0468ff] text-white text-[11.5px] font-bold">{{ t('Обложка') }}</span>
         <div class="absolute inset-x-0 bottom-0 p-[6px] flex justify-end gap-[6px] bg-gradient-to-t from-black/60 to-transparent">
-          <button v-if="i > 0" type="button" @click="makeCover(i)" title="Сделать обложкой" class="w-[30px] h-[30px] rounded-full bg-white/90 hover:bg-white text-[#152242] grid place-items-center text-[12px]">
+          <button v-if="i > 0" type="button" @click="makeCover(i)" :title="t('Сделать обложкой')" class="w-[30px] h-[30px] rounded-full bg-white/90 hover:bg-white text-[#152242] grid place-items-center text-[12px]">
             <font-awesome-icon :icon="['fas', 'star']" />
           </button>
-          <button type="button" @click="rotate(img)" title="Повернуть" class="w-[30px] h-[30px] rounded-full bg-white/90 hover:bg-white text-[#152242] grid place-items-center text-[12px]">
+          <button type="button" @click="rotate(img)" :title="t('Повернуть')" class="w-[30px] h-[30px] rounded-full bg-white/90 hover:bg-white text-[#152242] grid place-items-center text-[12px]">
             <font-awesome-icon :icon="['fas', 'rotate-right']" />
           </button>
-          <button type="button" @click="remove(i)" title="Удалить" class="w-[30px] h-[30px] rounded-full bg-white/90 hover:bg-white text-[#dc2626] grid place-items-center text-[12px]">
+          <button type="button" @click="remove(i)" :title="t('Удалить')" class="w-[30px] h-[30px] rounded-full bg-white/90 hover:bg-white text-[#dc2626] grid place-items-center text-[12px]">
             <font-awesome-icon :icon="['fas', 'trash']" />
           </button>
         </div>
       </div>
     </div>
-    <p v-if="pictures.length > 1" class="wz-hint">Перетащите фото, чтобы поменять порядок. Первое — обложка, его видят в поиске.</p>
+    <p v-if="pictures.length > 1" class="wz-hint">{{ t('Перетащите фото, чтобы поменять порядок. Первое — обложка, его видят в поиске.') }}</p>
   </div>
 </template>
 
@@ -59,10 +59,10 @@ function sync() {
 function addFiles(fileList) {
   rejected.value = []
   const files = [...fileList].filter((f) => /^image\/(jpeg|png|webp)$/.test(f.type))
-  if (files.length < fileList.length) rejected.value.push('Часть файлов пропущена: подходят только JPG, PNG и WEBP')
+  if (files.length < fileList.length) rejected.value.push(t('Часть файлов пропущена: подходят только JPG, PNG и WEBP'))
   for (const file of files) {
     if (pictures.value.length >= MAX) {
-      rejected.value.push(`Можно загрузить не больше ${MAX} фото`)
+      rejected.value.push(t('Можно загрузить не больше {n} фото', { n: MAX }))
       break
     }
     const url = URL.createObjectURL(file)
@@ -73,7 +73,7 @@ function addFiles(fileList) {
         sync()
       } else {
         URL.revokeObjectURL(url)
-        rejected.value.push(`«${file.name}» слишком маленькое (${probe.naturalWidth}×${probe.naturalHeight}) — нужно от ${MIN_W}×${MIN_H} px`)
+        rejected.value.push(t('«{name}» слишком маленькое ({w}×{h}) — нужно от {minW}×{minH} px', { name: file.name, w: probe.naturalWidth, h: probe.naturalHeight, minW: MIN_W, minH: MIN_H }))
       }
     }
     probe.src = url

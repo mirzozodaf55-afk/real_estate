@@ -1,4 +1,3 @@
-import Pusher from 'pusher-js'
 
 // Общее состояние на всё приложение: колокольчик в навбаре и страница уведомлений видят одни и те же данные
 const notifications = ref([])
@@ -60,15 +59,7 @@ export function useNotifications() {
     if (!process.client || !userId || listeningUserId === userId) return
     listeningUserId = userId
     try {
-      const pusher = new Pusher('local', {
-        wsHost: wsHost(),
-        wsPort: '6001',
-        forceTLS: false,
-        disableStats: true,
-        cluster: 'mt1',
-        enabledTransports: ['ws', 'wss'],
-      })
-      const channel = pusher.subscribe(`user.${userId}`)
+      const channel = createPusher().subscribe(`private-user.${userId}`)
       channel.bind('notify', (data) => {
         const item = data?.announ // публичное свойство события = payload уведомления
         if (!item?.id || notifications.value.some((n) => n.id === item.id)) return

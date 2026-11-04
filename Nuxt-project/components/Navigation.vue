@@ -5,7 +5,7 @@
                     <div>
                         <font-awesome-icon style="font-size:1.15em;" :icon="['fas', 'right-to-bracket']" />
                     </div>
-                    <a>Войти</a>
+                    <a>{{ t('Войти') }}</a>
                 </li>
                 <li v-if="user.id" class="flex w-[200px] ml-[5px] items-center" @click="logOut">
                     <div class="user"  :style="`background-image: url('${apiBase()}/api/avatar/${user.avatar}');`">

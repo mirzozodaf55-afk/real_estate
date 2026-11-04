@@ -4,7 +4,7 @@
       <!-- Шаги -->
       <aside class="hidden lg:block lg:sticky lg:top-[20px]">
         <div class="bg-white rounded-[16px] border border-[#e8edf3] p-[16px]">
-          <div class="text-[12px] uppercase tracking-[0.08em] text-[#94a3b8] font-bold">Новое объявление</div>
+          <div class="text-[12px] uppercase tracking-[0.08em] text-[#94a3b8] font-bold">{{ t('Новое объявление') }}</div>
           <div class="text-[14px] font-semibold text-[#152242] mt-[2px] truncate">{{ summary }}</div>
           <ol class="list-none m-0 mt-[14px] p-0 flex flex-col gap-[2px]">
             <li v-for="(s, i) of nav.steps" :key="s.path">
@@ -16,20 +16,20 @@
                   <font-awesome-icon v-if="i < nav.index" :icon="['fas', 'check']" class="text-[11px]" />
                   <template v-else>{{ i + 1 }}</template>
                 </span>
-                <span class="text-[14px]" :class="i === nav.index ? 'font-semibold text-[#0468ff]' : i < nav.index ? 'text-[#334155]' : 'text-[#94a3b8]'">{{ s.label }}</span>
+                <span class="text-[14px]" :class="i === nav.index ? 'font-semibold text-[#0468ff]' : i < nav.index ? 'text-[#334155]' : 'text-[#94a3b8]'">{{ t(s.label) }}</span>
               </button>
             </li>
           </ol>
         </div>
-        <p class="text-[12px] text-[#94a3b8] mt-[10px] px-[4px] leading-[1.5]">Всё, что вы заполнили, сохраняется — можно вернуться позже и продолжить.</p>
+        <p class="text-[12px] text-[#94a3b8] mt-[10px] px-[4px] leading-[1.5]">{{ t('Всё, что вы заполнили, сохраняется — можно вернуться позже и продолжить.') }}</p>
       </aside>
 
       <main class="min-w-0">
         <!-- Телефон: прогресс -->
         <div class="lg:hidden mb-[12px]">
           <div class="flex justify-between text-[12.5px] text-[#64748b] mb-[6px]">
-            <span>Шаг {{ nav.index + 1 }} из {{ nav.steps.length }}</span>
-            <span class="font-semibold text-[#152242] truncate ml-[8px]">{{ nav.steps[nav.index]?.label }}</span>
+            <span>{{ t('Шаг') }} {{ nav.index + 1 }} {{ t('из') }} {{ nav.steps.length }}</span>
+            <span class="font-semibold text-[#152242] truncate ml-[8px]">{{ t(nav.steps[nav.index]?.label) }}</span>
           </div>
           <div class="h-[6px] rounded-full bg-[#e2e8f0] overflow-hidden">
             <div class="h-full rounded-full bg-gradient-to-r from-[#60a5fa] to-[#0468ff] transition-all" :style="{ width: `${((nav.index + 1) / nav.steps.length) * 100}%` }"></div>
@@ -38,7 +38,7 @@
 
         <section class="bg-white rounded-[18px] border border-[#e8edf3] p-[18px] sm:p-[26px]">
           <h1 class="text-[22px] sm:text-[26px] font-bold text-[#152242] m-0 leading-tight">{{ title }}</h1>
-          <p v-if="subtitle" class="text-[14px] text-[#64748b] mt-[6px] mb-0">{{ subtitle }}</p>
+          <p v-if="subtitle" class="text-[14px] text-[#64748b] mt-[6px] mb-0">{{ t(subtitle) }}</p>
           <div class="mt-[22px] flex flex-col gap-[22px]">
             <slot />
           </div>
@@ -47,18 +47,18 @@
         <!-- Кнопки: на телефоне прилипают к низу экрана -->
         <div class="fixed lg:static inset-x-0 bottom-0 z-[40] bg-white/95 lg:bg-transparent backdrop-blur lg:backdrop-blur-0 border-t lg:border-0 border-[#e8edf3] px-[16px] lg:px-0 py-[10px] lg:py-0 lg:mt-[16px]">
           <p v-if="error" class="text-[13px] text-[#dc2626] mt-0 mb-[8px] lg:text-right" role="alert" data-test="wz-error">
-            <font-awesome-icon :icon="['fas', 'circle-exclamation']" class="mr-[4px]" />{{ error }}
+            <font-awesome-icon :icon="['fas', 'circle-exclamation']" class="mr-[4px]" />{{ t(error) }}
           </p>
           <div class="flex gap-[10px] lg:justify-end">
             <button v-if="nav.prev && !hideBack" type="button" @click="navigateTo(nav.prev)"
               class="h-[46px] px-[18px] rounded-[12px] border border-[#e2e8f0] bg-white text-[15px] font-semibold text-[#334155] hover:border-[#94a3b8]">
-              <font-awesome-icon :icon="['fas', 'arrow-left']" class="mr-[6px] text-[13px]" />Назад
+              <font-awesome-icon :icon="['fas', 'arrow-left']" class="mr-[6px] text-[13px]" />{{ t('Назад') }}
             </button>
             <button type="button" @click="$emit('next')" :disabled="loading" data-test="wz-next"
               class="h-[46px] flex-1 lg:flex-none lg:min-w-[180px] px-[22px] rounded-[12px] text-white text-[15px] font-bold transition-colors disabled:opacity-70"
               :class="final ? 'bg-[#16a34a] hover:bg-[#15803d]' : 'bg-[#0468ff] hover:bg-[#0353cc]'">
               <font-awesome-icon v-if="loading" :icon="['fas', 'spinner']" spin-pulse class="mr-[6px]" />
-              {{ nextLabel || (final ? 'Разместить' : 'Далее') }}
+              {{ nextLabel || (final ? t('Разместить') : t('Далее')) }}
               <font-awesome-icon v-if="!final && !loading" :icon="['fas', 'arrow-right']" class="ml-[6px] text-[13px]" />
             </button>
           </div>
@@ -86,10 +86,10 @@ const nav = computed(() => announStepNav(announData.value, route.path))
 const summary = computed(() => {
   const d = announData.value || {}
   const deal = d.rent === 'Аренда' ? (d.typeRent === 'Посуточно' ? 'Посуточно' : 'Аренда') : d.rent
-  return [deal, d.objects].filter(Boolean).join(' · ') || 'Выберите тип'
+  return [deal && t(deal), d.objects && t(d.objects)].filter(Boolean).join(' · ') || t('Выберите тип')
 })
 
-useHead({ title: computed(() => `${props.title} — новое объявление`) })
+useHead({ title: computed(() => t('{x} — новое объявление', { x: props.title })) })
 </script>
 
 <!-- Общие стили полей формы для всех шагов (не scoped — используются внутри слотов) -->

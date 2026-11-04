@@ -89,7 +89,7 @@ public function createResidentAnnoun(Request $request){
             $filename = [];
             $names = [];
             foreach ($images as $image) {
-                $names[] = $name = uniqid() . '.' . $image->getClientOriginalExtension();
+                $names[] = $name = \App\Support\UploadName::make($image, \App\Support\UploadName::IMAGES, 'jpg');
                 $filename[] = [
                     'name'=> $name,
                     'xsmall' => 'xsmall/' . $name,

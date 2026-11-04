@@ -30,6 +30,7 @@ async function aiPost(path, body, auth = false) {
 }
 
 // Заголовок и описание объявления по характеристикам и черновику владельца
-export const aiDescribe = (facts, title, description) => aiPost('/ai/describe', { facts, title, description }, true)
+// lang — язык сайта: ИИ отвечает и пишет текст объявления на нём
+export const aiDescribe = (facts, title, description) => aiPost('/ai/describe', { facts, title, description, lang: useLang().lang.value }, true)
 
-export const aiChat = (messages) => aiPost('/ai/chat', { messages })
+export const aiChat = (messages) => aiPost('/ai/chat', { messages, lang: useLang().lang.value })

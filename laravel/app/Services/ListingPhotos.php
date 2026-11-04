@@ -19,7 +19,7 @@ class ListingPhotos
     /** Сохраняет файл во всех размерах и привязывает к объявлению. Возвращает имя файла. */
     public static function store(UploadedFile $file, int $announId, int $position, int $rotation = 0): string
     {
-        $name = uniqid() . '.' . $file->getClientOriginalExtension();
+        $name = \App\Support\UploadName::make($file, \App\Support\UploadName::IMAGES, 'jpg');
         foreach (self::SIZES as $folder => [$w, $h]) {
             Image::make($file)->fit($w, $h)->save(public_path("$folder/$name"));
         }

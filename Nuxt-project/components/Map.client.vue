@@ -1,23 +1,23 @@
 <template>
-  <WzShell :title="kind === 'land' ? 'Где находится участок?' : 'Где находится объект?'"
-    subtitle="Найдите адрес или отметьте точку на карте — покупатели увидят объявление на карте и в поиске по адресу"
+  <WzShell :title="kind === 'land' ? t('Где находится участок?') : t('Где находится объект?')"
+    :subtitle="t('Найдите адрес или отметьте точку на карте — покупатели увидят объявление на карте и в поиске по адресу')"
     :error="error" @next="next">
     <WzLocationPicker :draft="d" :invalid="tried && !hasPoint" />
 
     <template v-if="kind !== 'land'">
-      <div class="wz-section-title">{{ kind === 'flat' ? 'О доме' : 'О доме и постройке' }}</div>
+      <div class="wz-section-title">{{ kind === 'flat' ? t('О доме') : t('О доме и постройке') }}</div>
 
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-[16px]">
-        <WzNumber v-if="kind === 'flat'" v-model="d.floor" label="Этаж" :max="3" width="w-full"
-          :invalid="tried && (!d.floor || floorTooHigh)" :error="floorTooHigh ? 'Больше этажности дома' : 'Укажите этаж'" />
-        <WzNumber v-model="d.floorHouse" :label="kind === 'flat' ? 'Этажей в доме' : 'Количество этажей'" :max="3" width="w-full"
-          :invalid="tried && !d.floorHouse" error="Укажите этажность" />
-        <WzNumber v-model="d.year" label="Год постройки" :max="4" width="w-full" placeholder="например, 2015"
-          :invalid="tried && !yearOk" :error="`Год от 1900 до ${currentYear}`" />
+        <WzNumber v-if="kind === 'flat'" v-model="d.floor" :label="t('Этаж')" :max="3" width="w-full"
+          :invalid="tried && (!d.floor || floorTooHigh)" :error="floorTooHigh ? t('Больше этажности дома') : t('Укажите этаж')" />
+        <WzNumber v-model="d.floorHouse" :label="kind === 'flat' ? t('Этажей в доме') : t('Количество этажей')" :max="3" width="w-full"
+          :invalid="tried && !d.floorHouse" :error="t('Укажите этажность')" />
+        <WzNumber v-model="d.year" :label="t('Год постройки')" :max="4" width="w-full" :placeholder="t('например, 2015')"
+          :invalid="tried && !yearOk" :error="t('Год от 1900 до {y}', { y: currentYear })" />
       </div>
 
-      <WzChoice v-model="d.selectType" :label="kind === 'flat' ? 'Тип дома' : 'Материал стен'" :options="HOUSE_TYPES"
-        :invalid="tried && !d.selectType" error="Выберите тип дома" />
+      <WzChoice v-model="d.selectType" :label="kind === 'flat' ? t('Тип дома') : t('Материал стен')" :options="HOUSE_TYPES"
+        :invalid="tried && !d.selectType" :error="t('Выберите тип дома')" />
     </template>
   </WzShell>
 </template>
